@@ -24,29 +24,30 @@
 #include "common.h"
 
 #include <string.h>
+#include <libgen.h>
 
 
 void show_help(void) {
     printf("Usage: %s PATH\n \
     or: %s [OPTION] [PATH]\n\n \
-    -h, --help\t\tdisplay this help\n \
-    -V, --version\tdisplay version information\n\n \
+    -s, --suffix=SUFFIX\tremove trailing suffix\n \
+    -h, --help\t\t\tdisplay this help\n \
+    -V, --version\t\tdisplay version information\n\n \
     Examples:\n \
-    \tbasename /usr/bin/sort       Output 'sort'.\n \
-    \tbasename -s .h include/stdio.h Output 'stdio'. \n\n \
+    \tbasename /usr/bin/sort         Output: 'sort'.\n \
+    \tbasename -s .h include/stdio.h Output: 'stdio'. \n\n \
     Report bugs to <bulliver@gmail.com>\n", APPNAME, APPNAME);
 }
 
 int main(int argc, char *argv[]) {
-    int opt;
+    int  opt;
     char name[256];
-    int sfx = 0;
-    int sdn = 0;
+    int  sfx = 0;
+    int  sdn = 0;
     char suffix[256];
-    char *n_ptr;
 
     struct option longopts[] = {
-        {"suffix", 0, NULL, 's'},
+        {"suffix", required_argument, NULL, 's'},
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
         {0,0,0,0}
@@ -78,7 +79,7 @@ int main(int argc, char *argv[]) {
         fgets(name, 256, stdin);
         sdn = 1;
     } else {
-        n_ptr = strcpy(name, argv[optind]);
+	    strcpy(name, argv[optind]);
     }
 
     /* Next 10 lines stolen from GNU basename */
@@ -90,7 +91,7 @@ int main(int argc, char *argv[]) {
 
         while (np > name && sp > suffix)
             if (*--np != *--sp)
-                return;
+                return 0;
         if (np > name)
             *np = '\0';
     }
