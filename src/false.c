@@ -20,6 +20,10 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+/* NOTE: your shell probably has 'false' as a built-in
+ *       so use this program with a non-ambiguous 
+ *       path like: './bin/false' or similar */
+
 #define APPNAME "false"
 #include "common.h"
 
@@ -45,7 +49,7 @@ int main(int argc, char *argv[]) {
         switch(opt) {
             case 'V': printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION); exit(EXIT_SUCCESS); break;
             case 'h': show_help(); exit(EXIT_SUCCESS); break;
-            default : show_help(); exit(EXIT_FAILURE); break;
+            default : show_help(); exit(EXIT_FAILURE); break; /* This is probably pointless */
         }
     }
     return EXIT_FAILURE;
