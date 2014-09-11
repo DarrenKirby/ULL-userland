@@ -1,0 +1,104 @@
+Current status of programs:
+
+========================================================================
+
+[         :: not started
+base64    :: not started
+basename  :: in progress  /* TODO: Add support for SUFFIX */
+cat       :: in progress
+cd        :: in progress
+chgrp     :: not started
+chmod     :: not started
+chown     :: not started
+chroot    :: not started
+cksum     :: not started
+comm      :: not started
+cd        :: completed    /* But useless! */
+cp        :: not started
+csplit    :: not started
+cut       :: not started
+date      :: not started
+dd        :: not started
+df        :: not started
+dir       :: not started
+dircolors :: not started
+dirname   :: not started
+du        :: not started
+echo      :: not started
+env       :: in progress
+expand    :: not started
+expr      :: not started
+factor    :: not started
+false     :: completed
+fmt       :: not started
+fold      :: not started
+free      :: completed    /* Fix portability problems */
+head      :: not started
+hostid    :: not started
+id        :: not started
+install   :: not started
+join      :: not started
+link      :: not started
+ln        :: in progress
+logname   :: not started
+ls        :: not started
+md5sum    :: not started
+mkdir     :: not started
+mkfifo    :: not started
+mknod     :: not started
+mv        :: completed    /* No 'force' Seems to be the default, so what's it for? */
+nice      :: not started
+nl        :: not started
+nohup     :: not started
+od        :: not started
+paste     :: not started
+pathchk   :: not started
+pinky     :: not started
+pr        :: not started
+printenv  :: completed
+printf    :: not started
+ptx       :: not started
+pwd       :: completed
+readlink  :: not started
+rm        :: in progress
+rmdir     :: completed
+seq       :: not started
+sha1sum   :: not started
+sha224sum :: not started
+sha256sum :: not started
+sha384sum :: not started
+sha512sum :: not started
+shred     :: not started
+shuf      :: not started
+sleep     :: in progress  /* TODO: Allow decimal arguments and multiple arguments */
+sort      :: not started
+split     :: not started
+stat      :: not started
+stty      :: not started
+sum       :: not started
+sync      :: not started
+tac       :: not started
+tail      :: not started
+tee       :: not started
+test      :: not started
+time      :: not started
+touch     :: not started
+tr        :: not started
+true      :: completed
+tsort     :: not started
+tty       :: not started
+uname     :: completed    /* TODO: Make more portable */
+unexpand  :: not started
+uniq      :: not started
+unlink    :: not started
+uptime    :: completed
+users     :: not started
+vdir      :: not started
+wc        :: in progress  /* TODO: Add support for 'total' line as per GNU version */
+who       :: not started
+whoami    :: completed
+yes       :: completed
+
+========================================================================
+
+Copyright (C) 2014 Darren Kirby <bulliver@gmail.com>
