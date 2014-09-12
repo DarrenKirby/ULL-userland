@@ -22,7 +22,6 @@
 
 #define APPNAME "printenv"
 #include "common.h"
-
 #include "env.h"
 
 
