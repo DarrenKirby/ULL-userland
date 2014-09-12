@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2007 by Darren Kirby   *
- *   bulliver@badcomputer.org   *
+ *   Copyright (C) 2014 by Darren Kirby                                    *
+ *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -24,32 +24,34 @@
 #define APPNAME "free"
 #include "common.h"
 
+unsigned long int fmt(unsigned long n, int C);
 
 int getfree(int C, int T, int BC) {
     struct meminfo {
         unsigned long int memtotal;
         unsigned long int memfree;
+        unsigned long int memavialable;
         unsigned long int buffers;
         unsigned long int cached;
         unsigned long int swapcached;
         unsigned long int active;
         unsigned long int inactive;
-        unsigned long int hightotal;
-        unsigned long int highfree;
-        unsigned long int lowtotal;
-        unsigned long int lowfree;
+        unsigned long int a_active;
+        unsigned long int a_inactive;
+        unsigned long int f_active;
+        unsigned long int f_unactive;
+        unsigned long int unevictable;
+        unsigned long int mlocked;
         unsigned long int swaptotal;
         unsigned long int swapfree;
         unsigned long int dirty;
         unsigned long int writeback;
+        unsigned long int anonpages;
         unsigned long int mapped;
+        unsigned long int shmem;
         unsigned long int slab;
-        unsigned long int commitlimit;
-        unsigned long int committed_as;
-        unsigned long int pagetables;
-        unsigned long int vmalloctotal;
-        unsigned long int mallocused;
-        unsigned long int mallocchunk;
+        unsigned long int sreclaimable;
+
     };
 
     int i;
@@ -60,7 +62,7 @@ int getfree(int C, int T, int BC) {
     long int value[23];
 
     FILE *memi;
-    memi = fopen("/proc/meminfo", "r");
+    memi = fopen("/proc/meminfo", "r"); /* hideously non-portable */
 
     if (!memi) {
         printf("open failed\n");
@@ -69,7 +71,7 @@ int getfree(int C, int T, int BC) {
 
     for (i = 0; i < 23; i++) {
         line = fgets(lines, 30, memi);
-        sscanf(line, "%s%d kB", &memtype, &value[i]);
+        sscanf(line, "%s%ld kB", memtype, &value[i]);
     }
 
     minfo = (struct meminfo) { value[0],  value[1],  value[2],  value[3],
@@ -92,19 +94,21 @@ int getfree(int C, int T, int BC) {
     printf("%18s %10s %10s %10s %10s %10s\n", "total","used","free","shared","buffers", "cached");
     printf("Mem:%14lu %10lu %10lu %10lu %10lu %10lu\n",
             fmt(minfo.memtotal,C), fmt(memused,C), fmt(minfo.memfree,C),
-            // shared no longer computed...
-            fmt(0,C), fmt(minfo.buffers,C), fmt(minfo.cached,C));
+            fmt(minfo.shmem,C), fmt(minfo.buffers,C), fmt(minfo.cached,C));
 
-    (BC == 1) ? printf("-/+ buffers/cache: %10lu %10lu\n", fmt(used_minus_buffer,C), fmt(free_plus_buffer,C)) : printf("");
-    printf("Swap: %12lu %10i %10lu\n", fmt(minfo.swaptotal,C), fmt(used_swap,C), fmt(minfo.swapfree,C));
+    if (BC == 1) {
+        printf("-/+ buffers/cache: %10lu %10lu\n", fmt(used_minus_buffer,C), fmt(free_plus_buffer,C));
+    }
+    printf("Swap: %12lu %10lu %10lu\n", fmt(minfo.swaptotal,C), fmt(used_swap,C), fmt(minfo.swapfree,C));
 
-    (T == 1) ? printf("Total: %11lu %10lu %10lu\n", fmt(minfo.memtotal + minfo.swaptotal,C), fmt(memused + used_swap,C),
-                                                    fmt(minfo.memfree + minfo.swapfree,C)) : printf("");
+    if (T == 1) {
+        printf("Total: %11lu %10lu %10lu\n", fmt(minfo.memtotal + minfo.swaptotal,C), fmt(memused + used_swap,C),
+                                             fmt(minfo.memfree + minfo.swapfree,C));
+    }
     return 0;
-
 }
 
-int fmt(unsigned long n, int C) {
+unsigned long int fmt(unsigned long n, int C) {
     if (C == 2) {
         return n / 1024;
     } else if (C == 1) {
@@ -122,7 +126,8 @@ int showHelp(void) {
     -s\t\t   update every [delay] seconds\n \
     -h, --help\t   display this help\n \
     -V, --version display version information and exit\n\n \
-    Report bugs to <dgnu-utils@badcomputer.org>\n", APPNAME);
+    Report bugs to <bulliver@gmail.com>\n", APPNAME);
+	return EXIT_SUCCESS;
 }
 
 int main(int argc, char *argv[]) {
