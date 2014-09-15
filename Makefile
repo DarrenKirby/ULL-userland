@@ -16,6 +16,8 @@ false:
 	$(CC) $(CFLAGS) -o $(BINDIR)/false $(SRCDIR)/false.c
 free:
 	$(CC) $(CFLAGS) -o $(BINDIR)/free $(SRCDIR)/free.c
+mkdir:
+	$(CC) $(CFLAGS) -o $(BINDIR)/mkdir $(SRCDIR)/mkdir.c
 mv:
 	$(CC) $(CFLAGS) -o $(BINDIR)/mv $(SRCDIR)/mv.c
 printenv:
