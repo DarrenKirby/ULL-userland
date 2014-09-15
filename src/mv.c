@@ -23,14 +23,10 @@
 #define APPNAME "mv"
 #include "common.h"
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
 
 void show_help(void) {
     printf("Usage: %s [OPTION]... SOURCE DEST\n\
-    r: %s [OPTION]... SOURCE... DIRECTORY\n\n\
+    or: %s [OPTION]... SOURCE... DIRECTORY\n\n\
     Rename SOURCE to DEST, or move SOURCE(s) to DIRECTORY.\n\n\
 Options:\n\
     -f, --force\t\tdo not prompt before overwriting\n\
@@ -111,26 +107,21 @@ int main(int argc, char *argv[]) {
     }
 
     from = argv[optind];
-    if (n_args == 2) {  /* A simple rename... */
-        to = argv[optind+1];
-        n_args = 1;     /* This ensures we traverse the do/while loop only once */
-    } else {            /* mv files into directory */
-        to = argv[argc-1];
-        if (stat(to, &s) != 0) {
-            f_error(to, "Cannot stat:");
-            exit(EXIT_FAILURE);
-        }
-        if (!S_ISDIR(s.st_mode)) {
-            g_error("Last argument must be a directory");
-            exit(EXIT_FAILURE);
-        } else {
-            isdir = 1;
-        }
-        n_args--;
+    to = argv[argc-1];
+    
+    stat(to, &s);
+    if (S_ISDIR(s.st_mode))
+        isdir = 1;
+    if (n_args > 2 && isdir == 0) {
+        printf("%s: '%s' must be a directory\n", APPNAME, to);
+        exit(EXIT_FAILURE);
     }
+     
+    n_args--; /* Already 'popped' last arg */
 
     do {
-        if (isdir) {
+        if (isdir == 1) {
+            
             snprintf(tmp, 256, "%s/%s", to, from); /* Rename 'to' */
             if (opts.interactive && access(to, F_OK) == 0) {
                 if (!prompt(to)) {
