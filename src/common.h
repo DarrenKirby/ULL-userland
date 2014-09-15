@@ -29,6 +29,9 @@
 #include <errno.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 
 /* For longopts */
@@ -70,7 +73,7 @@ int dump_args(int argc, char *argv[]) {
 }
 
 
-/* trims leading and tailing whitspace from strings */
+/* trims leading and tailing whitespace from strings */
 char *trim_whitespace(char *str) {
     size_t len = 0;
     char *frontp = str;
