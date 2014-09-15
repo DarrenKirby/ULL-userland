@@ -23,10 +23,6 @@
 #define APPNAME "cd"
 #include "common.h"
 
-#include <unistd.h>
-#include <string.h>
-
-
 void show_help(void) {
     printf("Usage: %s [OPTION] [DIRECTORY]\n\n\
     Change current working directory to [DIRECTORY].\n\
@@ -75,6 +71,10 @@ int main(int argc, char *argv[]) {
         strncpy(path, argv[1], 255);
     }
 
+    /* due to the fact the shell runs all commands in a new process, we can't actually 
+     * change directories (chdir() changes the directory of the current process), thus, 
+     * the 'cd' command is a shell built-in. This program simply prints the directory 
+     * you would cd to if it were possible */ 
     printf("%s\n", path);
 
     if (chdir(path) != 0) {
