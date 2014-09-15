@@ -4,7 +4,7 @@ Current status of programs:
 
 [         :: not started
 base64    :: not started
-basename  :: in progress  /* TODO: Add support for SUFFIX */
+basename  :: completed
 cat       :: in progress
 cd        :: in progress
 chgrp     :: not started
@@ -32,7 +32,7 @@ factor    :: not started
 false     :: completed
 fmt       :: not started
 fold      :: not started
-free      :: completed    /* Fix portability problems */
+free      :: completed    /* But still need to fix portability problems */
 head      :: not started
 hostid    :: not started
 id        :: not started

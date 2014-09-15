@@ -12,16 +12,14 @@ portability is to be an educational exercise for me.
 
 Here is a list of programs considered 'done':
 
-    false free printenv true uname uptime whoami yes
+    basename false free printenv true uname uptime whoami yes
 
 Here is a list of programs in progress, in various states of usefulness:
 
-    basename cat env rm sleep wc
+    cat env rm sleep wc
 
 See the file TODO for more details on programs I intend to write, and status
-of 'in progress' programs.
-
-See the file NEWS for a list of major changes in the current release.
+of 'in progress' programs, as well as notes on portability.
 
 See the file INSTALL for compilation and installation instructions.
 
