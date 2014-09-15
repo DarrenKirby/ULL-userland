@@ -43,7 +43,7 @@ ln        :: in progress
 logname   :: not started
 ls        :: not started
 md5sum    :: not started
-mkdir     :: not started
+mkdir     :: completed
 mkfifo    :: not started
 mknod     :: not started
 mv        :: completed    /* No 'force' Seems to be the default, so what's it for? */
