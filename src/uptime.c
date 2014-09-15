@@ -2,7 +2,7 @@
  *   uptime.c - Tell how long the system has been running                  *
  *                                                                         *
  *   Copyright (C) 2014 by Darren Kirby                                    *
- *   bulliver@gmail.com                                              *
+ *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -32,6 +32,7 @@
 #define ONEMINUTE  60
 #define LOADS_SCALE 65536.0
 
+int error;
 
 int getTime(void) {
     struct tm *tm_ptr;
@@ -46,7 +47,6 @@ int getTime(void) {
 
 int getUptime(void) {
     struct sysinfo s_info;
-    int error;
     error = sysinfo(&s_info);
 
     int days, hours, minutes;
@@ -77,7 +77,7 @@ int getUptime(void) {
 
     printf(" up %i day%s, %02i:%02i, %i user%s, load average: %2.2f, %2.2f, %2.2f\n",
             days, (days != 1) ? "s" : "", hours, minutes, numuser, (numuser != 1) ? "s" : "", av1, av2, av3);
-    return EXIT_SUCCESS;
+    return error;
 }
 
 void showHelp(void) {
@@ -104,7 +104,10 @@ int main(int argc, char *argv[]) {
         }
     }
     getTime();
-    getUptime();
-    return EXIT_SUCCESS;
+    error = getUptime();
+    if (error == 0)
+        return EXIT_SUCCESS;
+    else
+        return EXIT_FAILURE;
 }
 
