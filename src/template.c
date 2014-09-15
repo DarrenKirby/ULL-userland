@@ -50,6 +50,13 @@ int main(int argc, char *argv[]) {
                 show_help();
                 exit(EXIT_SUCCESS);
                 break;
+            case ':':
+                printf("option '%c' needs an argument\n", optopt);
+                exit(EXIT_FAILURE);
+                break;
+            case '?':
+                 /* getopt_long prints own error message */
+                exit(EXIT_FAILURE);
             default:
                 show_help();
                 exit(EXIT_FAILURE);
