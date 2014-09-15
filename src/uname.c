@@ -25,13 +25,9 @@
 
 #include <sys/utsname.h>
 #include <sys/sysctl.h>
-#include <string.h>
 
 /* TODO: Make more portable */
 
-/* The fact we have eight 'information entries'
-makes it too perfect, so I decided to pack the
-flags in a one-byte bitfield. Overkill, I know */
 struct packed_flags {
     unsigned int s:1;
     unsigned int n:1;
@@ -129,9 +125,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    int t, f;
-    char lines[50];
-    char *line = lines;
+    char *line = NULL;
+    size_t len = 0;
 
     struct cpuinfo {
         char vendor[50];
@@ -147,20 +142,26 @@ int main(int argc, char *argv[]) {
         strcpy(cpu.vendor, "Unknown\0");
         strcpy(cpu.name, "Unknown\0");
     } else {
-        line = fgets(lines, 50, fp);    /* line 1 */
-        line = fgets(lines, 50, fp);    /* line 2 */
+        const char delimiters[] = ":\n";
+        
+        getline(&line, &len, fp);    /* line 1 */
+        getline(&line, &len, fp);    /* line 2 */
 
-        for (t = 0, f = 12; line[f] != '\n'; t++, f++) {
-            cpu.vendor[t] = line[f];
-        }
+        char *token;
+        token = strtok(line, delimiters);
+        token = strtok (NULL, delimiters); 
+        token = trim_whitespace(token);
+        strcpy(cpu.vendor, token);
 
-        line = fgets(lines, 50, fp);    /* line 3 */
-        line = fgets(lines, 50, fp);    /* line 4 */
-        line = fgets(lines, 50, fp);    /* line 5 */
+        getline(&line, &len, fp);    /* line 3 */
+        getline(&line, &len, fp);    /* line 4 */
+        getline(&line, &len, fp);    /* line 5 */
+        
+        token = strtok(line, delimiters);
+        token = strtok (NULL, delimiters);
+        token = trim_whitespace(token);
+        strcpy(cpu.name, token);
 
-        for (t = 0, f = 13; line[f] != '\n'; t++, f++) {
-            cpu.name[t] = line[f];
-        }
     }
 
     fclose(fp);
@@ -168,6 +169,7 @@ int main(int argc, char *argv[]) {
     struct utsname uts;
     uname(&uts);
 
+    int t;
     t = 0;
 
     if (optflags.s) {
