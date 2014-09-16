@@ -7,7 +7,7 @@ DIRSRC="${DIRROOT}/src"
 mkdir -p ${DIRSRC} ${DIRBIN}
 
 cp ./src/*.{c,h} ${DIRSRC}
-cp AUTHORS COPYING ChangeLog Makefile NEWS README TODO ${DIRROOT}/
+cp AUTHORS COPYING Makefile README TODO ${DIRROOT}/
 
 tar cf "${DIRROOT}.tar" "${DIRROOT}"
 gzip "${DIRROOT}.tar"
