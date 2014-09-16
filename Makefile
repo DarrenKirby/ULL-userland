@@ -1,6 +1,6 @@
-all: basename cat cd cp env false free ln mkdir mv printenv pwd rm sleep stat true uname uptime wc whoami yes
+all: basename cat cd cp env false free ln mkdir mv printenv pwd rm sleep stat sync true uname uptime wc whoami yes
 CC = gcc
-CFLAGS = -g -O0 -Wall -std=gnu99
+CFLAGS = -g -Wall -Wno-unused-variable -O0 -std=gnu99
 SRCDIR = ./src
 BINDIR = ./bin
 
@@ -36,6 +36,8 @@ sleep:
 	$(CC) $(CFLAGS) -o $(BINDIR)/sleep $(SRCDIR)/sleep.c
 stat:
 	$(CC) $(CFLAGS) -o $(BINDIR)/stat $(SRCDIR)/stat.c
+sync:
+	$(CC) $(CFLAGS) -o $(BINDIR)/sync $(SRCDIR)/sync.c
 true:
 	$(CC) $(CFLAGS) -o $(BINDIR)/true $(SRCDIR)/true.c
 uname:

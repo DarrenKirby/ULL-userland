@@ -12,12 +12,12 @@ portability is to be an educational exercise for me.
 
 Here is a list of programs considered 'done':
 
-    basename cat cd false free mkdir mv printenv pwd rm true uname uptime wc 
-    whoami yes
+    basename cat cd false free mkdir mv printenv pwd rm stat sync true uname 
+    uptime wc whoami yes
 
 Here is a list of programs in progress, in various states of usefulness:
 
-    env sleep ln cp stat
+    env sleep ln cp
 
 See the file TODO for more details on programs I intend to write, and status
 of 'in progress' programs, as well as notes on portability.

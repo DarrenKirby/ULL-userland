@@ -1,5 +1,9 @@
-Current status of programs:
+Current status of programs
 
+Note: Just because the status is 'completed' doesn't mean I won't
+still hack on it. Just means the core functionality that I intend
+to implement is there. Over time I will add more error-checking or
+refactoring, as well as adding portability fixes.
 ========================================================================
 
 [         :: not started
@@ -73,10 +77,10 @@ shuf      :: not started
 sleep     :: in progress  /* TODO: Allow decimal arguments and multiple arguments */
 sort      :: not started
 split     :: not started
-stat      :: in progress
+stat      :: completed    /* Probably as done as it will be. Don't think I'll add all the Gnu opts */
 stty      :: not started
 sum       :: not started
-sync      :: not started
+sync      :: completed    /* Took about 30seconds to write ha ha ha ha! */
 tac       :: not started
 tail      :: not started
 tee       :: not started
