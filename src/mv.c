@@ -92,11 +92,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    int n_args = argc - optind; /* Number of arguments */
-    int isdir = 0;              /* Final arg a directory? */
-    char *from;                 /* From name */
-    char *to;                   /* To name */
-    char tmp[256];              /* Tmp name for 'to' when it is a directory */
+    int n_args = argc - optind;    /* Number of arguments */
+    int isdir = 0;                 /* Final arg a directory? */
+    char *from;                    /* From name */
+    char *to;                      /* To name */
+    char tmp[filemax];             /* Tmp name for 'to' when it is a directory */
 
     struct stat s;
 

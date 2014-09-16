@@ -23,7 +23,6 @@
 #define APPNAME "pwd"
 #include "common.h"
 
-
 void show_help(void) {
     printf("Usage: %s [OPTION]\n\n\
     Print the full filename of the current working directory.\n\n\
@@ -35,6 +34,8 @@ Report bugs to <bulliver@gmail.com>\n", APPNAME);
 
 int main(int argc, char *argv[]) {
     int opt;
+    int size;
+    char *ptr;
 
     struct option longopts[] = {
         {"help", 0, NULL, 'h'},
@@ -58,7 +59,11 @@ int main(int argc, char *argv[]) {
                 break;
         }
     }
-    printf("%s\n", get_current_dir_name());
+    ptr = path_alloc(&size);
+    if (getcwd(ptr, size) == NULL)
+        g_error("getcwd failed");
+    
+    printf("%s\n", ptr);
     return EXIT_SUCCESS;
 }
 
