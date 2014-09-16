@@ -57,7 +57,7 @@ static int filemax = 255;
 
 /* Version information */
 #define APPSUITE   "dgnu-utils"
-#define APPVERSION "0.2"
+#define APPVERSION "0.3"
 
 /* prototypes */
 void g_error(char *message);                      /* Displays a general error */
@@ -67,6 +67,7 @@ char *trim_whitespace(char *str);                 /* Removes leading and trailin
 char *path_alloc(int *sizep);                     /* Allocates memory for a pathname */
 char *file_perm_str(mode_t perm, int flags);      /* Displays a symbolic string of permission ie: rwxrw-rw- */
 char *filetype(mode_t st_mode);                   /* Retuns the plain-english filetype from the stat struct */
+int file_perm_oct(mode_t perm);                   /* Returns octal representation of permissions */
 char *get_username(uid_t uid);                    /* Returns username from uid */
 char *get_groupname(gid_t gid);                   /* Returns groupname from gid */
 
@@ -193,6 +194,24 @@ char *file_perm_str(mode_t perm, int flags) {
 (((perm & S_ISVTX) && (flags & FP_SPECIAL)) ? 't' : 'x') :
 (((perm & S_ISVTX) && (flags & FP_SPECIAL)) ? 'T' : '-'));
     return str;
+}
+
+/* Returns octal permissions of a file/directory */
+int file_perm_oct(mode_t perm) {
+    int oct_perm = 00;
+    (perm & S_ISUID) ? (oct_perm += 04000) : (oct_perm += 00);
+    (perm & S_ISGID) ? (oct_perm += 02000) : (oct_perm += 00);
+    (perm & S_ISVTX) ? (oct_perm += 01000) : (oct_perm += 00);
+    (perm & S_IRUSR) ? (oct_perm +=  0400) : (oct_perm += 00);
+    (perm & S_IWUSR) ? (oct_perm +=  0200) : (oct_perm += 00);
+    (perm & S_IXUSR) ? (oct_perm +=  0100) : (oct_perm += 00);
+    (perm & S_IRGRP) ? (oct_perm +=   040) : (oct_perm += 00);
+    (perm & S_IWGRP) ? (oct_perm +=   020) : (oct_perm += 00);
+    (perm & S_IXGRP) ? (oct_perm +=   010) : (oct_perm += 00);
+    (perm & S_IROTH) ? (oct_perm +=    04) : (oct_perm += 00);
+    (perm & S_IWOTH) ? (oct_perm +=    02) : (oct_perm += 00);
+    (perm & S_IXOTH) ? (oct_perm +=    01) : (oct_perm += 00);
+    return oct_perm;
 }
 
 char *filetype(mode_t st_mode) {
