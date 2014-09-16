@@ -1,4 +1,4 @@
-all: basename cat cd cp env false free ln mv printenv pwd rm sleep true uname uptime wc whoami yes
+all: basename cat cd cp env false free ln mkdir mv printenv pwd rm sleep true uname uptime wc whoami yes
 CC = gcc
 CFLAGS = -g -O0 -Wall -std=gnu99
 SRCDIR = ./src
@@ -10,12 +10,16 @@ cat:
 	$(CC) $(CFLAGS) -o $(BINDIR)/cat $(SRCDIR)/cat.c
 cd:
 	$(CC) $(CFLAGS) -o $(BINDIR)/cd $(SRCDIR)/cd.c
+cp:
+	$(CC) $(CFLAGS) -o $(BINDIR)/cp $(SRCDIR)/cp.c
 env:
 	$(CC) $(CFLAGS) -o $(BINDIR)/env $(SRCDIR)/env.c
 false:
 	$(CC) $(CFLAGS) -o $(BINDIR)/false $(SRCDIR)/false.c
 free:
 	$(CC) $(CFLAGS) -o $(BINDIR)/free $(SRCDIR)/free.c
+ln:
+	$(CC) $(CFLAGS) -o $(BINDIR)/ln $(SRCDIR)/ln.c
 mkdir:
 	$(CC) $(CFLAGS) -o $(BINDIR)/mkdir $(SRCDIR)/mkdir.c
 mv:
