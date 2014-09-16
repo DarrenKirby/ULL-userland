@@ -1,5 +1,5 @@
 /***************************************************************************
- *       *
+ *   stat.c - display file attributes                                      *
  *                                                                         *
  *   Copyright (C) 2014 by Darren Kirby                                    *
  *   bulliver@gmail.com                                                    *
@@ -46,8 +46,12 @@ void stat_file(char *filename, int follow_links) {
         }
     }
     
-    printf("  File: '%s'\n", filename);
-    printf("  Size: %lld\t\t", (long long) buf.st_size);
+    const time_t *atim = &buf.st_atim;
+    const time_t *mtim = &buf.st_mtim;
+    const time_t *ctim = &buf.st_ctim;
+    
+    printf("File: '%s'\n", filename);
+    printf("Size:  %lld\t\t", (long long) buf.st_size);
     printf("Blocks: %lld\t\t", (long long)buf.st_blocks);
     printf("IO Block: %ld\t\t", (long) buf.st_blksize);
     printf("%s\n", filetype(buf.st_mode));
@@ -56,13 +60,13 @@ void stat_file(char *filename, int follow_links) {
     printf("Inode: %ld\t\t", (long) buf.st_ino);
     printf("Links: %ld\n", (long) buf.st_nlink);
     
-    printf(" Perms: %*o/%s\t", 4, (int) buf.st_mode, file_perm_str(buf.st_mode, 0));
+    printf("Perms:  %#o/%s\t", file_perm_oct(buf.st_mode), file_perm_str(buf.st_mode, 1));
     printf("Uid: %ld/%s\t", (long) buf.st_uid, get_username(buf.st_uid));
     printf("Gid: %ld/%s\n", (long) buf.st_gid, get_username(buf.st_gid));
     
-    printf("Access: %s", ctime(&buf.st_atim));
-    printf("Modify: %s", ctime(&buf.st_mtim));
-    printf("Change: %s", ctime(&buf.st_ctim));
+    printf("Access: %s", ctime(atim));
+    printf("Modify: %s", ctime(mtim));
+    printf("Change: %s", ctime(ctim));
 }
 
 int main(int argc, char *argv[]) {
