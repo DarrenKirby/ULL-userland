@@ -5,7 +5,7 @@ Current status of programs:
 [         :: not started
 base64    :: not started
 basename  :: completed
-cat       :: in progress
+cat       :: completed   /* though a little buggy */
 cd        :: in progress
 chgrp     :: not started
 chmod     :: not started
