@@ -23,10 +23,6 @@
 #define APPNAME "wc"
 #include "common.h"
 
-#include <string.h>
-
-/* TODO: Add support for 'total' line as per GNU version */
-
 /* Our count struct is used both for storing boolean
    values regarding _if_ we want to count something,
    and it also holds the counts themselves */
@@ -140,8 +136,10 @@ int main(int argc, char *argv[]) {
         count_opts.chars = count_opts.lines = count_opts.words = 1;
 
     struct count t_counts;
+    struct count t_cumulative;
+    int multiple_args;
     if (argc == optind) {                     /* We're dealing with STDIN */
-        t_counts = count_all("/dev/stdin");
+        t_counts = count_all("/dev/stdin");   /* not portable */
         if (count_opts.lines == 1)
             printf("%i ", t_counts.lines);
         if (count_opts.words == 1)
@@ -153,18 +151,40 @@ int main(int argc, char *argv[]) {
         printf("\n");
 
     } else {                                  /* Cycle through file arguments */
-        for (; optind < argc; optind++) {
-        t_counts = count_all(argv[optind]);
-            if (count_opts.lines == 1)
-                printf("%i \t", t_counts.lines);
-            if (count_opts.words == 1)
-                printf("%i \t", t_counts.words);
-            if (count_opts.chars == 1)
-                printf("%i \t", t_counts.chars);
-            if (count_opts.longest == 1)
-                printf("%i \t", t_counts.longest);
-            printf("%s\n", argv[optind]);
+        if (argc > (optind + 1)) {            /* more than one file arg  */
+            t_cumulative = (struct count) {0,0,0,0};
+            multiple_args = 1;
         }
+        while (optind < argc) {
+            t_counts = count_all(argv[optind]);
+            if (count_opts.lines == 1)
+                printf("%5i ", t_counts.lines);
+            if (count_opts.words == 1)
+                printf("%5i ", t_counts.words);
+            if (count_opts.chars == 1)
+                printf("%5i ", t_counts.chars);
+            if (count_opts.longest == 1)
+                printf("%5i ", t_counts.longest);
+            printf("%s\n", argv[optind]);
+            optind++;
+            
+            t_cumulative.lines   += t_counts.lines;
+            t_cumulative.words   += t_counts.words;
+            t_cumulative.chars   += t_counts.chars;
+            if (t_counts.longest > t_cumulative.longest)
+                t_cumulative.longest = t_counts.longest;   
+        }
+    }
+    if (multiple_args) {
+        if (count_opts.lines == 1)
+            printf("%5i ", t_cumulative.lines);
+        if (count_opts.words == 1)
+            printf("%5i ", t_cumulative.words);
+        if (count_opts.chars == 1)
+            printf("%5i ", t_cumulative.chars);
+        if (count_opts.longest == 1)
+            printf("%5i ", t_cumulative.longest);
+        printf("total\n");
     }
     return EXIT_SUCCESS;
 }
