@@ -22,20 +22,20 @@
 
 #define APPNAME "mkdir"
 #include "common.h"
-#include <sys/stat.h>
 
 void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n \
     -h, --help\t\tdisplay this help\n \
     -V, --version\tdisplay version information\n \
+    -m, --mode=MODE\tset file mode (as in chmod), not a=rwx - umask\n \
     -v, --verbose\tdisplay directories created\n\n \
     Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
 int main(int argc, char *argv[]) {
     int opt;
-    mode_t mode;
-    mode = 0755;
+    umask(0); /* so our permissions are set as expected */
+    mode_t mode = 0755; /* sensible default for dirs */
     int verbose = 0;
 
     static struct option longopts[] = {
@@ -52,11 +52,7 @@ int main(int argc, char *argv[]) {
                 verbose = 1;
                 break;
             case 'm':
-                errno = 0;
                 mode = strtoul(optarg, NULL, 8); 
-                if (errno != 0)
-                    printf("%s: invalid mode agrument: %s", APPNAME, optarg);
-                    exit(EXIT_FAILURE);
                 break;
             case 'V': 
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION); 
@@ -67,7 +63,7 @@ int main(int argc, char *argv[]) {
                 exit(EXIT_SUCCESS); 
                 break;
             case ':':
-                printf("option '%c' needs an argument\n", optopt);
+                /* getopt_long print own error message */
                 exit(EXIT_FAILURE);
                 break;
             case '?':
@@ -82,7 +78,7 @@ int main(int argc, char *argv[]) {
 
     if (argc == optind)
         g_error("must supply at least one directory argument");
-    
+
     while (optind < argc) {
         mkdir(argv[optind], mode);
         if (verbose == 1)
