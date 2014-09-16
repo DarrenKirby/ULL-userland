@@ -34,10 +34,18 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+/* determine portable max path length */
 #ifdef PATH_MAX
 static int pathmax = PATH_MAX;
 #else
 static int pathmax = 0;
+#endif
+
+/* determine portable max filename length */
+#ifdef _POSIX_NAME_MAX
+static int filemax = _POSIX_NAME_MAX;
+#else
+static int filemax = 255;
 #endif
 
 /* For longopts */
@@ -49,11 +57,13 @@ static int pathmax = 0;
 #define APPVERSION "0.2"
 
 /* prototypes */
-
 void g_error(char *message);
 int f_error(char *filename, char *message);
 int dump_args(int argc, char *argv[]);
 char *trim_whitespace(char *str);
+char *path_alloc(int *sizep);
+
+/* Comonly used function definitions */
 
 /* Generic error */
 void g_error(char *message) {
@@ -131,8 +141,7 @@ char *trim_whitespace(char *str) {
      * characters from each end.
      */
     while( isspace(*frontp) ) { ++frontp; }
-    if( endp != frontp )
-    {
+    if( endp != frontp ) {
         while( isspace(*(--endp)) && endp != frontp ) {}
     }
 
@@ -146,12 +155,10 @@ char *trim_whitespace(char *str) {
      * of endp to mean the front of the string buffer now.
      */
     endp = str;
-    if( frontp != str )
-    {
+    if( frontp != str ) {
             while( *frontp ) { *endp++ = *frontp++; }
             *endp = '\0';
     }
-    
     return str;
 }
 
