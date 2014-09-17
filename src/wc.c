@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
     struct count t_cumulative;
     int multiple_args;
     if (argc == optind) {                     /* We're dealing with STDIN */
-        t_counts = count_all("/dev/stdin");   /* not portable */
+        t_counts = count_all("/dev/fd/0");    /* Not POSIX, but APUE says this works on *BSD, OS X. Linux and Solaris*/
         if (count_opts.lines == 1)
             printf("%i ", t_counts.lines);
         if (count_opts.words == 1)
