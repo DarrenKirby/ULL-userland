@@ -17,7 +17,7 @@ Here is a list of programs considered 'done':
 
 Here is a list of programs in progress, in various states of usefulness:
 
-    env sleep ln cp
+    env sleep ln cp stat
 
 See the file TODO for more details on programs I intend to write, and status
 of 'in progress' programs, as well as notes on portability.

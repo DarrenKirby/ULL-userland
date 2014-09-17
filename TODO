@@ -73,7 +73,7 @@ shuf      :: not started
 sleep     :: in progress  /* TODO: Allow decimal arguments and multiple arguments */
 sort      :: not started
 split     :: not started
-stat      :: not started
+stat      :: in progress
 stty      :: not started
 sum       :: not started
 sync      :: not started
