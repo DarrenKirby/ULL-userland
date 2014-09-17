@@ -24,6 +24,7 @@
 #define _COMMON_H
 
 /* Common includes */
+#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -31,8 +32,10 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <time.h>
+#include <pwd.h>
+#include <grp.h>
 
 /* determine portable max path length */
 #ifdef PATH_MAX
@@ -57,11 +60,15 @@ static int filemax = 255;
 #define APPVERSION "0.2"
 
 /* prototypes */
-void g_error(char *message);
-int f_error(char *filename, char *message);
-int dump_args(int argc, char *argv[]);
-char *trim_whitespace(char *str);
-char *path_alloc(int *sizep);
+void g_error(char *message);                      /* Displays a general error */
+void f_error(char *filename, char *message);      /* Displays a general error involving a file */
+int  dump_args(int argc, char *argv[]);           /* Aid for debugging */
+char *trim_whitespace(char *str);                 /* Removes leading and trailing whitespace from a string */
+char *path_alloc(int *sizep);                     /* Allocates memory for a pathname */
+char *file_perm_str(mode_t perm, int flags);      /* Displays a symbolic string of permission ie: rwxrw-rw- */
+char *filetype(mode_t st_mode);                   /* Retuns the plain-english filetype from the stat struct */
+char *get_username(uid_t uid);                    /* Returns username from uid */
+char *get_groupname(gid_t gid);                   /* Returns groupname from gid */
 
 /* Comonly used function definitions */
 
@@ -71,11 +78,10 @@ void g_error(char *message) {
 }
 
 /* File error */
-int f_error(char *filename, char *message) {
+void f_error(char *filename, char *message) {
     char error[50];
     sprintf(error, "%s: %s%s", APPNAME, (message == NULL) ? "" : message, filename);
     perror(error);
-    exit(EXIT_FAILURE);
 }
 
 /* Debugging aids */
@@ -162,5 +168,75 @@ char *trim_whitespace(char *str) {
     return str;
 }
 
+#define FP_SPECIAL 1
+/* Include set-user-ID, set-group-ID, and sticky
+bit information in returned string */
+
+#define STR_SIZE sizeof("rwxrwxrwx")
+
+/* Return ls(1)-style string for file permissions mask, This is from 
+ * 'The Linux Programming Interface'    
+ */
+char *file_perm_str(mode_t perm, int flags) {
+    static char str[STR_SIZE];
+    snprintf(str, STR_SIZE, "%c%c%c%c%c%c%c%c%c",
+(perm & S_IRUSR) ? 'r' : '-', (perm & S_IWUSR) ? 'w' : '-',
+(perm & S_IXUSR) ?
+(((perm & S_ISUID) && (flags & FP_SPECIAL)) ? 's' : 'x') :
+(((perm & S_ISUID) && (flags & FP_SPECIAL)) ? 'S' : '-'),
+(perm & S_IRGRP) ? 'r' : '-', (perm & S_IWGRP) ? 'w' : '-',
+(perm & S_IXGRP) ?
+(((perm & S_ISGID) && (flags & FP_SPECIAL)) ? 's' : 'x') :
+(((perm & S_ISGID) && (flags & FP_SPECIAL)) ? 'S' : '-'),
+(perm & S_IROTH) ? 'r' : '-', (perm & S_IWOTH) ? 'w' : '-',
+(perm & S_IXOTH) ?
+(((perm & S_ISVTX) && (flags & FP_SPECIAL)) ? 't' : 'x') :
+(((perm & S_ISVTX) && (flags & FP_SPECIAL)) ? 'T' : '-'));
+    return str;
+}
+
+char *filetype(mode_t st_mode) {
+      switch (st_mode & S_IFMT) {
+           case S_IFBLK:  return "block device";     break;
+           case S_IFCHR:  return "character device"; break;
+           case S_IFDIR:  return "directory";        break;
+           case S_IFIFO:  return "FIFO/pipe";        break;
+           case S_IFLNK:  return "symlink";          break;
+           case S_IFREG:  return "regular file";     break;
+           case S_IFSOCK: return "socket";           break;
+           default:       return "unknown";          break;
+           }
+}
+
+char *get_username(uid_t uid) {
+    struct passwd *pwd;
+    errno = 0;
+    pwd = getpwuid(uid);
+    if (pwd == NULL) {
+        if (errno == 0) {
+            return "unknown username";
+        } else {
+            g_error("username lookup failed");
+            exit(EXIT_FAILURE);
+        }
+    }
+    
+    return pwd->pw_name;
+}
+
+char *get_groupname(gid_t gid) {
+    struct group *grp;
+    errno = 0;
+    grp = getgrgid(gid);
+    if (grp == NULL) {
+        if (errno == 0) {
+            return "unknown groupname";
+        } else {
+            g_error("groupname lookup failed");
+            exit(EXIT_FAILURE);
+        }
+    }
+    return grp->gr_name;
+}
 
 #endif /* _COMMON_H */
