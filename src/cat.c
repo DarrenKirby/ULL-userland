@@ -24,12 +24,12 @@
 #include "common.h"
 
 void show_help(void) {
-    printf("Usage: %s [OPTION]... [FILE]...\n\
+    printf("Usage: %s [OPTION]... [FILE]...\n \
 Concatenate FILE(s), or standard input to standard output.\n\n \
 Options:\n\
-    -n, --number\t\tnumber lines \
-    -h, --help\t\tdisplay this help\n\
-    -V, --version\tdisplay version information\n\n\
+    -n, --number\t\tnumber lines\n \
+    -h, --help\t\tdisplay this help\n \
+    -V, --version\tdisplay version information\n\n \
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
