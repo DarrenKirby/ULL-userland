@@ -137,7 +137,7 @@ int main(int argc, char *argv[]) {
 
     struct count t_counts;
     struct count t_cumulative;
-    int multiple_args;
+    int multiple_args = 0;
     if (argc == optind) {                     /* We're dealing with STDIN */
         t_counts = count_all("/dev/fd/0");    /* Not POSIX, but APUE says this works on *BSD, OS X. Linux and Solaris*/
         if (count_opts.lines == 1)
