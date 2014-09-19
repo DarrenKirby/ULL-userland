@@ -26,10 +26,10 @@
 #include <time.h>
 
 #if defined(__APPLE__) && defined(__MACH__)
-#define st_atimespec        st_atim
-#define st_mtimespec        st_mtim
-#define st_ctimespec        st_ctim
-#define st_birthtimespec    st_birthtime
+#define st_atim      st_atimespec
+#define st_mtim      st_mtimespec 
+#define st_ctim      st_ctimespec  
+#define st_birthtime st_birthtimespec 
 #endif
 
 void show_help(void) {
