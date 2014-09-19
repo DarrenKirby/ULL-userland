@@ -1,5 +1,5 @@
 all: basename cat cd cp env false free ln mkdir mv printenv pwd rm sleep stat sync true uname uptime wc whoami yes
-CC = gcc
+CC = cc
 CFLAGS = -g -Wall -Wno-unused-variable -O0 -std=gnu99
 SRCDIR = ./src
 BINDIR = ./bin
