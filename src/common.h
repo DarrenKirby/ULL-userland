@@ -23,6 +23,10 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
+/* Version information */
+#define APPSUITE   "dgnu-utils"
+#define APPVERSION "0.3"
+
 /* Common includes */
 #include <sys/types.h>
 #include <stdio.h>
@@ -54,10 +58,6 @@ static int filemax = 255;
 /* For longopts */
 #define _GNU_SOURCE
 #include <getopt.h>
-
-/* Version information */
-#define APPSUITE   "dgnu-utils"
-#define APPVERSION "0.3"
 
 /* prototypes */
 void g_error(char *message);                      /* Displays a general error */
