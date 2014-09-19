@@ -25,8 +25,7 @@
 
 #include <time.h>
 
-//#if defined(__APPLE__) && defined(__MACH__)
-#if TARGET_OS_MAC == 1
+#if defined(__APPLE__) && defined(__MACH__)
 #define st_atimespec        st_atim
 #define st_mtimespec        st_mtim
 #define st_ctimespec        st_ctim
