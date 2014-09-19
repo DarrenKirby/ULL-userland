@@ -4,20 +4,28 @@ Note: Just because the status is 'completed' doesn't mean I won't
 still hack on it. Just means the core functionality that I intend
 to implement is there. Over time I will add more error-checking or
 refactoring, as well as adding portability fixes.
+
+On portability: these programs are tested on three systems:
+Gentoo Linux       (GCC 4.7.3, GLIBC 2.19)
+OS X Mavericks     (LLVM 5.1, CLANG 503.0.40,) 
+FreeBSD 10-Release (CLANGBSD 3.3, )
+
+...but developed on the linux machine for the most part. Am working 
+on portablility but a lot of the apps are flaky or don't even compile 
+on OS X and FeeBSD. See notes below...
 ========================================================================
 
 [         :: not started
 base64    :: not started
-basename  :: completed
-cat       :: completed   /* though a little buggy */
-cd        :: in progress
+basename  :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
+cat       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works 
+cd        :: completed    # Linux: compiles | OS X: compiles | FreeBSD: compiles (But ueless on all three: read cd.c source)
 chgrp     :: not started
 chmod     :: not started
 chown     :: not started
 chroot    :: not started
 cksum     :: not started
 comm      :: not started
-cd        :: completed    /* But useless! */
 cp        :: not started
 csplit    :: not started
 cut       :: not started
@@ -33,10 +41,10 @@ env       :: in progress
 expand    :: not started
 expr      :: not started
 factor    :: not started
-false     :: completed
+false     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 fmt       :: not started
 fold      :: not started
-free      :: completed    /* But still need to fix portability problems */
+free      :: completed    # Linux: compiles, works | OS X: compiles, doesn't work | FreeBSD: compiles, doesn't work
 head      :: not started
 hostid    :: not started
 id        :: not started
@@ -47,10 +55,10 @@ ln        :: in progress
 logname   :: not started
 ls        :: not started
 md5sum    :: not started
-mkdir     :: completed
+mkdir     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 mkfifo    :: not started
 mknod     :: not started
-mv        :: completed    /* No 'force' Seems to be the default, so what's it for? */
+mv        :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 nice      :: not started
 nl        :: not started
 nohup     :: not started
@@ -59,13 +67,13 @@ paste     :: not started
 pathchk   :: not started
 pinky     :: not started
 pr        :: not started
-printenv  :: completed
+printenv  :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 printf    :: not started
 ptx       :: not started
-pwd       :: completed
+pwd       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 readlink  :: not started
 rm        :: in progress
-rmdir     :: completed
+rmdir     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 seq       :: not started
 sha1sum   :: not started
 sha224sum :: not started
@@ -74,13 +82,13 @@ sha384sum :: not started
 sha512sum :: not started
 shred     :: not started
 shuf      :: not started
-sleep     :: in progress  /* TODO: Allow decimal arguments and multiple arguments */
+sleep     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 sort      :: not started
 split     :: not started
-stat      :: completed    /* Probably as done as it will be. Don't think I'll add all the Gnu opts */
+stat      :: completed    # Linux: compiles, works | OS X: does not compile | FreeBSD: compiles, works
 stty      :: not started
 sum       :: not started
-sync      :: completed    /* Took about 30seconds to write ha ha ha ha! */
+sync      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 tac       :: not started
 tail      :: not started
 tee       :: not started
@@ -88,20 +96,20 @@ test      :: not started
 time      :: not started
 touch     :: not started
 tr        :: not started
-true      :: completed
+true      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 tsort     :: not started
 tty       :: not started
-uname     :: completed    /* TODO: Make more portable */
+uname     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, segfaults
 unexpand  :: not started
 uniq      :: not started
 unlink    :: not started
-uptime    :: completed
+uptime    :: completed    # Linux: compiles, works | OS X: does not compile | FreeBSD: does not compile
 users     :: not started
 vdir      :: not started
-wc        :: in progress  /* TODO: Add support for 'total' line as per GNU version */
+wc        :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 who       :: not started
-whoami    :: completed
-yes       :: completed
+whoami    :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
+yes       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 
 ========================================================================
 
