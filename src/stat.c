@@ -23,12 +23,44 @@
 #define APPNAME "stat"
 #include "common.h"
 
+#include <time.h>
+
+//#if defined(__APPLE__) && defined(__MACH__)
+#if TARGET_OS_MAC == 1
+#define st_atimespec        st_atim
+#define st_mtimespec        st_mtim
+#define st_ctimespec        st_ctim
+#define st_birthtimespec    st_birthtime
+#endif
+
 void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
 Options:\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
+}
+
+#define TIME_SIZE sizeof("1970-01-01 00:00:00.000000000 UTC")
+#define NANO 1000000000L
+
+char *format_time(struct timespec *ts) {
+    struct tm bdt;
+    int ret;
+    static char str[TIME_SIZE + 1];
+
+    if (localtime_r(&(ts->tv_sec), &bdt) == NULL) {
+        g_error("error converting time");
+        exit(EXIT_FAILURE);
+    }
+    
+    snprintf(str, TIME_SIZE, "%i-%02i-%02i %02i:%02i:%02i.%09ld %s",
+        (bdt.tm_year + 1900), bdt.tm_mon, bdt.tm_mday,
+        bdt.tm_hour, bdt.tm_min, bdt.tm_sec,
+        ts->tv_nsec, bdt.tm_zone
+    );
+    
+    return str;
 }
 
 void stat_file(char *filename, int follow_links) {
@@ -46,12 +78,8 @@ void stat_file(char *filename, int follow_links) {
         }
     }
     
-    const time_t *atim = &buf.st_atim;
-    const time_t *mtim = &buf.st_mtim;
-    const time_t *ctim = &buf.st_ctim;
-    
-    printf("File: '%s'\n", filename);
-    printf("Size:  %lld\t\t", (long long) buf.st_size);
+    printf("File:  '%s'\n", filename);
+    printf("Size:   %lld\t\t", (long long) buf.st_size);
     printf("Blocks: %lld\t\t", (long long)buf.st_blocks);
     printf("IO Block: %ld\t\t", (long) buf.st_blksize);
     printf("%s\n", filetype(buf.st_mode));
@@ -64,9 +92,9 @@ void stat_file(char *filename, int follow_links) {
     printf("Uid: %ld/%s\t", (long) buf.st_uid, get_username(buf.st_uid));
     printf("Gid: %ld/%s\n", (long) buf.st_gid, get_username(buf.st_gid));
     
-    printf("Access: %s", ctime(atim));
-    printf("Modify: %s", ctime(mtim));
-    printf("Change: %s", ctime(ctim));
+    printf("Access: %s\n", format_time(&buf.st_atim));
+    printf("Modify: %s\n", format_time(&buf.st_mtim));
+    printf("Change: %s\n", format_time(&buf.st_ctim));
 }
 
 int main(int argc, char *argv[]) {
