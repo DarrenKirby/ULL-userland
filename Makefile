@@ -1,7 +1,7 @@
 CC = cc
 CFLAGS ?= -g -Wall -Wno-unused-variable -O0 -std=gnu99
-SRCDIR = ./src
-BINDIR = ./bin
+SRCDIR = src
+BINDIR = bin
 
 package = dgnu-utils
 version = 0.3
