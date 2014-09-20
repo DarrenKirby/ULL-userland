@@ -24,19 +24,20 @@
 #include "common.h"
 
 #include <sys/utsname.h>
-#include <sys/sysctl.h>
 
-/* TODO: Make more portable */
+#ifndef linux
+#include <sys/sysctl.h>
+#endif
 
 struct packed_flags {
-    unsigned int s:1;
-    unsigned int n:1;
-    unsigned int r:1;
-    unsigned int v:1;
-    unsigned int m:1;
-    unsigned int p:1;
-    unsigned int i:1;
-    unsigned int o:1;
+    unsigned int s : 1;
+    unsigned int n : 1;
+    unsigned int r : 1;
+    unsigned int v : 1;
+    unsigned int m : 1;
+    unsigned int p : 1;
+    unsigned int i : 1;
+    unsigned int o : 1;
 };
 
 void show_help(void) {
@@ -81,6 +82,7 @@ int main(int argc, char *argv[]) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
             case 'h':
                 show_help();
@@ -133,6 +135,7 @@ int main(int argc, char *argv[]) {
         char name[50];
     };
 
+#if defined (__linux__)
     struct cpuinfo cpu;
 
     FILE *fp;
@@ -165,12 +168,12 @@ int main(int argc, char *argv[]) {
     }
 
     fclose(fp);
-
+#endif
+    
     struct utsname uts;
     uname(&uts);
 
-    int t;
-    t = 0;
+    int t = 0;
 
     if (optflags.s) {
         printf("%s ", uts.sysname);
@@ -193,15 +196,43 @@ int main(int argc, char *argv[]) {
         t = 1;
     }
     if (optflags.p) {
-        printf("%s ", cpu.name);    /* Not portable enough */
+#if defined (__linux__)
+        printf("%s ", cpu.name);
+#elif defined (BSD)
+        size_t len;
+        static char buf[1024]
+        if (sysctlbyname("hw.model", &buf, &len, NULL, 0) == -1)
+            g_error("could not read sysctl");
+        printf("%s ", buf);
+#elif defined (__APPLE__) && defined (__MACH__)
+        ;
+#elif defined (__sun) && defined (__SVR4)
+        ;
+#endif
         t = 1;
     }
     if (optflags.i) {
-        printf("%s ", cpu.vendor);  /* Not portable enough */
+#if defined (__linux__)
+        printf("%s ", cpu.vendor); 
+#elif defined (BSD)
+        ;
+#elif defined (__APPLE__) && defined (__MACH__)
+        ;
+#elif defined (__sun) && defined (__SVR4)
+        ;
         t = 1;
+#endif
     }
     if (optflags.o) {
-        printf("%s ", "GNU/Linux"); /* Not sure where to find this. Totally borks portability */
+#if defined (__linux__)
+        printf("GNU/Linux");
+#elif defined (BSD)
+        printf("%s ", uts.sysname);
+#elif defined (__APPLE__) && defined (__MACH__)
+        printf("OS X ");
+#elif defined (__sun) && defined (__SVR4)
+        printf("Solaris");
+#endif
         t = 1;
     }
     if (t == 0) {
