@@ -198,9 +198,9 @@ int main(int argc, char *argv[]) {
     if (optflags.p) {
 #if defined (__linux__)
         printf("%s ", cpu.name);
-#elif defined (BSD)
+#elif defined (BSD) && defined (__unix__)
         size_t len;
-        static char buf[1024]
+        static char buf[1024];
         if (sysctlbyname("hw.model", &buf, &len, NULL, 0) == -1)
             g_error("could not read sysctl");
         printf("%s ", buf);
@@ -214,7 +214,7 @@ int main(int argc, char *argv[]) {
     if (optflags.i) {
 #if defined (__linux__)
         printf("%s ", cpu.vendor); 
-#elif defined (BSD)
+#elif defined (BSD) && defined (__unix__)
         ;
 #elif defined (__APPLE__) && defined (__MACH__)
         ;
@@ -226,7 +226,7 @@ int main(int argc, char *argv[]) {
     if (optflags.o) {
 #if defined (__linux__)
         printf("GNU/Linux");
-#elif defined (BSD)
+#elif defined (BSD) && defined (__unix__)
         printf("%s ", uts.sysname);
 #elif defined (__APPLE__) && defined (__MACH__)
         printf("OS X ");
