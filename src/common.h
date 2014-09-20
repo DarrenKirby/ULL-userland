@@ -40,6 +40,7 @@
 #include <time.h>
 #include <pwd.h>
 #include <grp.h>
+#include <libgen.h>
 
 /* determine portable max path length */
 #ifdef PATH_MAX
