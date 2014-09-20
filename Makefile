@@ -1,8 +1,29 @@
-all: basename cat cd cp env false free ln mkdir mv printenv pwd rm sleep stat sync true uname uptime wc whoami yes
 CC = cc
-CFLAGS = -g -Wall -Wno-unused-variable -O0 -std=gnu99
+CFLAGS ?= -g -Wall -Wno-unused-variable -O0 -std=gnu99
 SRCDIR = ./src
 BINDIR = ./bin
+
+package = dgnu-utils
+version = 0.3
+tarname = $(package)
+distdir = $(tarname)-$(version)
+
+all: basename cat cd cp env false free ln mkdir mv printenv pwd rm sleep stat sync true uname uptime wc whoami yes
+
+dist: $(distdir).tar.gz
+
+$(distdir).tar.gz: $(distdir)
+	tar chof - $(distdir) | gzip -9 -c > $@
+	rm -rf $(distdir)
+
+$(distdir): FORCE
+	mkdir -p $(distdir)/src
+	mkdir -p $(distdir)/bin
+	mkdir -p $(distdir)/doc
+	cp Makefile $(distdir)
+	cp AUTHORS COPYING INSTALL README TODO $(distdir)
+	cp src/*.h $(distdir)/src
+	cp src/*.c $(distdir)/src
 
 basename:
 	$(CC) $(CFLAGS) -o $(BINDIR)/basename $(SRCDIR)/basename.c
@@ -52,8 +73,13 @@ yes:
 	$(CC) $(CFLAGS) -o $(BINDIR)/yes $(SRCDIR)/yes.c
 
 clean:
-	- rm $(BINDIR)/*
+	-rm -rf $(BINDIR)/*
 
 strip:
 	strip $(BINDIR)/*
 
+FORCE:
+	-rm $(distdir).tar.gz >/dev/null 2>&1
+	-rm -rf $(distdir) >/dev/null 2>&1
+
+.PHONEY: all clean dist strip
