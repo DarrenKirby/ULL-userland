@@ -29,7 +29,7 @@
 #define st_atim      st_atimespec
 #define st_mtim      st_mtimespec 
 #define st_ctim      st_ctimespec  
-#define st_birthtime st_birthtimespec 
+#define st_birthtim  st_birthtimespec 
 #endif
 
 void show_help(void) {
@@ -94,6 +94,9 @@ void stat_file(char *filename, int follow_links) {
     printf("Access: %s\n", format_time(&buf.st_atim));
     printf("Modify: %s\n", format_time(&buf.st_mtim));
     printf("Change: %s\n", format_time(&buf.st_ctim));
+#ifndef linux                                          /* Linux stat struct doesn't include this */
+    printf(" Birth: %s\n", format_time(&buf.st_birthtim));
+#endif
 }
 
 int main(int argc, char *argv[]) {
