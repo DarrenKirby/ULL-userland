@@ -19,7 +19,7 @@ on OS X and FeeBSD. See notes below...
 base64    :: not started
 basename  :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 cat       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works 
-cd        :: completed    # Linux: compiles | OS X: compiles | FreeBSD: compiles (But ueless on all three: read cd.c source)
+cd        :: completed    # Linux: compiles | OS X: compiles | FreeBSD: compiles (But ueless on all: read cd.c source)
 chgrp     :: not started
 chmod     :: not started
 chown     :: not started
@@ -85,7 +85,7 @@ shuf      :: not started
 sleep     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 sort      :: not started
 split     :: not started
-stat      :: completed    # Linux: compiles, works | OS X: does not compile | FreeBSD: compiles, works
+stat      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 stty      :: not started
 sum       :: not started
 sync      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
