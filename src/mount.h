@@ -41,7 +41,7 @@ struct mounted_fs_entry {
     char fs_mntops[MNT_FLAGS_LEN];    /* mount flags */
     int  fs_freq;                     /* dump */
     int  fs_passno;                   /* pass */
-}; // mounted_fs_entry;
+};
 
 #if __WORDSIZE == 32
 #define __WORD_TYPE int
@@ -116,13 +116,13 @@ int getfsstat_linux(struct statfs_ext *buf, long int bufsize) {
         sscanf(line, "%s %s %s %s %d %d\n", fse[i].fs_spec, fse[i].fs_file,
                                             fse[i].fs_vsftype, fse[i].fs_mntops,
                                             &fse[i].fs_freq, &fse[i].fs_passno);
-
     }
 
     fclose(fp);
     
     /* statfs array struct */
-    struct statfs_ext* sas[n_lines]; //= malloc(sizeof(statfs_ext) * n_lines);
+    struct statfs_ext *sas = malloc(sizeof(struct statfs_ext) * n_lines);
+    //struct statfs_ext *buf = malloc(sizeof(struct statfs_ext) * n_lines);
     
     struct statfs_ext *f_tmp;
     f_tmp = malloc(sizeof(struct statfs_ext));
@@ -150,28 +150,53 @@ int getfsstat_linux(struct statfs_ext *buf, long int bufsize) {
         strncpy(f_tmp->f_mntonname, fse[i2].fs_file, PATH_MAX);
         strncpy(f_tmp->f_mntfromname, fse[i2].fs_spec, PATH_MAX);
         
-        printf("f_type:    %#x\n", (unsigned int)f_tmp->f_type);
-        printf("f_bsize:   %lu\n", f_tmp->f_bsize);
-        printf("f_blocks:  %d\n", (int)f_tmp->f_blocks);
-        printf("f_bfree:   %d\n", (int)f_tmp->f_bfree);
-        printf("f_bavail:  %d\n", (int)f_tmp->f_bavail);
-        printf("f_files:   %d\n", (int)f_tmp->f_files);
-        printf("f_ffree:   %d\n", (int)f_tmp->f_ffree);
+        //printf("f_type:    %#x\n", (unsigned int)f_tmp->f_type);
+        //printf("f_bsize:   %lu\n", f_tmp->f_bsize);
+        //printf("f_blocks:  %d\n", (int)f_tmp->f_blocks);
+        //printf("f_bfree:   %d\n", (int)f_tmp->f_bfree);
+        //printf("f_bavail:  %d\n", (int)f_tmp->f_bavail);
+        //printf("f_files:   %d\n", (int)f_tmp->f_files);
+        //printf("f_ffree:   %d\n", (int)f_tmp->f_ffree);
         //printf("f_fsid1:   %lu\n", f_tmp->f_fsid);
-        printf("f_namelen  %lu\n", f_tmp->f_namelen);
-        printf("f_frsize   %lu\n", f_tmp->f_frsize);
-        printf("f_fstypename:  %s\n", f_tmp->f_fstypename);
-        printf("f_mntonname:   %s\n", f_tmp->f_mntonname);
-        printf("f_mntfromname: %s\n", f_tmp->f_mntfromname);
+        //printf("f_namelen  %lu\n", f_tmp->f_namelen);
+        //printf("f_frsize   %lu\n", f_tmp->f_frsize);
+        //printf("f_fstypename:  %s\n", f_tmp->f_fstypename);
+        //printf("f_mntonname:   %s\n", f_tmp->f_mntonname);
+        //printf("f_mntfromname: %s\n", f_tmp->f_mntfromname);
+        
+        sas[i2] = *f_tmp;
 
+        printf("f_type:    %#x\n", (unsigned int)sas[i2].f_type);
+        printf("f_bsize:   %lu\n", sas[i2].f_bsize);
+        printf("f_blocks:  %d\n", (int)sas[i2].f_blocks);
+        printf("f_bfree:   %d\n", (int)sas[i2].f_bfree);
+        printf("f_bavail:  %d\n", (int)sas[i2].f_bavail);
+        printf("f_files:   %d\n", (int)sas[i2].f_files);
+        printf("f_ffree:   %d\n", (int)sas[i2].f_ffree);
+        //printf("f_fsid1:   %lu\n", f_tmp->f_fsid);
+        printf("f_namelen  %lu\n", sas[i2].f_namelen);
+        printf("f_frsize   %lu\n", sas[i2].f_frsize);
+        printf("f_fstypename:  %s\n", sas[i2].f_fstypename);
+        printf("f_mntonname:   %s\n", sas[i2].f_mntonname);
+        printf("f_mntfromname: %s\n", sas[i2].f_mntfromname);
     }
     
     free(s_tmp);
     free(f_tmp);
-    
+    printf("f_fstypename:  %s\n", sas[0].f_fstypename);
+    printf("f_fstypename:  %s\n", sas[1].f_fstypename);
+    printf("f_fstypename:  %s\n", sas[2].f_fstypename);
+    printf("f_fstypename:  %s\n", sas[3].f_fstypename);
+    printf("f_fstypename:  %s\n", sas[4].f_fstypename);
+    printf("f_fstypename:  %s\n", sas[5].f_fstypename);
+    printf("f_fstypename:  %s\n", sas[6].f_fstypename);
+    printf("f_fstypename:  %s\n", sas[7].f_fstypename);
+    printf("f_fstypename:  %s\n", sas[8].f_fstypename);
+    printf("f_fstypename:  %s\n", sas[9].f_fstypename);
     printf("Size of sas: %lu\n", sizeof(sas));
-    //buf = &sas;
-    //free(sas);
+    printf("Size of buf: %lu\n", sizeof(buf));
+    //buf = **sas;
+    free(sas);
     return i2;
 }
 
