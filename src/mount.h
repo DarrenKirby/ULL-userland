@@ -30,13 +30,16 @@
 #include <stdlib.h>          /* for EXIT_FAILURE */
 #include <string.h>
 
+#define FS_TYPE_LEN      90
+#define MNT_FLAGS_LEN    256
+
 typedef struct _mounted_fs_entry {
-    char fs_spec[PATH_MAX];   /* device or special file system path */
-    char fs_file[PATH_MAX];   /* mount point */
-    char fs_vsftype[15];    /* file system type */
-    char fs_mntops[1024];     /* mount flags */
-    int  fs_freq;             /* dump */
-    int  fs_passno;           /* pass */
+    char fs_spec[PATH_MAX];           /* device or special file system path */
+    char fs_file[PATH_MAX];           /* mount point */
+    char fs_vsftype[FS_TYPE_LEN];     /* file system type */
+    char fs_mntops[MNT_FLAGS_LEN];    /* mount flags */
+    int  fs_freq;                     /* dump */
+    int  fs_passno;                   /* pass */
 } mounted_fs_entry;
 
 #if __WORDSIZE == 32
@@ -59,16 +62,14 @@ typedef struct _statfs_full {
     __WORD_TYPE  f_spare[5];
     
     /* these extra fields add path info as in the *BSD versions of statfs() */
-    char f_fstypename[1024];    /* fs type name */
-    char f_mntonname[PATH_MAX];       /* directory on which mounted */
-    char f_mntfromname[PATH_MAX];     /* mounted file sytem */
+    char f_fstypename[FS_TYPE_LEN];  /* fs type name */
+    char f_mntonname[PATH_MAX];      /* directory on which mounted */
+    char f_mntfromname[PATH_MAX];    /* mounted file sytem */
 } statfs_full; 
 
 int merge_statfs_structs(struct statfs *buf, statfs_full **buf_full) {
-    printf("In merge_statfs_structs\n");
     int i;
     (*buf_full)->f_type    = buf->f_type;
-    printf("assigned f_type OK\n");
     (*buf_full)->f_bsize   = buf->f_bsize;
     (*buf_full)->f_blocks  = buf->f_blocks;
     (*buf_full)->f_bfree   = buf->f_bfree;
@@ -114,17 +115,12 @@ int getfsstat_linux(statfs_full *buf, long int bufsize) {
         sscanf(line, "%s %s %s %s %d %d\n", fse[i].fs_spec, fse[i].fs_file,
                                             fse[i].fs_vsftype, fse[i].fs_mntops,
                                             &fse[i].fs_freq, &fse[i].fs_passno);
-        /*) != 0) {
-            perror("scanf failed");
-            exit(EXIT_FAILURE);
-        } */
-    //i++;q
+
     }
 
     fclose(fp);
     
-    //struct statfs_full *sas[n_lines];       /* statfs array struct */
-    //sas = (struct statfs_full*) malloc(sizeof(statfs_full) * n_lines);
+    /* statfs array struct */
     statfs_full* sas = malloc(sizeof(statfs_full) * n_lines);
 
     for (i2 = 0; i2 < n_lines; i2++) {
@@ -133,33 +129,29 @@ int getfsstat_linux(statfs_full *buf, long int bufsize) {
         struct statfs *s_tmp;
         s_tmp = malloc(sizeof(statfs));
         
-        statfs(fse[i2].fs_file, s_tmp); //&sas[i2]);
-
+        statfs(fse[i2].fs_file, s_tmp); 
         merge_statfs_structs(s_tmp, &f_tmp);
-        printf("exited merge_statfs_structs OK\n");
-        strncpy(f_tmp->f_fstypename, fse[i2].fs_vsftype, 1024);
-        printf("first strcpy() OK\n");
+
+        strncpy(f_tmp->f_fstypename, fse[i2].fs_vsftype, FS_TYPE_LEN);      
         strncpy(f_tmp->f_mntonname, fse[i2].fs_file, PATH_MAX);
         strncpy(f_tmp->f_mntfromname, fse[i2].fs_spec, PATH_MAX);
-        printf("third strcpy() OK\n");
-        printf("f_type %lu\n", f_tmp->f_type);
-        printf("f_bsize %lu\n", f_tmp->f_bsize);
-        printf("f_blocks %d\n", f_tmp->f_blocks);
-        printf("f_bfree %d\n", f_tmp->f_bfree);
-        printf("f_bavail %d\n", f_tmp->f_bavail);
-        printf("f_files %d\n", f_tmp->f_files);
-        printf("f_ffree %d\n", f_tmp->f_ffree);
-        printf("f_fsid %d\n", f_tmp->f_fsid);
-        printf("f_namelen %lu\n", f_tmp->f_namelen);
-        printf("f_frsize %lu\n", f_tmp->f_frsize);
-        printf("f_fstypename %s\n", f_tmp->f_fstypename);
-        printf("f_mntonname %s\n", f_tmp->f_mntonname);
-        printf("f_mntfromname %s\n", f_tmp->f_mntfromname);
         
-        //sas[i2] = f_tmp;
+        printf("f_type:    %#x\n", (unsigned int)f_tmp->f_type);
+        printf("f_bsize:   %lu\n", f_tmp->f_bsize);
+        printf("f_blocks:  %d\n", (int)f_tmp->f_blocks);
+        printf("f_bfree:   %d\n", (int)f_tmp->f_bfree);
+        printf("f_bavail:  %d\n", (int)f_tmp->f_bavail);
+        printf("f_files:   %d\n", (int)f_tmp->f_files);
+        printf("f_ffree:   %d\n", (int)f_tmp->f_ffree);
+        printf("f_fsid1:   %lu\n", f_tmp->f_fsid);
+        printf("f_namelen  %lu\n", f_tmp->f_namelen);
+        printf("f_frsize   %lu\n", f_tmp->f_frsize);
+        printf("f_fstypename:  %s\n", f_tmp->f_fstypename);
+        printf("f_mntonname:   %s\n", f_tmp->f_mntonname);
+        printf("f_mntfromname: %s\n", f_tmp->f_mntfromname);
+        
         //free(s_tmp);
         //free(f_tmp);
-        //printf("freed structs\n");
     }
     
     printf("Size of sas: %lu\n", sizeof(sas));
