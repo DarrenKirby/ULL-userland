@@ -29,18 +29,19 @@
 #include <errno.h>           /* for perror() */
 #include <stdlib.h>          /* for EXIT_FAILURE */
 #include <string.h>
+#include <sys/types.h>
 
 #define FS_TYPE_LEN      90
 #define MNT_FLAGS_LEN    256
 
-typedef struct _mounted_fs_entry {
+struct mounted_fs_entry {
     char fs_spec[PATH_MAX];           /* device or special file system path */
     char fs_file[PATH_MAX];           /* mount point */
     char fs_vsftype[FS_TYPE_LEN];     /* file system type */
     char fs_mntops[MNT_FLAGS_LEN];    /* mount flags */
     int  fs_freq;                     /* dump */
     int  fs_passno;                   /* pass */
-} mounted_fs_entry;
+}; // mounted_fs_entry;
 
 #if __WORDSIZE == 32
 #define __WORD_TYPE int
@@ -48,7 +49,7 @@ typedef struct _mounted_fs_entry {
 #define __WORD_TYPE long int
 #endif
 
-typedef struct _statfs_full {
+struct statfs_ext {
     __WORD_TYPE  f_type;             /* type of filesystem (see below) */
     __WORD_TYPE  f_bsize;            /* optimal transfer block size */
     fsblkcnt_t   f_blocks;           /* total data blocks in filesystem */
@@ -65,9 +66,9 @@ typedef struct _statfs_full {
     char f_fstypename[FS_TYPE_LEN];  /* fs type name */
     char f_mntonname[PATH_MAX];      /* directory on which mounted */
     char f_mntfromname[PATH_MAX];    /* mounted file sytem */
-} statfs_full; 
+};
 
-int merge_statfs_structs(struct statfs *buf, statfs_full **buf_full) {
+int merge_statfs_structs(struct statfs *buf, struct statfs_ext **buf_full) {
     int i;
     (*buf_full)->f_type    = buf->f_type;
     (*buf_full)->f_bsize   = buf->f_bsize;
@@ -85,7 +86,7 @@ int merge_statfs_structs(struct statfs *buf, statfs_full **buf_full) {
     return 0;
 }
 
-int getfsstat_linux(statfs_full *buf, long int bufsize) {
+int getfsstat_linux(struct statfs_ext *buf, long int bufsize) {
     FILE *fp;
     int  n_lines = 0;
     char lines[128];
@@ -107,7 +108,7 @@ int getfsstat_linux(statfs_full *buf, long int bufsize) {
     if (buf == NULL)               /* We have # of mounted fs, might as well bail */
         return n_lines;
     
-    mounted_fs_entry fse[n_lines];
+    struct mounted_fs_entry fse[n_lines];
     int i, i2;
 
     for (i = 0; i < n_lines; i++) {
@@ -121,15 +122,28 @@ int getfsstat_linux(statfs_full *buf, long int bufsize) {
     fclose(fp);
     
     /* statfs array struct */
-    statfs_full* sas = malloc(sizeof(statfs_full) * n_lines);
+    struct statfs_ext* sas[n_lines]; //= malloc(sizeof(statfs_ext) * n_lines);
+    
+    struct statfs_ext *f_tmp;
+    f_tmp = malloc(sizeof(struct statfs_ext));
+    if (f_tmp == NULL) {
+        perror("unable to malloc");
+        exit(EXIT_FAILURE);
+    }
+    
+    struct statfs *s_tmp;
+    s_tmp = malloc(sizeof(struct statfs));
+    if (s_tmp == NULL) {
+        perror("unable to malloc");
+        exit(EXIT_FAILURE);
+    }
 
     for (i2 = 0; i2 < n_lines; i2++) {
-        statfs_full *f_tmp;
-        f_tmp = malloc(sizeof(statfs_full));
-        struct statfs *s_tmp;
-        s_tmp = malloc(sizeof(statfs));
-        
-        statfs(fse[i2].fs_file, s_tmp); 
+
+        if (statfs(fse[i2].fs_file, s_tmp) != 0) {
+            perror("statfs() failed");
+            continue; /* might not be fatal */
+        }
         merge_statfs_structs(s_tmp, &f_tmp);
 
         strncpy(f_tmp->f_fstypename, fse[i2].fs_vsftype, FS_TYPE_LEN);      
@@ -143,20 +157,21 @@ int getfsstat_linux(statfs_full *buf, long int bufsize) {
         printf("f_bavail:  %d\n", (int)f_tmp->f_bavail);
         printf("f_files:   %d\n", (int)f_tmp->f_files);
         printf("f_ffree:   %d\n", (int)f_tmp->f_ffree);
-        printf("f_fsid1:   %lu\n", f_tmp->f_fsid);
+        //printf("f_fsid1:   %lu\n", f_tmp->f_fsid);
         printf("f_namelen  %lu\n", f_tmp->f_namelen);
         printf("f_frsize   %lu\n", f_tmp->f_frsize);
         printf("f_fstypename:  %s\n", f_tmp->f_fstypename);
         printf("f_mntonname:   %s\n", f_tmp->f_mntonname);
         printf("f_mntfromname: %s\n", f_tmp->f_mntfromname);
-        
-        //free(s_tmp);
-        //free(f_tmp);
+
     }
     
+    free(s_tmp);
+    free(f_tmp);
+    
     printf("Size of sas: %lu\n", sizeof(sas));
-    buf = &sas;
-    free(sas);
+    //buf = &sas;
+    //free(sas);
     return i2;
 }
 
