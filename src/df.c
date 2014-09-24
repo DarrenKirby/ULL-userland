@@ -137,13 +137,22 @@ int main(int argc, char *argv[]) {
                 break;
         }
     }
-    struct statfs *foo;
+    struct statfs_full *foo;
     int n_mounts;
-    
+#if defined (__linux__)
     if (argc == optind) /* display all mounted file systems */
-        n_mounts = getfsstat_linux(foo, 453452);
+        n_mounts = getfsstat_linux(foo, 4048);
+    
+    printf("Found %i mounted file systems\n", n_mounts);
+    printf("sizeof foo: %lu\n", sizeof(foo));
+    return EXIT_SUCCESS;
+#else
+    if (argc == optind) /* display all mounted file systems */
+        n_mounts = getfsstat(foo, 500000, NULL);
     
     printf("Found %i mounted file systems\n", n_mounts);
     return EXIT_SUCCESS;
+#endif
+
 }
 
