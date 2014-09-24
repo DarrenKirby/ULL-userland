@@ -21,7 +21,15 @@
  ***************************************************************************/
 
 #define APPNAME "df"
+
+#if defined (__linux__)
 #include "mount.h"
+#else
+#include <sys/param.h>
+#include <sys/ucred.h>
+#include <sys/mount.h>
+#endif
+
 #include "common.h"
 
 struct packed_flags {
@@ -77,7 +85,7 @@ int main(int argc, char *argv[]) {
                 show_help();
                 exit(EXIT_SUCCESS);
                 break;
-            case 'b': 
+            case 'b':
                 get_option_char = optarg[0];
                 switch(get_option_char) {
                     case 'k': fmt = 1; break;
@@ -137,22 +145,32 @@ int main(int argc, char *argv[]) {
                 break;
         }
     }
-    struct statfs_ext *foo;
-    int n_mounts;
+
+    int n_mounts = 0;
 #if defined (__linux__)
+    struct statfs_ext *foo = NULL;
     if (argc == optind) /* display all mounted file systems */
         n_mounts = getfsstat_linux(foo, 8096);
-    
+
     printf("Found %i mounted file systems\n", n_mounts);
     printf("sizeof foo: %lu\n", sizeof(foo));
-    return EXIT_SUCCESS;
+
 #else
+    struct statfs *foo = NULL;
     if (argc == optind) /* display all mounted file systems */
-        n_mounts = getfsstat(foo, 500000, NULL);
-    
+        n_mounts = getfsstat(foo, 8096, MNT_NOWAIT);
+
     printf("Found %i mounted file systems\n", n_mounts);
-    return EXIT_SUCCESS;
+    printf("sizeof foo: %lu\n", sizeof(foo));
+
 #endif
+    //for (int i = 0; i < n_mounts; i++)
+    printf("%s\n", foo[0].f_fstypename);
+    printf("%s\n", foo[1].f_fstypename);
+    printf("%s\n", foo[2].f_fstypename);
+    printf("%s\n", foo[3].f_fstypename);
 
+
+
+    return EXIT_SUCCESS;
 }
-
