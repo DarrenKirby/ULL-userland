@@ -54,6 +54,12 @@ Options:\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
+//int print_fs_fields(buf, i) {
+//    unsigned int b_size = buf[i].
+//    
+//    printf("", buf[i].);
+//}
+
 int main(int argc, char *argv[]) {
     int opt;
 
@@ -156,7 +162,7 @@ int main(int argc, char *argv[]) {
     printf("sizeof foo: %lu\n", sizeof(foo));
 
 #else
-    struct statfs *foo = NULL;
+    struct statfs *foo = malloc(sizeof(struct statfs));
     if (argc == optind) /* display all mounted file systems */
         n_mounts = getfsstat(foo, 8096, MNT_NOWAIT);
 
@@ -165,11 +171,11 @@ int main(int argc, char *argv[]) {
 
 #endif
     //for (int i = 0; i < n_mounts; i++)
-    printf("%s\n", foo[0].f_fstypename);
-    printf("%s\n", foo[1].f_fstypename);
-    printf("%s\n", foo[2].f_fstypename);
-    printf("%s\n", foo[3].f_fstypename);
-
+    //printf("%s\n", foo[0].f_fstypename);
+    //printf("%s\n", foo[1].f_fstypename);
+    //printf("%s\n", foo[2].f_fstypename);
+    //printf("%s\n", foo[3].f_fstypename);
+    //print_fs_fields(foo);
 
 
     return EXIT_SUCCESS;
