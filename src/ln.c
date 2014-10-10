@@ -35,12 +35,17 @@ void show_help(void) {
     Report bugs to <bulliver@gmail.com>\n", APPNAME, APPNAME);
 }
 
+struct packed_flags {
+    int symbolic:1;
+    int force:1;
+    int verbose:1;
+    int interactive:1;
+};
+    
 int main(int argc, char *argv[]) {
     int opt;
-    int symbolic = 0;
-    int force = 0;
-    int verbose = 0;
-    int interactive = 0;
+    struct packed_flags flags = {0,0,0,0};
+
 
     struct option longopts[] = {
         {"symbolic", 0, NULL, 's'},
@@ -64,16 +69,16 @@ int main(int argc, char *argv[]) {
                 exit(EXIT_SUCCESS); 
                 break;
             case 's':
-                symbolic = 1;
+                flags.symbolic = 1;
                 break;
             case 'f':
-                force = 1;
+                flags.force = 1;
                 break;
             case 'v':
-                verbose = 1;
+                flags.verbose = 1;
                 break;
             case 'i':
-                interactive = 1;
+                flags.interactive = 1;
                 break;
             case ':':
                  /* getopt_long prints own error message */
@@ -88,44 +93,72 @@ int main(int argc, char *argv[]) {
                 break;
         }
     }
-    printf("Argc: %i\n", argc);
+    //printf("Argc: %i\n", argc);
     /*if (argc > 3) {
         perror("too many arguments");
         exit(EXIT_FAILURE);
     }
     */
-    char target[PATH_MAX];
-    char *target_p = target; 
-    strncpy(target_p, argv[argc], PATH_MAX);
-    char name[PATH_MAX];
-    char *name_p = name;
-    strncpy(name_p, argv[argc + 1], PATH_MAX);
+    //char target[PATH_MAX];
+    //char *target_p = target; 
+    //strncpy(target_p, argv[optind], PATH_MAX);
+    //char name[PATH_MAX];
+    //char *name_p = name;
+    //strncpy(name_p, argv[optind + 1], PATH_MAX);
 
-    if (argc) { /* 1st form */
-        if (access(argv[1], F_OK) == 0) {
-            if (force == 1) 
-                unlink(argv[1]);
-            if (interactive == 1) {
+    if ((argc - optind) == 2) { /* 1st form */
+        if (access(argv[optind], F_OK) == 0) {
+            if (flags.force) 
+                unlink(argv[optind + 1]);
+            if (flags.interactive) {
                 char response; 
-                printf("%s exits, overwrite? ('y' or 'n') ", argv[1]);
+                printf("%s exists, overwrite? ('y' or 'n') ", argv[optind + 1]);
                 do {
                 response = getchar();
                 } while (response == '\n');
 
                 if (response == 'y' || response == 'Y')
-                    unlink(argv[1]);
+                    unlink(argv[optind + 1]);
+                else
+                    exit(EXIT_FAILURE);
             }
         }
-        if (symbolic == 1)
-            symlink(argv[1], argv[2]);
+        if (flags.symbolic)
+            symlink(argv[optind], argv[optind + 1]);
         else
-            link(argv[1], argv[2]);
-        if (verbose == 1)
-            printf("linked %s to %s\n", argv[1], argv[2]);
+            link(argv[optind], argv[optind + 1]);
+        if (flags.verbose)
+            printf("linked %s to %s\n", argv[optind], argv[optind + 1]);
             
 
-    } else if (argc == 2) { /* 2nd form */
-        ;    
+    } else if ((argc - optind)== 1) { /* 2nd form */
+        char target[PATH_MAX];
+        char *target_p = target;
+        target_p = basename(argv[optind]);
+        
+        if (access(argv[optind], F_OK) == 0) {
+            if (flags.force) 
+                unlink(target_p);
+            if (flags.interactive) {
+                char response; 
+                printf("%s exists, overwrite? ('y' or 'n') ", target_p);
+                do {
+                response = getchar();
+                } while (response == '\n');
+
+                if (response == 'y' || response == 'Y')
+                    unlink(target_p);
+                else
+                    exit(EXIT_FAILURE);
+            }
+        }
+        if (flags.symbolic)
+            symlink(argv[optind], target_p);
+        else
+            link(argv[optind], target_p);
+        if (flags.verbose)
+            printf("linked %s to %s\n", argv[optind], target_p);
+            
     } else {
         perror("not enough arguments");
         exit(EXIT_FAILURE);
