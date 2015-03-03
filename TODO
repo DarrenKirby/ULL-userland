@@ -31,7 +31,7 @@ csplit    :: not started
 cut       :: not started
 date      :: not started
 dd        :: not started
-df        :: not started
+df        :: in progress
 dir       :: not started
 dircolors :: not started
 dirname   :: not started
@@ -62,7 +62,7 @@ mv        :: completed    # Linux: compiles, works | OS X: compiles, works | Fre
 nice      :: not started
 nl        :: not started
 nohup     :: not started
-od        :: not started
+od        :: in progress
 paste     :: not started
 pathchk   :: not started
 pinky     :: not started
@@ -113,4 +113,4 @@ yes       :: completed    # Linux: compiles, works | OS X: compiles, works | Fre
 
 ========================================================================
 
-Copyright (C) 2014 Darren Kirby <bulliver@gmail.com>
+Copyright (C) 2015 Darren Kirby <bulliver@gmail.com>
