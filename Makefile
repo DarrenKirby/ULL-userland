@@ -45,8 +45,12 @@ ln:
 	$(CC) $(CFLAGS) -o $(BINDIR)/ln $(SRCDIR)/ln.c
 mkdir:
 	$(CC) $(CFLAGS) -o $(BINDIR)/mkdir $(SRCDIR)/mkdir.c
+mount:
+	$(CC) $(CFLAGS) -o $(BINDIR)/mount $(SRCDIR)/mount.c
 mv:
 	$(CC) $(CFLAGS) -o $(BINDIR)/mv $(SRCDIR)/mv.c
+od:
+	$(CC) $(CFLAGS) -o $(BINDIR)/od $(SRCDIR)/od.c
 printenv:
 	$(CC) $(CFLAGS) -o $(BINDIR)/printenv $(SRCDIR)/printenv.c
 pwd:
