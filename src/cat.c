@@ -45,7 +45,7 @@ void cat_stdin(int line_number) {
             line_number++;
         } else {
             putc(c, stdout);
-        }            
+        }
     }
     fclose(name);
     exit(EXIT_SUCCESS);
@@ -63,7 +63,7 @@ int cat_file(char *filename, unsigned int line_number) {
             line_number++;
         } else {
             putc(c, stdout);
-        }            
+        }
     }
     fclose(name);
     return line_number;
@@ -87,6 +87,7 @@ int main(int argc, char *argv[]) {
                 break;
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
                 break;
             case 'h':
@@ -106,21 +107,20 @@ int main(int argc, char *argv[]) {
                 break;
         }
     }
-    
+
     if (argc == optind) {        /* no file arguments */
         cat_stdin(line_number);
     }
-    
+
     if (number_lines == 1) {
         printf("%6u\t", line_number);
         line_number++;
     }
 
-    while (optind < argc) { 
+    while (optind < argc) {
         line_number = cat_file(argv[optind], line_number);
         optind++;
     }
     printf("\n");
     return EXIT_SUCCESS;
 }
-

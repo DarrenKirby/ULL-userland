@@ -149,15 +149,36 @@ int main(int argc, char *argv[]) {
 
     while ((opt = getopt_long(argc, argv, "bkmths:oV", longopts, NULL)) != -1) {
         switch(opt) {
-            case 'k': C = 0; break;
-            case 'b': C = 1; break;
-            case 'm': C = 2; break;
-            case 's': P = 1; poll_interval = atoi(optarg); break;
-            case 'V': printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION); exit(0); break;
-            case 't': T = 1; break;
-            case 'o': BC = 0; break;
-            case 'h': showHelp(); return EXIT_SUCCESS;
-            default : showHelp(); return EXIT_FAILURE;
+            case 'k':
+		C = 0;
+		break;
+            case 'b':
+		C = 1;
+		break;
+            case 'm':
+		C = 2;
+		break;
+            case 's':
+		P = 1;
+		poll_interval = atoi(optarg);
+		break;
+            case 'V':
+		printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+		printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
+		exit(0);
+		break;
+            case 't':
+		T = 1;
+		break;
+            case 'o':
+		BC = 0;
+		break;
+            case 'h':
+		showHelp();
+		return EXIT_SUCCESS;
+            default:
+		showHelp();
+		return EXIT_FAILURE;
         }
     }
 

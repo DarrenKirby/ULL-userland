@@ -47,6 +47,7 @@ int main(int argc, char *argv[]) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
                 break;
             case 'h':
@@ -71,10 +72,10 @@ int main(int argc, char *argv[]) {
         strncpy(path, argv[1], 255);
     }
 
-    /* due to the fact the shell runs all commands in a new process, we can't actually 
-     * change directories (chdir() changes the directory of the current process), thus, 
-     * the 'cd' command is a shell built-in. This program simply prints the directory 
-     * you would cd to if it were possible */ 
+    /* due to the fact the shell runs all commands in a new process, we can't actually
+     * change directories (chdir() changes the directory of the current process), thus,
+     * the 'cd' command is a shell built-in. This program simply prints the directory
+     * you would cd to if it were possible */
     printf("%s\n", path);
 
     if (chdir(path) != 0) {
@@ -82,4 +83,3 @@ int main(int argc, char *argv[]) {
     }
     return EXIT_SUCCESS;
 }
-

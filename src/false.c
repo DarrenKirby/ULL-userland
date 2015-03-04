@@ -21,7 +21,7 @@
  ***************************************************************************/
 
 /* NOTE: your shell probably has 'false' as a built-in
- *       so use this program with a non-ambiguous 
+ *       so use this program with a non-ambiguous
  *       path like: './bin/false' or similar */
 
 #define APPNAME "false"
@@ -47,9 +47,19 @@ int main(int argc, char *argv[]) {
 
     while ((opt = getopt_long(argc, argv, "Vh", longopts, NULL)) != -1) {
         switch(opt) {
-            case 'V': printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION); exit(EXIT_SUCCESS); break;
-            case 'h': show_help(); exit(EXIT_SUCCESS); break;
-            default : show_help(); exit(EXIT_FAILURE); break; /* This is probably pointless */
+            case 'V':
+                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
+                exit(EXIT_SUCCESS);
+                break;
+            case 'h':
+                show_help();
+                exit(EXIT_SUCCESS);
+                break;
+            default:
+                show_help();
+                exit(EXIT_FAILURE);
+                break; /* This is probably pointless */
         }
     }
     return EXIT_FAILURE;

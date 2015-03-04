@@ -52,15 +52,16 @@ int main(int argc, char *argv[]) {
                 verbose = 1;
                 break;
             case 'm':
-                mode = strtoul(optarg, NULL, 8); 
+                mode = strtoul(optarg, NULL, 8);
                 break;
-            case 'V': 
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION); 
-                exit(EXIT_SUCCESS); 
+            case 'V':
+                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
+                exit(EXIT_SUCCESS);
                 break;
-            case 'h': 
+            case 'h':
                 show_help(); 
-                exit(EXIT_SUCCESS); 
+                exit(EXIT_SUCCESS);
                 break;
             case ':':
                 /* getopt_long print own error message */
@@ -69,9 +70,9 @@ int main(int argc, char *argv[]) {
             case '?':
                 /* getopt_long prints own error message */
                 exit(EXIT_FAILURE);
-            default: 
-                show_help(); 
-                exit(EXIT_FAILURE); 
+            default:
+                show_help();
+                exit(EXIT_FAILURE);
                 break;
         }
     }
