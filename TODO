@@ -26,7 +26,7 @@ chown     :: not started
 chroot    :: not started
 cksum     :: not started
 comm      :: not started
-cp        :: not started
+cp        :: in progress
 csplit    :: not started
 cut       :: not started
 date      :: not started
@@ -44,7 +44,7 @@ factor    :: not started
 false     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 fmt       :: not started
 fold      :: not started
-free      :: completed    # Linux: compiles, works | OS X: compiles, doesn't work | FreeBSD: compiles, doesn't work
+free      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, doesn't work
 head      :: not started
 hostid    :: not started
 id        :: not started
@@ -113,4 +113,4 @@ yes       :: completed    # Linux: compiles, works | OS X: compiles, works | Fre
 
 ========================================================================
 
-Copyright (C) 2015 Darren Kirby <bulliver@gmail.com>
+Copyright (C) 2014-2015 Darren Kirby <bulliver@gmail.com>
