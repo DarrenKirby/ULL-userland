@@ -8,7 +8,7 @@ version = 0.3
 tarname = $(package)
 distdir = $(tarname)-$(version)
 
-all: basename cat cd cp df env false free ln mkdir mv od printenv pwd rm sleep stat sync true uname uptime wc whoami yes
+all: basename cat cd cp df env false free ln mkdir mv od printenv pwd rm sleep stat sync touch true uname unlink uptime wc whoami yes
 
 dist: $(distdir).tar.gz
 
@@ -65,10 +65,14 @@ stat:
 	$(CC) $(CFLAGS) -o $(BINDIR)/stat $(SRCDIR)/stat.c
 sync:
 	$(CC) $(CFLAGS) -o $(BINDIR)/sync $(SRCDIR)/sync.c
+touch:
+	$(CC) $(CFLAGS) -o $(BINDIR)/touch $(SRCDIR)/touch.c
 true:
 	$(CC) $(CFLAGS) -o $(BINDIR)/true $(SRCDIR)/true.c
 uname:
 	$(CC) $(CFLAGS) -o $(BINDIR)/uname $(SRCDIR)/uname.c
+unlink:
+	$(CC) $(CFLAGS) -o $(BINDIR)/unlink $(SRCDIR)/unlink.c
 uptime:
 	$(CC) $(CFLAGS) -o $(BINDIR)/uptime $(SRCDIR)/uptime.c
 wc:
