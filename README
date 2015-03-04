@@ -1,23 +1,13 @@
-These are the DGNU core utilities.
+These are the ULL core utilities.
 
 These programs are one man's silly attempt to rewrite the GNU coreutils,
-and a few other common/useful applications from scratch in an effort to
-both learn to program C better, and to learn the UNIX programming
-environment better.
+for use as the userland for ULL (Userland Linux), a bastard hybrid of the
+Linux kernel and a *BDSish userland.
 
 Some of these programs are not portable away from the Linux OS.  As I find
 the time I intend to make these programs run on Linux, OS X, *BSD, and
 Solaris.  I can not realistically deliver a time frame for this.  Again, this
 portability is to be an educational exercise for me.
-
-Here is a list of programs considered 'done':
-
-    basename cat cd false free mkdir mv printenv pwd rm stat sync true uname 
-    uptime wc whoami yes
-
-Here is a list of programs in progress, in various states of usefulness:
-
-    env sleep ln cp
 
 See the file TODO for more details on programs I intend to write, and status
 of 'in progress' programs, as well as notes on portability.
@@ -28,16 +18,16 @@ As it stands, these programs are different from the GNU versions in several
 fundamental ways.  First of all, it is not the first, nor even an important
 goal for these programs to be 'drop-in' replacements.  Therefore, not all
 functionality or command-line options/arguments are interfaced identically.
-For example, I have tried to make the DGNU-Utils have a consistant interface,
+For example, I have tried to make the ULL utils have a consistant interface,
 so I have adhered to standards such as '-h' and '--help' _always_ display
 a usage/option summary, and '-V' and '--version' _always_ display version
 information.  At times this convention clashes with the GNU version options.
 
 For some of these programs, I do not intend to mimic all functionality of the
 GNU versions for reasons of either personal interest, and/or technical ability.
-Do not assume that because the GNU version does something, the DGNU version
+Do not assume that because the GNU version does something, the ULL version
 does as well.
 
 ========================================================================
 
-Copyright (C) 2014 Darren Kirby <bulliver@gmail.com>
+Copyright (C) 2014-2015 Darren Kirby <bulliver@gmail.com>
