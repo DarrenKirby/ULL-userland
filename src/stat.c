@@ -27,9 +27,9 @@
 
 #if defined(__APPLE__) && defined(__MACH__)
 #define st_atim      st_atimespec
-#define st_mtim      st_mtimespec 
-#define st_ctim      st_ctimespec  
-#define st_birthtim  st_birthtimespec 
+#define st_mtim      st_mtimespec
+#define st_ctim      st_ctimespec
+#define st_birthtim  st_birthtimespec
 #endif
 
 void show_help(void) {
@@ -52,45 +52,45 @@ char *format_time(struct timespec *ts) {
         g_error("error converting time");
         exit(EXIT_FAILURE);
     }
-    
+
     snprintf(str, TIME_SIZE, "%i-%02i-%02i %02i:%02i:%02i.%09ld %s",
         (bdt.tm_year + 1900), bdt.tm_mon, bdt.tm_mday,
         bdt.tm_hour, bdt.tm_min, bdt.tm_sec,
         ts->tv_nsec, bdt.tm_zone
     );
-    
+
     return str;
 }
 
 void stat_file(char *filename, int follow_links) {
     struct stat buf;
-    
+
     if (!follow_links) {
         if (lstat(filename, &buf) == -1) {
             f_error(filename, "couldn't stat");
             exit(EXIT_FAILURE);
-        }            
+        }
     } else {
         if (stat(filename, &buf) == -1) {
             f_error(filename, "couldn't stat");
             exit(EXIT_FAILURE);
         }
     }
-    
+
     printf("File:  '%s'\n", filename);
     printf("Size:   %lld\t\t", (long long) buf.st_size);
     printf("Blocks: %lld\t\t", (long long)buf.st_blocks);
     printf("IO Block: %ld\t\t", (long) buf.st_blksize);
     printf("%s\n", filetype(buf.st_mode));
-    
+
     printf("Device: %li/%li\t\t", (long) major(buf.st_dev), (long) minor(buf.st_dev));
     printf("Inode: %ld\t\t", (long) buf.st_ino);
     printf("Links: %ld\n", (long) buf.st_nlink);
-    
+
     printf("Perms:  %#o/%s\t", file_perm_oct(buf.st_mode), file_perm_str(buf.st_mode, 1));
     printf("Uid: %ld/%s\t", (long) buf.st_uid, get_username(buf.st_uid));
     printf("Gid: %ld/%s\n", (long) buf.st_gid, get_groupname(buf.st_gid));
-    
+
     printf("Access: %s\n", format_time(&buf.st_atim));
     printf("Modify: %s\n", format_time(&buf.st_mtim));
     printf("Change: %s\n", format_time(&buf.st_ctim));
@@ -114,6 +114,7 @@ int main(int argc, char *argv[]) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
                 break;
             case 'h':
@@ -142,4 +143,3 @@ int main(int argc, char *argv[]) {
     }
     return EXIT_SUCCESS;
 }
-

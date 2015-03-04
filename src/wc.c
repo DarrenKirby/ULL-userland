@@ -124,6 +124,7 @@ int main(int argc, char *argv[]) {
                 exit(EXIT_SUCCESS);
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
             default:
                 showHelp();
@@ -167,12 +168,12 @@ int main(int argc, char *argv[]) {
                 printf("%5i ", t_counts.longest);
             printf("%s\n", argv[optind]);
             optind++;
-            
+
             t_cumulative.lines   += t_counts.lines;
             t_cumulative.words   += t_counts.words;
             t_cumulative.chars   += t_counts.chars;
             if (t_counts.longest > t_cumulative.longest)
-                t_cumulative.longest = t_counts.longest;   
+                t_cumulative.longest = t_counts.longest;
         }
     }
     if (multiple_args) {

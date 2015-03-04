@@ -44,6 +44,7 @@ int main(int argc, char *argv[]) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
                 break;
             case 'h':
@@ -63,9 +64,8 @@ int main(int argc, char *argv[]) {
                 break;
         }
     }
-    
+
     sync(); /* no point checking exit status - sync is always successful */
-    
+
     return EXIT_SUCCESS;
 }
-

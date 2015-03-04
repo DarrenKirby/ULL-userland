@@ -168,7 +168,6 @@ int main(int argc, char *argv[]) {
     }
 
 
-
     if (format == 0x1) {
         read_file_hex(&argv[optind]);
     }

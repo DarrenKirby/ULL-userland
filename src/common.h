@@ -24,7 +24,7 @@
 #define _COMMON_H
 
 /* Version information */
-#define APPSUITE   "dgnu-utils"
+#define APPSUITE   "ull-userland"
 #define APPVERSION "0.3"
 
 /* Common includes */
@@ -104,10 +104,10 @@ static long posix_version = 0;
 char *path_alloc(int *sizep) {
     char *ptr;
     int size;
-    
+
     if (posix_version == 0)
         posix_version = sysconf(_SC_VERSION);
-    
+
     if (pathmax == 0) {
         errno = 0;
         if ((pathmax = pathconf("/", _PC_PATH_MAX)) < 0) {
@@ -123,16 +123,16 @@ char *path_alloc(int *sizep) {
         size = pathmax + 1;
     else
         size = PATH_MAX;
-    
+
     if ((ptr = malloc(size)) == NULL)
         g_error("malloc error for pathname");
-        
+
     if (sizep != NULL)
         *sizep = size;
     return(ptr);
 }
 /* end APUE code */
-    
+
 /* trims leading and tailing whitespace from strings */
 char *trim_whitespace(char *str) {
     size_t len = 0;
@@ -176,8 +176,8 @@ bit information in returned string */
 
 #define STR_SIZE sizeof("rwxrwxrwx")
 
-/* Return ls(1)-style string for file permissions mask, This is from 
- * 'The Linux Programming Interface'    
+/* Return ls(1)-style string for file permissions mask, This is from
+ * 'The Linux Programming Interface'
  */
 char *file_perm_str(mode_t perm, int flags) {
     static char str[STR_SIZE];
@@ -240,7 +240,7 @@ char *get_username(uid_t uid) {
             exit(EXIT_FAILURE);
         }
     }
-    
+
     return pwd->pw_name;
 }
 

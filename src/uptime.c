@@ -98,11 +98,19 @@ int main(int argc, char *argv[]) {
 
     while ((opt = getopt_long(argc, argv, "Vh", longopts, NULL)) != -1) {
         switch(opt) {
-           case 'V': printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION); exit(EXIT_SUCCESS);
-           case 'h': showHelp(); exit(EXIT_SUCCESS);
-           default : showHelp(); exit(EXIT_FAILURE);
+            case 'V':
+                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
+                exit(EXIT_SUCCESS);
+            case 'h':
+                showHelp();
+                exit(EXIT_SUCCESS);
+            default:
+                showHelp();
+                exit(EXIT_FAILURE);
         }
     }
+
     getTime();
     error = getUptime();
     if (error == 0)
@@ -110,4 +118,3 @@ int main(int argc, char *argv[]) {
     else
         return EXIT_FAILURE;
 }
-

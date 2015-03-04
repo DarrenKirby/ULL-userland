@@ -93,6 +93,7 @@ int main(int argc, char *argv[]) {
                 exit(EXIT_SUCCESS);
             case 'V':
                 printf("%s (%s) %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
             default:
                 showHelp();
@@ -122,4 +123,3 @@ int main(int argc, char *argv[]) {
     }
     return EXIT_SUCCESS;
 }
-

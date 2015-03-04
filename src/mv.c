@@ -82,6 +82,7 @@ int main(int argc, char *argv[]) {
                 break;
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
             case 'h':
                 show_help();
@@ -108,7 +109,7 @@ int main(int argc, char *argv[]) {
 
     from = argv[optind];
     to = argv[argc-1];
-    
+
     stat(to, &s);
     if (S_ISDIR(s.st_mode))
         isdir = 1;
@@ -116,12 +117,12 @@ int main(int argc, char *argv[]) {
         printf("%s: '%s' must be a directory\n", APPNAME, to);
         exit(EXIT_FAILURE);
     }
-     
+
     n_args--; /* Already 'popped' last arg */
 
     do {
         if (isdir == 1) {
-            
+
             snprintf(tmp, 256, "%s/%s", to, from); /* Rename 'to' */
             if (opts.interactive && access(to, F_OK) == 0) {
                 if (!prompt(to)) {
