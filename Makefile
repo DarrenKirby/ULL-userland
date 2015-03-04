@@ -8,7 +8,7 @@ version = 0.3
 tarname = $(package)
 distdir = $(tarname)-$(version)
 
-all: basename cat cd cp df env false free ln mkdir mv printenv pwd rm sleep stat sync true uname uptime wc whoami yes
+all: basename cat cd cp df env false free ln mkdir mv od printenv pwd rm sleep stat sync true uname uptime wc whoami yes
 
 dist: $(distdir).tar.gz
 
