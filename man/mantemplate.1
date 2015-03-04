@@ -1,0 +1,60 @@
+.TH FOO 1 "March 2015" Userland Linux "User Manuals"
+
+
+.SH NAME
+foo \- frobnicate the bar library
+
+
+.SH SYNOPSIS
+.B foo [-bar] [-c
+.I config-file
+.B ]
+.I file
+.B ...
+
+
+.SH DESCRIPTION
+.B foo
+frobnicates the bar library by tweaking internal
+symbol tables. By default it parses all baz segments
+and rearranges them in reverse order by time for the
+.BR xyzzy (1)
+linker to find them. The symdef entry is then compressed
+using the WBG (Whiz-Bang-Gizmo) algorithm.
+All files are processed in the order specified.
+
+
+.SH OPTIONS
+.TP
+\fB-h or --help\fP
+Print quick usage details to the screen.
+.TP
+\fB-V or --version\fP
+Print version information to the screen.
+
+.SH FILES
+.I /etc/foo.conf
+.RS
+The system wide configuration file. See
+.BR foo (5)
+for further details.
+.RE
+.I ~/.foorc
+.RS
+Per user configuration file. See
+.BR foo (5)
+for further details.
+
+.SH BUGS
+The command name should have been chosen more carefully
+to reflect its purpose.
+
+
+.SH AUTHOR
+Darren Kirby <bulliver@gmail.com>
+
+.SH "SEE ALSO"
+.BR bar (1),
+.BR foo (5),
+.BR xyzzy (1)
+
