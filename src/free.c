@@ -18,15 +18,13 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <errno.h>
-#include <unistd.h>
 
 #define APPNAME "free"
 #include "common.h"
 
-unsigned long int fmt(unsigned long n, int C);
 
-int getfree(int C, int T, int BC) {
+#if defined (__linux__)
+int get_free(int C, int T, int BC) {
     struct meminfo {
         unsigned long int memtotal;
         unsigned long int memfree;
@@ -118,6 +116,107 @@ unsigned long int fmt(unsigned long n, int C) {
     }
 }
 
+#elif defined (__APPLE__) && defined (__MACH__)
+#include <sys/sysctl.h>
+
+struct Meminfo {
+    /* core */
+    long int mem_total;
+    long int mem_used;
+    long int mem_free;
+    /* swap */
+    long int swap_total;
+    long int swap_used;
+    long int swap_free;
+} m_info;
+
+int get_swap(void) {
+    struct xsw_usage vmusage;
+    size_t size = sizeof(vmusage);
+
+    if (sysctlbyname("vm.swapusage", &vmusage, &size, NULL, 0) != 0) {
+        fprintf(stderr, "Could not collect VM info, errno %d - %s",
+                errno, strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
+
+    m_info.swap_total = vmusage.xsu_total;
+    m_info.swap_used  = vmusage.xsu_used;
+    m_info.swap_free  = vmusage.xsu_avail;
+
+    return 0;
+}
+
+int get_total_mem(void) {
+    size_t size;
+    long int buf;
+    size = sizeof(long int);
+
+    if (sysctlbyname("hw.memsize", &buf, &size, NULL, 0) != 0) {
+        fprintf(stderr, "Could not collect VM info, errno %d - %s",
+                errno, strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
+    m_info.mem_total = buf;
+    return 0;
+}
+
+int get_used_mem(void) {
+    long int wired, active, inactive;
+    FILE *fd;
+
+    if ((fd = popen("vm_stat", "r")) == NULL) {
+        fprintf(stderr, "popen failed, errno %d - %s",
+                errno, strerror(errno));
+    }
+
+    char *line = NULL;
+    size_t linecap = 0;
+    ssize_t linelen;
+
+    /* first line is throwaway */
+    linelen = getline(&line, &linecap, fd);
+    long int value[3];
+
+    for (int i = 0; i < 3; i++) {
+        linelen = getline(&line, &linecap, fd);
+        sscanf(line, "Pages %*s %ld.", &value[i]);
+    }
+
+    m_info.mem_used = (value[0] + value[1] + value[2]) * 4096;
+    m_info.mem_free = (m_info.mem_total - m_info.mem_used);
+
+    pclose(fd);
+    return 0;
+}
+
+
+long int fmt(char base, long int n) {
+    if (base == 'm')
+	return n / 1024 / 1024;
+    else if (base == 'k')
+	return n / 1024;
+    else
+	return n;
+}
+
+int get_free(char base) {
+    if (get_total_mem() != 0)
+	printf("Could not get total memory\n");
+    if (get_used_mem() != 0)
+	printf("Could not obtain used memory\n");
+    if (get_swap() != 0)
+	printf("Could not obtain swap memory\n");
+	printf("\t%10s\t%10s\t%10s\n", "Total", "Used", "Free");
+	printf("Mem:\t%10ld\t%10ld\t%10ld\n", fmt(base, m_info.mem_total),fmt(base, m_info.mem_used),fmt(base, m_info.mem_free));
+	printf("Swap:\t%10ld\t%10ld\t%10ld\n", fmt(base, m_info.swap_total),fmt(base, m_info.swap_used),fmt(base, m_info.swap_free));
+    return 0;
+}
+
+#endif
+
 int showHelp(void) {
     printf("usage: %s [-b|-k|-m] [-o] [-t] [-s delay] [-V, --version] [-h, --help]\n \
     -b,-k,-m\t   show output in bytes, KB, or MB\n \
@@ -135,6 +234,7 @@ int main(int argc, char *argv[]) {
     int opt;
 
     int C;         /* -b, -k, or -m */
+    char base;     /* for OS X */
     int P = 0;     /* polling? */
     int T = 0;     /* print total? */
     int BC = 1;    /* display -/+ buffer/cache? */
@@ -151,12 +251,15 @@ int main(int argc, char *argv[]) {
         switch(opt) {
             case 'k':
 		C = 0;
+		base = 'k';
 		break;
             case 'b':
 		C = 1;
+		base = 'b';
 		break;
             case 'm':
 		C = 2;
+		base = 'm';
 		break;
             case 's':
 		P = 1;
@@ -184,12 +287,20 @@ int main(int argc, char *argv[]) {
 
     if (P == 1) {
         while (1 == 1) {
-            getfree(C,T,BC);
+#if defined (__linux__)
+            get_free(C,T,BC);
+#elif defined (__APPLE__) && defined (__MACH__)
+	    get_free(base);
+#endif
             printf("\n");
             sleep(poll_interval);
         }
     } else {
-        getfree(C,T,BC);
+#if defined (__linux__)
+        get_free(C,T,BC);
+#elif defined (__APPLE__) && defined (__MACH__)
+	get_free(base);
+#endif
         return EXIT_SUCCESS;
     }
 
