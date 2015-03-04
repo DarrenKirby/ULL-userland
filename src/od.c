@@ -31,6 +31,36 @@ Options:\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
+int read_file_dec(char *filename[]) {
+    FILE *fp;
+    char c;
+
+    if ((fp = fopen(*filename, "r")) == NULL ) {
+        f_error(*filename, "Cannot open ");
+    }
+
+    int offset = 0;
+
+    printf("%08d ", offset);
+    while (( c = getc(fp)) != EOF ) {
+        printf("%03d", (unsigned)c );
+        offset++;
+
+        if (offset % 2 == 0) {
+            printf(" ");
+        }
+
+        if (offset % 16 == 0) {
+            printf("\n");
+            printf("%08d ", offset);
+        }
+    }
+    printf("\n");
+    printf("%08d\n", offset);
+
+    return 0;
+}
+
 int read_file_hex(char *filename[]) {
     FILE *fp;
     char c;
@@ -56,6 +86,7 @@ int read_file_hex(char *filename[]) {
         }
     }
     printf("\n");
+    printf("0x%08x\n", offset);
 
     return 0;
 }
@@ -74,10 +105,7 @@ int read_file_oct(char *filename[]) {
     while (( c = getc(fp)) != EOF ) {
         printf("%03o", (unsigned)c );
         offset++;
-
-        //if (offset % 2 == 0) {
-            printf(" ");
-        // }
+        printf(" ");
 
         if (offset % 16 == 0) {
             printf("\n");
@@ -85,6 +113,7 @@ int read_file_oct(char *filename[]) {
         }
     }
     printf("\n");
+    printf("0%08o\n", offset);
 
     return 0;
 }
@@ -93,13 +122,28 @@ int main(int argc, char *argv[]) {
     int opt;
 
     struct option longopts[] = {
+        {"hex", 0, NULL, 'x'},
+        {"octal", 0, NULL, 'o'},
+        {"decimal", 0, NULL, 'd'},
+        {"skip-bytes", 0, NULL, 'j'},
+        {"read-bytes", 0, NULL, 'N'},
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
         {0,0,0,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "Vh", longopts, NULL)) != -1) {
+    int format = 0x0;
+
+    while ((opt = getopt_long(argc, argv, "VhxodjN", longopts, NULL)) != -1) {
         switch(opt) {
+            case 'x':
+                format = 0x1;
+                break;
+            case 'd':
+                format = 0x2;
+                break;
+            case 'o':
+                break;
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
                 printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
@@ -123,7 +167,16 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    read_file_oct(&argv[1]);
+
+
+    if (format == 0x1) {
+        read_file_hex(&argv[optind]);
+    }
+    else if (format == 0x2) {
+        read_file_dec(&argv[optind]);
+    } else {
+        read_file_oct(&argv[optind]);
+    }
 
     return EXIT_SUCCESS;
 }
