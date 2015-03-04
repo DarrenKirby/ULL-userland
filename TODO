@@ -102,7 +102,7 @@ tty       :: not started
 uname     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, segfaults
 unexpand  :: not started
 uniq      :: not started
-unlink    :: not started
+unlink    :: completed    # need to test
 uptime    :: completed    # Linux: compiles, works | OS X: does not compile | FreeBSD: does not compile
 users     :: not started
 vdir      :: not started
