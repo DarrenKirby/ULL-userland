@@ -27,17 +27,23 @@ void show_help(void) {
     printf("Usage: %s [OPTION]... [FILE]...\n \
 Concatenate FILE(s), or standard input to standard output.\n\n \
 Options:\n\
-    -n, --number\t\tnumber lines\n \
-    -h, --help\t\tdisplay this help\n \
-    -V, --version\tdisplay version information\n\n \
+    -n, --number\tnumber lines\n \
+   -u, --unbuffered\tsets stdout to be unbuffered\n \
+   -h, --help\t\tdisplay this help\n \
+   -V, --version\tdisplay version information\n\n \
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
+
 
 int number_lines = 0;
 FILE *name;
 char c;
 
-void cat_stdin(int line_number) {
+void cat_stdin(int line_number, int unbuffered) {
+    if (unbuffered == 1) {
+        setvbuf(stdout, NULL, _IONBF, 1);
+    }
+
     while (( c = getc(stdin)) != EOF ) {
         if  (c == 10 && number_lines == 1) {
             putc(c, stdout);
@@ -72,44 +78,45 @@ int cat_file(char *filename, unsigned int line_number) {
 int main(int argc, char *argv[]) {
     int opt;
     unsigned int line_number = 1;
+    int unbuffered = 0;
 
     struct option longopts[] = {
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
         {"number", 0, NULL, 'n'},
+        {"unbuffered", 0, NULL, 'u'},
         {0,0,0,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "Vhn", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "Vhnu", longopts, NULL)) != -1) {
         switch(opt) {
             case 'n':
                 number_lines = 1;
+                break;
+            case 'u':
+                unbuffered = 1;
                 break;
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
                 printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
-                break;
             case 'h':
                 show_help();
                 exit(EXIT_SUCCESS);
-                break;
             case ':':
                 printf("option '%c' needs an argument\n", optopt);
                 exit(EXIT_FAILURE);
-                break;
             case '?':
                  /* getopt_long prints own error message */
                 exit(EXIT_FAILURE);
             default:
                 show_help();
                 exit(EXIT_FAILURE);
-                break;
         }
     }
 
     if (argc == optind) {        /* no file arguments */
-        cat_stdin(line_number);
+        cat_stdin(line_number, unbuffered);
     }
 
     if (number_lines == 1) {
