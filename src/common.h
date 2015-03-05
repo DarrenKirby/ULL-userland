@@ -38,9 +38,11 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <sys/time.h>
 #include <pwd.h>
 #include <grp.h>
 #include <libgen.h>
+#include <fcntl.h>
 
 /* determine portable max path length */
 #ifdef PATH_MAX
