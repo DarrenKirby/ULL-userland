@@ -23,8 +23,6 @@
 #define APPNAME "env"
 #include "common.h"
 
-#include "env.h"
-
 
 void show_help(void) {
     printf("Usage: %s [OPTION]... [NAME=VALUE]... [COMMAND [ARG]...]\n\n\
