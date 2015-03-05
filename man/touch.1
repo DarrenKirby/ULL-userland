@@ -1,0 +1,46 @@
+.TH TOUCH 1 "March 2015" "User Manuals"
+
+
+.SH NAME
+touch \- change file access and modification times
+
+
+.SH SYNOPSIS
+touch [-acm] [-r
+.I ref_file
+|-t
+.I time
+|-d
+.I date_time
+] file...
+
+
+.SH DESCRIPTION
+Update the access and modification times of each FILE to the current time.
+A FILE argument that does not exist is created empty, unless -c is supplied.
+
+
+
+.SH OPTIONS
+.TP
+\fB-h or --help\fP
+Print quick usage details to the screen.
+.TP
+\fB-V or --version\fP
+Print version information to the screen.
+.TP
+\fB-a or --access\fP
+only change access time
+.TP
+\fB-m or --modification\fP
+only change modification time
+.TP
+\fB-c or --nocreate\fP
+don't create the file if it doesn't exist
+
+.SH BUGS
+-t, -r, and -d options not yet implemented.
+
+
+.SH AUTHOR
+Darren Kirby <bulliver@gmail.com>
