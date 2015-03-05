@@ -261,4 +261,28 @@ char *get_groupname(gid_t gid) {
     return grp->gr_name;
 }
 
+/* Cycle through and print all env variables */
+int print_all_env(void) {
+    extern char **environ;
+    char **env = environ;
+    while (*env) {
+        printf("%s\n", *env);
+        env++;
+    }
+    return EXIT_SUCCESS;
+}
+
+/* Print a single env variable */
+int print_env(char *name) {
+    char *var, *value;
+    var = name;
+    value = getenv(var);
+    if (value)
+        printf("%s\n", value);
+    else
+        return EXIT_FAILURE;
+    return EXIT_SUCCESS;
+}
+
+
 #endif /* _COMMON_H */
