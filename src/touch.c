@@ -26,6 +26,9 @@
 void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
 Options:\n\
+    -a, --access\tonly change access time\n\
+    -m, --modification\tonly change modification time\n\
+    -c, --nocreate\tdon't create the file if it doesn't exist\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
@@ -33,7 +36,7 @@ Report bugs to <bulliver@gmail.com>\n", APPNAME);
 
 int main(int argc, char *argv[]) {
     int opt;
-    int access = 1;
+    int acces = 1;
     int modification = 1;
     int nocreate = 0;
 
@@ -61,7 +64,7 @@ int main(int argc, char *argv[]) {
                 modification = 0;
                 break;
             case 'm':
-                access = 0;
+                acces = 0;
                 break;
             case 'c':
                 nocreate = 1;
@@ -111,7 +114,6 @@ int main(int argc, char *argv[]) {
         }
         optind++;
     }
-
 
     return EXIT_SUCCESS;
 }
