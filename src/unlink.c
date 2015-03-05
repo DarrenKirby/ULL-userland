@@ -24,8 +24,8 @@
 #include "common.h"
 
 void show_help(void) {
-    printf("Usage: %s [OPTION] \
-                   %s [FILE]\n\n\
+    printf("Usage: %s [OPTION]\n \
+      %s [FILE]\n\n\
 Options:\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
