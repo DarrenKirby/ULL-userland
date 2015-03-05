@@ -23,8 +23,6 @@
 #define APPNAME "whoami"
 #include "common.h"
 
-#include <unistd.h>
-
 
 void show_help(void) {
     printf("Usage: %s [OPTION]\n\n \
