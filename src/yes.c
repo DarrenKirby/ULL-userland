@@ -23,8 +23,6 @@
 #define APPNAME "yes"
 #include "common.h"
 
-#include <string.h>
-
 
 void show_help(void) {
     printf("Usage: %s [String]...\n\
