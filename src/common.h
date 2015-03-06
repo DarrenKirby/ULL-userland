@@ -43,6 +43,7 @@
 #include <grp.h>
 #include <libgen.h>
 #include <fcntl.h>
+#include <ftw.h>
 
 /* determine portable max path length */
 #ifdef PATH_MAX
@@ -283,6 +284,5 @@ int print_env(char *name) {
         return EXIT_FAILURE;
     return EXIT_SUCCESS;
 }
-
 
 #endif /* _COMMON_H */
