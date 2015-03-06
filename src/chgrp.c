@@ -1,5 +1,5 @@
 /***************************************************************************
- *       *
+ *   chgrp.c - change group ownership of file                              *
  *                                                                         *
  *   Copyright (C) 2014 by Darren Kirby                                    *
  *   bulliver@gmail.com                                                    *
@@ -27,6 +27,8 @@
 void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
 Options:\n\
+    -R, --recursive\t\tchange group of files recursively\n\
+    -v, --verbose\t\toutput a diagnostic for every file processed\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
@@ -41,15 +43,17 @@ int print_name(const char *path, const struct stat *stat_buf, int type, struct F
 int main(int argc, char *argv[]) {
     int opt;
     int recursive = 0;
+    int verbose = 0;
 
     struct option longopts[] = {
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
         {"recursive", 0, NULL, 'R'},
+        {"verbose", 0, NULL, 'v'},
         {0,0,0,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "VhR", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "VhRv", longopts, NULL)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
@@ -60,6 +64,9 @@ int main(int argc, char *argv[]) {
                 exit(EXIT_SUCCESS);
             case 'R':
                 recursive = 1;
+                break;
+            case 'v':
+                verbose = 1;
                 break;
             case ':':
                  /* getopt_long prints own error message */
@@ -75,6 +82,10 @@ int main(int argc, char *argv[]) {
     }
 
     struct group *grp_buf;
+    char to_grp[100];
+    if (strncpy(to_grp, argv[optind], 100) < 0) {
+        perror("strncpy failed");
+    }
 
     grp_buf = getgrnam(argv[optind]);
     if (grp_buf == NULL) {
@@ -84,7 +95,7 @@ int main(int argc, char *argv[]) {
 
     if (recursive == 1) {
         struct stat stat_buf;
-        struct FTW	ftw_buf;
+        struct FTW ftw_buf;
 
         if (nftw(argv[optind], print_name, 10, FTW_F) != 0) {
             perror("chgrp");
@@ -93,7 +104,13 @@ int main(int argc, char *argv[]) {
     }
 
     while (optind < argc) {
-        //cat_file(argv[optind], line_number);
+        if (chown(argv[optind], -1, grp_buf->gr_gid) != 0) {
+            perror("chown failed");
+        }
+        if (verbose == 1) {
+            printf("Changed group ownership of `%s' to `%s'\n", argv[optind], to_grp);
+        }
+
         optind++;
     }
 
