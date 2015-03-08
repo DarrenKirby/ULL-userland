@@ -20,9 +20,9 @@ base64    :: not started
 basename  :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 cat       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works 
 cd        :: completed    # Linux: compiles | OS X: compiles | FreeBSD: compiles (But ueless on all: read cd.c source)
-chgrp     :: not started
+chgrp     :: in progress
 chmod     :: not started
-chown     :: not started
+chown     :: completed    # Linux ?? | OS X: compiles, works | FreeBSD ??
 chroot    :: not started
 cksum     :: not started
 comm      :: not started
@@ -102,7 +102,7 @@ tty       :: not started
 uname     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, segfaults
 unexpand  :: not started
 uniq      :: not started
-unlink    :: completed    # need to test
+unlink    :: completed    # Linux ?? | OS X: compiles, works | FreeBSD: ??
 uptime    :: completed    # Linux: compiles, works | OS X: does not compile | FreeBSD: does not compile
 users     :: not started
 vdir      :: not started
