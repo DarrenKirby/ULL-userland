@@ -20,10 +20,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+
 #define APPNAME "stat"
 #include "common.h"
-
-#include <time.h>
 
 #if defined(__APPLE__) && defined(__MACH__)
 #define st_atim      st_atimespec
@@ -32,7 +31,7 @@
 #define st_birthtim  st_birthtimespec
 #endif
 
-void show_help(void) {
+static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
 Options:\n\
     -h, --help\t\tdisplay this help\n\
@@ -43,9 +42,8 @@ Report bugs to <bulliver@gmail.com>\n", APPNAME);
 #define TIME_SIZE sizeof("1970-01-01 00:00:00.000000000 UTC")
 #define NANO 1000000000L
 
-char *format_time(struct timespec *ts) {
+static char *format_time(struct timespec *ts) {
     struct tm bdt;
-    int ret;
     static char str[TIME_SIZE + 1];
 
     if (localtime_r(&(ts->tv_sec), &bdt) == NULL) {
@@ -62,7 +60,7 @@ char *format_time(struct timespec *ts) {
     return str;
 }
 
-void stat_file(char *filename, int follow_links) {
+static void stat_file(char *filename, int follow_links) {
     struct stat buf;
 
     if (!follow_links) {
@@ -143,3 +141,5 @@ int main(int argc, char *argv[]) {
     }
     return EXIT_SUCCESS;
 }
+
+
