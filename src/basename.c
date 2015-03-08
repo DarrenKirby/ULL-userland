@@ -20,14 +20,11 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+
 #define APPNAME "basename"
 #include "common.h"
 
-#include <string.h>
-#include <libgen.h>
-
-
-void show_help(void) {
+static void show_help(void) {
     printf("Usage: %s PATH\n \
     or: %s [OPTION] [PATH]\n\n \
     -s, --suffix=SUFFIX\tremove trailing suffix\n \
@@ -100,3 +97,5 @@ int main(int argc, char *argv[]) {
     printf("%s%s", basename(name), sdn == 0 ? "\n" : "");
     return EXIT_SUCCESS;
 }
+
+
