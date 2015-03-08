@@ -40,8 +40,8 @@ int main(int argc, char *argv[]) {
 
     static struct option longopts[] = {
         {"verbose", 0, NULL, 'v'},
-        {"mode", required_argument, NULL, 'm'},
-        {"help", 0, NULL, 'h'},
+        {"mode",    required_argument, NULL, 'm'},
+        {"help",    0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
         {0,0,0,0}
     };
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
                 exit(EXIT_SUCCESS);
                 break;
             case 'h':
-                show_help(); 
+                show_help();
                 exit(EXIT_SUCCESS);
                 break;
             case ':':
