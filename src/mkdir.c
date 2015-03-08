@@ -20,10 +20,11 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+
 #define APPNAME "mkdir"
 #include "common.h"
 
-void show_help(void) {
+static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n \
     -h, --help\t\tdisplay this help\n \
     -V, --version\tdisplay version information\n \
@@ -88,3 +89,5 @@ int main(int argc, char *argv[]) {
     }
     return EXIT_SUCCESS;
 }
+
+
