@@ -20,8 +20,11 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+
 #define APPNAME "chgrp"
 #include "common.h"
+
+/* Needed for nftw() */
 #define _XOPEN_SOURCE 600
 
 
@@ -36,7 +39,7 @@ struct optstruct {
 
 
 void show_help(void) {
-    printf("Usage: %s [OPTION]...\n\n\
+    printf("Usage: %s [OPTION] group file ...\n\n\
 Options:\n\
     -R, --recursive\t\tchange group of files recursively\n\
     -v, --verbose\t\toutput a diagnostic for every file processed\n\
@@ -61,10 +64,10 @@ int main(int argc, char *argv[]) {
     int opt;
 
     struct option longopts[] = {
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {"recursive", 0, NULL, 'R'},
-        {"verbose", 0, NULL, 'v'},
+        {"help",           0, NULL, 'h'},
+        {"version",        0, NULL, 'V'},
+        {"recursive",      0, NULL, 'R'},
+        {"verbose",        0, NULL, 'v'},
         {"no-dereference", 0, NULL, 'd'},
         {0,0,0,0}
     };
@@ -106,6 +109,7 @@ int main(int argc, char *argv[]) {
     grp_buf = getgrnam(argv[optind]);
     if (grp_buf == NULL) {
         printf("Could not resolve group name: %s", argv[optind]);
+        exit(EXIT_FAILURE);
     }
     optind++;
 
