@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
 
         opts.group_too = 1;
     } else {
-        /* only specified owner */
+        /* only specified user (new owner) */
         strncpy(to_own, argv[optind], 100);
     }
 
@@ -159,7 +159,10 @@ int main(int argc, char *argv[]) {
         }
 
         if (opts.verbose == 1) {
-            printf("Changed group ownership of `%s' to `%s'\n", argv[optind], to_grp);
+            printf("changed file ownership of `%s' to `%s'\n", argv[optind], to_own);
+            if (opts.group_too == 1) {
+                printf("changed group ownership of `%s' to `%s'\n", argv[optind], to_grp);
+            }
         }
 
         optind++;
