@@ -1,6 +1,11 @@
 CC = cc
-#  CFLAGS ?= -g -Wall -Wno-unused-variable -O0 -std=gnu99
-CFLAGS ?= -g -Wall -O2 -std=gnu99
+
+# hard coded path for testing
+# CC = /usr/local/bin/gcc  # Use gcc
+# CC = /usr/bin/clang      # use clang/llvm
+
+CFLAGS ?= -g -Wall -Wno-unused-variable -O2 -std=gnu99
+# CFLAGS ?= -g -Wall -O2 -std=gnu99
 SRCDIR = src
 BINDIR = bin
 
