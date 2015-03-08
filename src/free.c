@@ -22,9 +22,8 @@
 #define APPNAME "free"
 #include "common.h"
 
-
 #if defined (__linux__)
-int get_free(int C, int T, int BC) {
+static int get_free(int C, int T, int BC) {
     struct meminfo {
         unsigned long int memtotal;
         unsigned long int memfree;
@@ -106,7 +105,7 @@ int get_free(int C, int T, int BC) {
     return 0;
 }
 
-unsigned long int fmt(unsigned long n, int C) {
+static unsigned long int fmt(unsigned long n, int C) {
     if (C == 2) {
         return n / 1024;
     } else if (C == 1) {
@@ -130,7 +129,7 @@ struct Meminfo {
     long int swap_free;
 } m_info;
 
-int get_swap(void) {
+static int get_swap(void) {
     struct xsw_usage vmusage;
     size_t size = sizeof(vmusage);
 
@@ -148,7 +147,7 @@ int get_swap(void) {
     return 0;
 }
 
-int get_total_mem(void) {
+static int get_total_mem(void) {
     size_t size;
     long int buf;
     size = sizeof(long int);
@@ -163,8 +162,7 @@ int get_total_mem(void) {
     return 0;
 }
 
-int get_used_mem(void) {
-    long int wired, active, inactive;
+static int get_used_mem(void) {
     FILE *fd;
 
     if ((fd = popen("vm_stat", "r")) == NULL) {
@@ -192,8 +190,7 @@ int get_used_mem(void) {
     return 0;
 }
 
-
-long int fmt(char base, long int n) {
+static long int fmt(char base, long int n) {
     if (base == 'm')
 	return n / 1024 / 1024;
     else if (base == 'k')
@@ -202,7 +199,7 @@ long int fmt(char base, long int n) {
 	return n;
 }
 
-int get_free(char base) {
+static int get_free(char base) {
     if (get_total_mem() != 0)
 	printf("Could not get total memory\n");
     if (get_used_mem() != 0)
@@ -217,7 +214,7 @@ int get_free(char base) {
 
 #endif
 
-int showHelp(void) {
+static int showHelp(void) {
     printf("usage: %s [-b|-k|-m] [-o] [-t] [-s delay] [-V, --version] [-h, --help]\n \
     -b,-k,-m\t   show output in bytes, KB, or MB\n \
     -o\t\t   use old format (no -/+buffers/cache line\n \
@@ -305,3 +302,5 @@ int main(int argc, char *argv[]) {
     }
 
 }
+
+
