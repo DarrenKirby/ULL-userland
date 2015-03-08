@@ -1,9 +1,10 @@
 CC = cc
-CFLAGS ?= -g -Wall -Wno-unused-variable -O0 -std=gnu99
+#  CFLAGS ?= -g -Wall -Wno-unused-variable -O0 -std=gnu99
+CFLAGS ?= -g -Wall -O2 -std=gnu99
 SRCDIR = src
 BINDIR = bin
 
-package = dgnu-utils
+package = ull-userland
 version = 0.3
 tarname = $(package)
 distdir = $(tarname)-$(version)
