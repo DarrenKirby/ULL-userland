@@ -20,6 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+
 #define APPNAME "chown"
 #include "common.h"
 
@@ -39,7 +40,7 @@ struct optstruct {
 } opts;
 
 
-void show_help(void) {
+static void show_help(void) {
     printf("Usage: %s [OPTION] user[:group]...\n\n\
 Options:\n\
     -R, --recursive\t\tchange group of files recursively\n\
@@ -50,12 +51,29 @@ Options:\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
-int chown_recurse(const char *path, const struct stat *stat_buf, int type, struct FTW *ftw_buf) {
-    if (chown(path, -1, grp_buf->gr_gid) != 0) {
-            perror("chown failed");
+static int chown_recurse(const char *path, const struct stat *stat_buf, int type, struct FTW *ftw_buf) {
+    if (type == FTW_NS) {
+        printf("stat failed on `%s' (permissions?)\n", path);
+        /* non-fatal */
+        return 0;
     }
+
+    if (type == FTW_SL && opts.nodereference == 1) {
+        if (lchown(path, own_buf->pw_uid, (opts.group_too == 1 ? grp_buf->gr_gid : -1)) != 0) {
+                perror("chown failed");
+            }
+        return 0;
+    } else {
+        if (chown(path, own_buf->pw_uid, (opts.group_too == 1 ? grp_buf->gr_gid : -1)) != 0) {
+            perror("chown failed");
+        }
+    }
+
     if (opts.verbose == 1) {
-        printf("Changed group ownership of `%s' to `%s'\n", path, to_grp);
+        printf("changed file ownership of `%s' to `%s'\n", path, to_own);
+        if (opts.group_too == 1) {
+            printf("changed group ownership of `%s' to `%s'\n", path, to_grp);
+        }
     }
 
     return 0;
@@ -117,18 +135,13 @@ int main(int argc, char *argv[]) {
         /* only specified user (new owner) */
         strncpy(to_own, argv[optind], 100);
     }
-
     optind++;
-
-
-    //printf("owner: %s\ngroup: %s\n", to_own, to_grp);
 
     own_buf = getpwnam(to_own);
     if (own_buf == NULL) {
         printf("Could not resolve user name: %s\n", to_own);
         exit(EXIT_FAILURE);
     }
-
 
     grp_buf = getgrnam(to_grp);
     if (opts.group_too == 1 && grp_buf == NULL) {
@@ -140,10 +153,16 @@ int main(int argc, char *argv[]) {
         struct stat stat_buf;
         struct FTW ftw_buf;
 
-        if (nftw(argv[optind], chown_recurse, 10, FTW_F) != 0) {
-            perror("chgrp");
+        if (opts.nodereference == 1) {
+            if (nftw(argv[optind], chown_recurse, 10, FTW_PHYS) != 0) {
+                perror("chgrp");
+            }
+        } else {
+            if (nftw(argv[optind], chown_recurse, 10, 0) != 0) {
+                perror("chgrp");
+            }
         }
-    return EXIT_SUCCESS;
+        return EXIT_SUCCESS;
     }
 
     while (optind < argc) {
