@@ -43,7 +43,7 @@ struct packed_flags {
     unsigned int o : 1;
 };
 
-void show_help(void) {
+static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
     Print certain system information. With no OPTION, same as -s.\n\n\
 Options:\n\
@@ -245,3 +245,5 @@ int main(int argc, char *argv[]) {
 
     return EXIT_SUCCESS;
 }
+
+
