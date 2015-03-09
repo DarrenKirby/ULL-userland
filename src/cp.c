@@ -23,7 +23,7 @@
 #define APPNAME "cp"
 #include "common.h"
 
-void show_help(void) {
+static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n \
     -h, --help\t\tdisplay this help\n \
     -V, --version\tdisplay version information\n\n \
