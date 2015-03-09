@@ -20,11 +20,17 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+
 #define APPNAME "mv"
 #include "common.h"
 
+struct optstruct {
+    int force;
+    int interactive;
+    int verbose;
+} opts;
 
-void show_help(void) {
+static void show_help(void) {
     printf("Usage: %s [OPTION]... SOURCE DEST\n\
     or: %s [OPTION]... SOURCE... DIRECTORY\n\n\
     Rename SOURCE to DEST, or move SOURCE(s) to DIRECTORY.\n\n\
@@ -36,13 +42,7 @@ Options:\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME, APPNAME);
 }
 
-struct optstruct {
-    int force;
-    int interactive;
-    int verbose;
-} opts;
-
-int prompt(char *to) {
+static int prompt(char *to) {
     printf("%s: %s exists. Overwrite ('y' or 'n')? ", APPNAME, to);
     char response;
     do {
@@ -152,3 +152,4 @@ int main(int argc, char *argv[]) {
 
     return EXIT_SUCCESS;
 }
+
