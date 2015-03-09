@@ -23,8 +23,14 @@
 #define APPNAME "env"
 #include "common.h"
 
+#if defined(__APPLE__) && defined(__MACH__)
+int main() {
+    printf("Bug: Not working on OS X (and probably *BSD)\nneed to find substitute for clearenv()");
+    return EXIT_SUCCESS;
+}
 
-void show_help(void) {
+#else
+static void show_help(void) {
     printf("Usage: %s [OPTION]... [NAME=VALUE]... [COMMAND [ARG]...]\n\n\
     Set each NAME to VALUE in the environment and run COMMAND.\n\n\
 Options:\n\
@@ -81,3 +87,4 @@ int main(int argc, char *argv[]) {
 
     return EXIT_SUCCESS;
 }
+#endif

@@ -20,12 +20,19 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <sys/sysinfo.h>
-#include <time.h>
-#include <utmp.h>
 
 #define APPNAME "uptime"
 #include "common.h"
+
+#if defined(__APPLE__) && defined(__MACH__)
+int main() {
+    printf("Bug: Not working on OS X (and probably *BSD)\nneed to find substitute for clearenv()");
+    return EXIT_SUCCESS;
+}
+
+#else
+
+#include <sys/sysinfo.h>
 
 #define ONEDAY  86400
 #define ONEHOUR  3600
@@ -34,7 +41,7 @@
 
 int error;
 
-int getTime(void) {
+static int getTime(void) {
     struct tm *tm_ptr;
     time_t the_time;
 
@@ -45,7 +52,7 @@ int getTime(void) {
     return EXIT_SUCCESS;
 }
 
-int getUptime(void) {
+static int getUptime(void) {
     struct sysinfo s_info;
     error = sysinfo(&s_info);
 
@@ -80,7 +87,7 @@ int getUptime(void) {
     return error;
 }
 
-void showHelp(void) {
+static void showHelp(void) {
     printf("Usage: %s [-V, --version] [-h, --help]\n\n \
     -V, --version\tdisplay version\n \
     -h, --help\t\tdisplay this help\n\n \
@@ -118,3 +125,4 @@ int main(int argc, char *argv[]) {
     else
         return EXIT_FAILURE;
 }
+#endif
