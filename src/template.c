@@ -20,10 +20,14 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+
 #define APPNAME ""
 #include "common.h"
 
-void show_help(void) {
+struct optstruct {
+} opts;
+
+static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
 Options:\n\
     -h, --help\t\tdisplay this help\n\
@@ -66,4 +70,3 @@ int main(int argc, char *argv[]) {
     }
     return EXIT_SUCCESS;
 }
-
