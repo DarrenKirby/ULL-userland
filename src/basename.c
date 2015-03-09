@@ -38,10 +38,10 @@ static void show_help(void) {
 
 int main(int argc, char *argv[]) {
     int  opt;
-    char name[256];
+    char name[PATH_MAX];
     int  sfx = 0;
     int  sdn = 0;
-    char suffix[256];
+    char suffix[PATH_MAX];
 
     struct option longopts[] = {
         {"suffix", required_argument, NULL, 's'},
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
         switch(opt) {
             case 's':
                 sfx = 1;
-                strncpy(suffix, optarg, 256);
+                strncpy(suffix, optarg, PATH_MAX);
                 break;
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     int n_args = argc - optind; /* Number of arguments */
 
     if (n_args == 0 || strcmp(argv[optind], "-") == 0) {          /* Read path from STDIN */
-        fgets(name, 256, stdin);
+        fgets(name, PATH_MAX, stdin);
         sdn = 1;
     } else {
 	    strcpy(name, argv[optind]);
@@ -97,5 +97,3 @@ int main(int argc, char *argv[]) {
     printf("%s%s", basename(name), sdn == 0 ? "\n" : "");
     return EXIT_SUCCESS;
 }
-
-
