@@ -20,10 +20,17 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+
 #define APPNAME "touch"
 #include "common.h"
 
-void show_help(void) {
+struct optstruct {
+    int access;
+    int modification;
+    int nocreate;
+} opts;
+
+static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
 Options:\n\
     -a, --access\tonly change access time\n\
@@ -36,9 +43,6 @@ Report bugs to <bulliver@gmail.com>\n", APPNAME);
 
 int main(int argc, char *argv[]) {
     int opt;
-    int acces = 1;
-    int modification = 1;
-    int nocreate = 0;
 
     struct option longopts[] = {
         {"help", 0, NULL, 'h'},
@@ -61,13 +65,13 @@ int main(int argc, char *argv[]) {
                 exit(EXIT_SUCCESS);
                 break;
             case 'a':
-                modification = 0;
+                opts.modification = 1;
                 break;
             case 'm':
-                acces = 0;
+                opts.access = 1;
                 break;
             case 'c':
-                nocreate = 1;
+                opts.nocreate = 1;
                 break;
             case ':':
                  /* getopt_long prints own error message */
@@ -103,7 +107,7 @@ int main(int argc, char *argv[]) {
             }
 
         } else { /* file does not exist */
-            if (nocreate == 1) {
+            if (opts.nocreate == 1) {
                 exit(EXIT_FAILURE);
             }
 
