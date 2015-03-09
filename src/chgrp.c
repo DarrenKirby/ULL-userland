@@ -38,7 +38,7 @@ struct optstruct {
 } opts;
 
 
-void show_help(void) {
+static void show_help(void) {
     printf("Usage: %s [OPTION] group file ...\n\n\
 Options:\n\
     -R, --recursive\t\tchange group of files recursively\n\
@@ -49,10 +49,23 @@ Options:\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
-int chgrp_recurse(const char *path, const struct stat *stat_buf, int type, struct FTW *ftw_buf) {
-    if (chown(path, -1, grp_buf->gr_gid) != 0) {
-            perror("chown failed");
+static int chgrp_recurse(const char *path, const struct stat *stat_buf, int type, struct FTW *ftw_buf) {
+        if (type == FTW_NS) {
+        printf("stat failed on `%s' (permissions?)\n", path);
+        /* non-fatal */
+        return 0;
     }
+
+    if (type == FTW_SL && opts.nodereference == 1) {
+        if (lchown(path, -1, grp_buf->gr_gid) != 0) {
+                perror("chown failed");
+            }
+    } else {
+        if (chown(path, -1, grp_buf->gr_gid) != 0) {
+            perror("chown failed");
+        }
+    }
+
     if (opts.verbose == 1) {
         printf("Changed group ownership of `%s' to `%s'\n", path, to_grp);
     }
@@ -117,10 +130,16 @@ int main(int argc, char *argv[]) {
         struct stat stat_buf;
         struct FTW ftw_buf;
 
-        if (nftw(argv[optind], chgrp_recurse, 10, FTW_F) != 0) {
-            perror("chgrp");
+        if (opts.nodereference == 1) {
+            if (nftw(argv[optind], chgrp_recurse, 10, FTW_PHYS) != 0) {
+                perror("chgrp");
+            }
+        } else {
+            if (nftw(argv[optind], chgrp_recurse, 10, 0) != 0) {
+                perror("chgrp");
+            }
         }
-    return EXIT_SUCCESS;
+        return EXIT_SUCCESS;
     }
 
     while (optind < argc) {
