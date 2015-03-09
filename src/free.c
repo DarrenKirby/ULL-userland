@@ -1,5 +1,7 @@
 /***************************************************************************
- *   Copyright (C) 2014 by Darren Kirby                                    *
+ *   free.c - report memory usage                                          *
+ *                                                                         *
+ *   Copyright (C) 2014-2015 by Darren Kirby                               *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -22,8 +24,16 @@
 #define APPNAME "free"
 #include "common.h"
 
+struct optstruct {
+    int C;         /* -b, -k, or -m */
+    char base;     /* for OS X */
+    int P;         /* polling? */
+    int T;         /* print total? */
+    int BC;        /* display -/+ buffer/cache? */
+} opts;
+
 #if defined (__linux__)
-static int get_free(int C, int T, int BC) {
+static int get_free(void) {
     struct meminfo {
         unsigned long int memtotal;
         unsigned long int memfree;
@@ -90,25 +100,25 @@ static int get_free(int C, int T, int BC) {
 
     printf("%18s %10s %10s %10s %10s %10s\n", "total","used","free","shared","buffers", "cached");
     printf("Mem:%14lu %10lu %10lu %10lu %10lu %10lu\n",
-            fmt(minfo.memtotal,C), fmt(memused,C), fmt(minfo.memfree,C),
-            fmt(minfo.shmem,C), fmt(minfo.buffers,C), fmt(minfo.cached,C));
+            fmt(minfo.memtotal), fmt(memused), fmt(minfo.memfree),
+            fmt(minfo.shmem), fmt(minfo.buffers), fmt(minfo.cached));
 
-    if (BC == 1) {
-        printf("-/+ buffers/cache: %10lu %10lu\n", fmt(used_minus_buffer,C), fmt(free_plus_buffer,C));
+    if (opts.BC == 1) {
+        printf("-/+ buffers/cache: %10lu %10lu\n", fmt(used_minus_buffer), fmt(free_plus_buffer));
     }
-    printf("Swap: %12lu %10lu %10lu\n", fmt(minfo.swaptotal,C), fmt(used_swap,C), fmt(minfo.swapfree,C));
+    printf("Swap: %12lu %10lu %10lu\n", fmt(minfo.swaptotal), fmt(used_swap), fmt(minfo.swapfree));
 
-    if (T == 1) {
-        printf("Total: %11lu %10lu %10lu\n", fmt(minfo.memtotal + minfo.swaptotal,C), fmt(memused + used_swap,C),
-                                             fmt(minfo.memfree + minfo.swapfree,C));
+    if (opts.T == 1) {
+        printf("Total: %11lu %10lu %10lu\n", fmt(minfo.memtotal + minfo.swaptotal), fmt(memused + used_swap),
+                                             fmt(minfo.memfree + minfo.swapfree));
     }
     return 0;
 }
 
-static unsigned long int fmt(unsigned long n, int C) {
-    if (C == 2) {
+static unsigned long int fmt(unsigned long n) {
+    if (opts.C == 2) {
         return n / 1024;
-    } else if (C == 1) {
+    } else if (opts.C == 1) {
         return n * 1024;
     } else {
         return n;
@@ -175,7 +185,9 @@ static int get_used_mem(void) {
     ssize_t linelen;
 
     /* first line is throwaway */
-    linelen = getline(&line, &linecap, fd);
+    if (!(linelen = getline(&line, &linecap, fd)) > 0) {
+	perror("linelength");
+    }
     long int value[3];
 
     for (int i = 0; i < 3; i++) {
@@ -190,16 +202,16 @@ static int get_used_mem(void) {
     return 0;
 }
 
-static long int fmt(char base, long int n) {
-    if (base == 'm')
+static long int fmt(long int n) {
+    if (opts.base == 'm')
 	return n / 1024 / 1024;
-    else if (base == 'k')
+    else if (opts.base == 'k')
 	return n / 1024;
     else
 	return n;
 }
 
-static int get_free(char base) {
+static int get_free(void) {
     if (get_total_mem() != 0)
 	printf("Could not get total memory\n");
     if (get_used_mem() != 0)
@@ -207,8 +219,8 @@ static int get_free(char base) {
     if (get_swap() != 0)
 	printf("Could not obtain swap memory\n");
 	printf("\t%10s\t%10s\t%10s\n", "Total", "Used", "Free");
-	printf("Mem:\t%10ld\t%10ld\t%10ld\n", fmt(base, m_info.mem_total),fmt(base, m_info.mem_used),fmt(base, m_info.mem_free));
-	printf("Swap:\t%10ld\t%10ld\t%10ld\n", fmt(base, m_info.swap_total),fmt(base, m_info.swap_used),fmt(base, m_info.swap_free));
+	printf("Mem:\t%10ld\t%10ld\t%10ld\n", fmt(m_info.mem_total),fmt(m_info.mem_used),fmt(m_info.mem_free));
+	printf("Swap:\t%10ld\t%10ld\t%10ld\n", fmt(m_info.swap_total),fmt(m_info.swap_used),fmt(m_info.swap_free));
     return 0;
 }
 
@@ -229,14 +241,7 @@ static int showHelp(void) {
 int main(int argc, char *argv[]) {
 
     int opt;
-
-    int C;         /* -b, -k, or -m */
-    char base;     /* for OS X */
-    int P = 0;     /* polling? */
-    int T = 0;     /* print total? */
-    int BC = 1;    /* display -/+ buffer/cache? */
-
-    int poll_interval;
+    int poll_interval = 0;
 
     struct option longopts[] = {
         {"help", 0, NULL, 'h'},
@@ -247,31 +252,30 @@ int main(int argc, char *argv[]) {
     while ((opt = getopt_long(argc, argv, "bkmths:oV", longopts, NULL)) != -1) {
         switch(opt) {
             case 'k':
-		C = 0;
-		base = 'k';
+		opts.C = 0;
+		opts.base = 'k';
 		break;
             case 'b':
-		C = 1;
-		base = 'b';
+		opts.C = 1;
+		opts.base = 'b';
 		break;
             case 'm':
-		C = 2;
-		base = 'm';
+		opts.C = 2;
+		opts.base = 'm';
 		break;
             case 's':
-		P = 1;
+		opts.P = 1;
 		poll_interval = atoi(optarg);
 		break;
             case 'V':
 		printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
 		printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
-		exit(0);
-		break;
+		return EXIT_SUCCESS;
             case 't':
-		T = 1;
+		opts.T = 1;
 		break;
             case 'o':
-		BC = 0;
+		opts.BC = 0;
 		break;
             case 'h':
 		showHelp();
@@ -282,25 +286,23 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if (P == 1) {
+    if (opts.P == 1) {
         while (1 == 1) {
 #if defined (__linux__)
-            get_free(C,T,BC);
+            get_free();
 #elif defined (__APPLE__) && defined (__MACH__)
-	    get_free(base);
+	    get_free();
 #endif
             printf("\n");
             sleep(poll_interval);
         }
     } else {
 #if defined (__linux__)
-        get_free(C,T,BC);
+        get_free();
 #elif defined (__APPLE__) && defined (__MACH__)
-	get_free(base);
+	get_free();
 #endif
         return EXIT_SUCCESS;
     }
 
 }
-
-
