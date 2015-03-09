@@ -7,20 +7,20 @@ refactoring, as well as adding portability fixes.
 
 On portability: these programs are tested on three systems:
 Gentoo Linux       (GCC 4.7.3, GLIBC 2.19)
-OS X Mavericks     (LLVM 5.1, CLANG 503.0.40,) 
+OS X Mavericks     (LLVM 5.1, CLANG 503.0.40,)
 FreeBSD 10-Release (CLANGBSD 3.3, )
 
-...but developed on the linux machine for the most part. Am working 
-on portablility but a lot of the apps are flaky or don't even compile 
+...but developed on the linux machine for the most part. Am working
+on portablility but a lot of the apps are flaky or don't even compile
 on OS X and FeeBSD. See notes below...
 ========================================================================
 
 [         :: not started
 base64    :: not started
 basename  :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
-cat       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works 
+cat       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 cd        :: completed    # Linux: compiles | OS X: compiles | FreeBSD: compiles (But ueless on all: read cd.c source)
-chgrp     :: in progress
+chgrp     :: completed    # Linux ?? | OS X: compiles, works | FreeBSD ??
 chmod     :: not started
 chown     :: completed    # Linux ?? | OS X: compiles, works | FreeBSD ??
 chroot    :: not started
@@ -44,7 +44,7 @@ factor    :: not started
 false     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 fmt       :: not started
 fold      :: not started
-free      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, doesn't work
+free      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, ??
 head      :: not started
 hostid    :: not started
 id        :: not started
