@@ -20,10 +20,11 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+
 #define APPNAME "ln"
 #include "common.h"
 
-void show_help(void) {
+static void show_help(void) {
     printf("Usage: %s [OPTION]... TARGET LINK_NAME\t(1st form)\n \
   or: %s [OPTION]... TARGET\t\t(2nd form)\n\n \
     -s, --symbolic\tmake symbolic links instead of hard links\n \
@@ -35,17 +36,15 @@ void show_help(void) {
     Report bugs to <bulliver@gmail.com>\n", APPNAME, APPNAME);
 }
 
-struct packed_flags {
+struct optstruct {
     int symbolic:1;
     int force:1;
     int verbose:1;
     int interactive:1;
-};
+} opts;
 
 int main(int argc, char *argv[]) {
     int opt;
-    struct packed_flags flags = {0,0,0,0};
-
 
     struct option longopts[] = {
         {"symbolic",    0, NULL, 's'},
@@ -63,56 +62,41 @@ int main(int argc, char *argv[]) {
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
                 printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
-                break;
             case 'h':
                 show_help();
                 exit(EXIT_SUCCESS);
-                break;
             case 's':
-                flags.symbolic = 1;
+                opts.symbolic = 1;
                 break;
             case 'f':
-                flags.force = 1;
+                opts.force = 1;
                 break;
             case 'v':
-                flags.verbose = 1;
+                opts.verbose = 1;
                 break;
             case 'i':
-                flags.interactive = 1;
+                opts.interactive = 1;
                 break;
             case ':':
                  /* getopt_long prints own error message */
                 exit(EXIT_FAILURE);
-                break;
             case '?':
                  /* getopt_long prints own error message */
                 exit(EXIT_FAILURE);
             default :
                 show_help();
                 exit(EXIT_FAILURE);
-                break;
         }
     }
-    //printf("Argc: %i\n", argc);
-    /*if (argc > 3) {
-        perror("too many arguments");
-        exit(EXIT_FAILURE);
-    }
-    */
-    //char target[PATH_MAX];
-    //char *target_p = target;
-    //strncpy(target_p, argv[optind], PATH_MAX);
-    //char name[PATH_MAX];
-    //char *name_p = name;
-    //strncpy(name_p, argv[optind + 1], PATH_MAX);
+    /* FIXME: existing file will get clobbered even without -f */
 
     if ((argc - optind) == 2) { /* 1st form */
         if (access(argv[optind], F_OK) == 0) {
-            if (flags.force)
+            if (opts.force)
                 unlink(argv[optind + 1]);
-            if (flags.interactive) {
+            if (opts.interactive) {
                 char response;
-                printf("%s exists, overwrite? ('y' or 'n') ", argv[optind + 1]);
+                printf("`%s' exists, overwrite? ('y' or 'n') ", argv[optind + 1]);
                 do {
                 response = getchar();
                 } while (response == '\n');
@@ -123,12 +107,12 @@ int main(int argc, char *argv[]) {
                     exit(EXIT_FAILURE);
             }
         }
-        if (flags.symbolic)
+        if (opts.symbolic)
             symlink(argv[optind], argv[optind + 1]);
         else
             link(argv[optind], argv[optind + 1]);
-        if (flags.verbose)
-            printf("linked %s to %s\n", argv[optind], argv[optind + 1]);
+        if (opts.verbose)
+            printf("linked `%s' to `%s'\n", argv[optind], argv[optind + 1]);
 
 
     } else if ((argc - optind)== 1) { /* 2nd form */
@@ -137,11 +121,11 @@ int main(int argc, char *argv[]) {
         target_p = basename(argv[optind]);
 
         if (access(argv[optind], F_OK) == 0) {
-            if (flags.force)
+            if (opts.force)
                 unlink(target_p);
-            if (flags.interactive) {
+            if (opts.interactive) {
                 char response;
-                printf("%s exists, overwrite? ('y' or 'n') ", target_p);
+                printf("`%s' exists, overwrite? ('y' or 'n') ", target_p);
                 do {
                 response = getchar();
                 } while (response == '\n');
@@ -152,12 +136,12 @@ int main(int argc, char *argv[]) {
                     exit(EXIT_FAILURE);
             }
         }
-        if (flags.symbolic)
+        if (opts.symbolic)
             symlink(argv[optind], target_p);
         else
             link(argv[optind], target_p);
-        if (flags.verbose)
-            printf("linked %s to %s\n", argv[optind], target_p);
+        if (opts.verbose)
+            printf("linked `%s' to `%s'\n", argv[optind], target_p);
 
     } else {
         perror("not enough arguments");
