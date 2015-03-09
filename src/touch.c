@@ -24,25 +24,74 @@
 #define APPNAME "touch"
 #include "common.h"
 
+#if defined(__APPLE__) && defined(__MACH__)
+#define st_atim      st_atimespec
+#define st_mtim      st_mtimespec
+#define st_ctim      st_ctimespec
+#define st_birthtim  st_birthtimespec
+#endif
+
 struct optstruct {
-    int access;
-    int modification;
-    int nocreate;
+    unsigned int access:1;
+    unsigned int modification:1;
+    unsigned int nocreate:1;
+    unsigned int nodereference:1;
+    unsigned int time:1;
+    unsigned int date:1;
+    unsigned int reference:1;
+    unsigned int current:1;
 } opts;
 
+#if defined (__linux__)
+struct timespec times[2];
+#else
+struct timeval times[2];
+#endif
+
 static void show_help(void) {
-    printf("Usage: %s [OPTION]...\n\n\
-Options:\n\
-    -a, --access\tonly change access time\n\
-    -m, --modification\tonly change modification time\n\
-    -c, --nocreate\tdon't create the file if it doesn't exist\n\
+    printf("Usage: %s [OPTION]...\n\n \
+Options:\n \
+    -a, --access\tonly change access time\n \
+    -m, --modification\tonly change modification time\n \
+    -c, --nocreate\tdon't create the file if it doesn't exist\n \
+    -n, --nodereference\taffect each symbolic link instead of any referenced file\n \
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
+static void to_time(char * r_file) {
+    if (opts.reference == 1) {
+        /* get timestamp from reference file */
+        struct stat buf;
+
+        if (stat(r_file, &buf) == -1) {
+            f_error(r_file, "couldn't stat");
+            exit(EXIT_FAILURE);
+        }
+
+#if defined (__linux__)
+        times[0].tv_sec  = buf.st_atim.tv_sec;
+        times[0].tv_nsec = buf.st_atim.tv_nsec;
+        times[1].tv_sec  = buf.st_mtim.tv_sec;
+        times[1].tv_nsec = buf.st_mtim.tv_nsec;
+#else
+        times[0].tv_sec  = buf.st_atim.tv_sec;
+        times[0].tv_usec = buf.st_atim.tv_nsec;
+        times[1].tv_sec  = buf.st_mtim.tv_sec;
+        times[1].tv_usec = buf.st_mtim.tv_nsec;
+#endif
+    } else if (opts.date == 1) {
+        // parse time
+    } else if (opts.time == 1) {
+        //parse date
+    }
+}
+
 int main(int argc, char *argv[]) {
     int opt;
+    opts.current = 1;
+    char r_file[PATH_MAX];
 
     struct option longopts[] = {
         {"help", 0, NULL, 'h'},
@@ -50,6 +99,10 @@ int main(int argc, char *argv[]) {
         {"access", 0, NULL, 'a'},
         {"modification", 0, NULL, 'm'},
         {"nocreate", 0, NULL, 'c'},
+        {"nodereference", 0, NULL, 'n'},
+        {"date", required_argument, NULL, 'd'},
+        {"time", required_argument, NULL, 't'},
+        {"reference", required_argument, NULL, 'r'},
         {0,0,0,0}
     };
 
@@ -63,45 +116,50 @@ int main(int argc, char *argv[]) {
             case 'h':
                 show_help();
                 exit(EXIT_SUCCESS);
-                break;
             case 'a':
-                opts.modification = 1;
+                opts.modification = 0;
                 break;
             case 'm':
-                opts.access = 1;
+                opts.access = 0;
                 break;
             case 'c':
                 opts.nocreate = 1;
                 break;
+            case 'n':
+                opts.nodereference = 1;
+                break;
+            case 'r':
+                opts.reference = 1;
+                opts.current = 0;
+                strncpy(r_file, optarg, PATH_MAX);
+                break;
             case ':':
                  /* getopt_long prints own error message */
                 exit(EXIT_FAILURE);
-                break;
             case '?':
                  /* getopt_long prints own error message */
                 exit(EXIT_FAILURE);
             default:
                 show_help();
                 exit(EXIT_FAILURE);
-                break;
         }
     }
 
+    /* populate the time struct */
+    to_time(r_file);
+
     int fd;
-    //char *p = 0; // NULL pointer
-    //struct timespec amtimes;
-    //amtimes.tv_sec  = ;
-    //amtimes.tv_nsec = UTIME_NOW;
-
-
     while (optind < argc) {
         fd = open(argv[optind], O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
         if (fd < 0) {
             if (errno == EEXIST) {    /* file exists */
-                if (utimes(argv[optind], NULL) != 0) {
-                    perror("touch");
+                if (opts.current == 1) {
+                    if (utimes(argv[optind], NULL) != 0)
+                        perror("utimes");
+                } else {
+                    if (utimes(argv[optind], times) != 0)
+                        perror("utimes");
                 }
-
             } else {
                 perror("touch");
             }
@@ -111,10 +169,13 @@ int main(int argc, char *argv[]) {
                 exit(EXIT_FAILURE);
             }
 
-            if (futimes(fd, NULL) != 0) {
-                perror("touch");
+            if (opts.current == 1) {
+                if (futimes(fd, NULL) != 0)
+                    perror("futimes");
+            } else {
+                if (futimes(fd, times) != 0)
+                    perror("futimes");
             }
-
         }
         optind++;
     }
