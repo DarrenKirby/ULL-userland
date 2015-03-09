@@ -62,7 +62,6 @@ static int chown_recurse(const char *path, const struct stat *stat_buf, int type
         if (lchown(path, own_buf->pw_uid, (opts.group_too == 1 ? grp_buf->gr_gid : -1)) != 0) {
                 perror("chown failed");
             }
-        return 0;
     } else {
         if (chown(path, own_buf->pw_uid, (opts.group_too == 1 ? grp_buf->gr_gid : -1)) != 0) {
             perror("chown failed");
