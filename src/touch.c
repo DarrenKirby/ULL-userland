@@ -1,7 +1,7 @@
 /***************************************************************************
  *   touch.c - update timestamp or create empty file                       *
  *                                                                         *
- *   Copyright (C) 2014 by Darren Kirby                                    *
+ *   Copyright (C) 2014-2015 by Darren Kirby                               *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -23,13 +23,6 @@
 
 #define APPNAME "touch"
 #include "common.h"
-
-#if defined(__APPLE__) && defined(__MACH__)
-#define st_atim      st_atimespec
-#define st_mtim      st_mtimespec
-#define st_ctim      st_ctimespec
-#define st_birthtim  st_birthtimespec
-#endif
 
 struct optstruct {
     unsigned int access:1;
