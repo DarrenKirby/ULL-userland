@@ -1,7 +1,7 @@
 /***************************************************************************
  *   common.h - includes and functions common to all files                 *
  *                                                                         *
- *   Copyright (C) 2014 by Darren Kirby                                    *
+ *   Copyright (C) 2014-2015 by Darren Kirby                               *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -26,6 +26,14 @@
 /* Version information */
 #define APPSUITE   "ull-userland"
 #define APPVERSION "0.3"
+
+/* For OS X */
+#if defined(__APPLE__) && defined(__MACH__)
+#define st_atim      st_atimespec
+#define st_mtim      st_mtimespec
+#define st_ctim      st_ctimespec
+#define st_birthtim  st_birthtimespec
+#endif
 
 /* Common includes */
 #include <sys/types.h>
