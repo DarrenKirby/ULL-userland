@@ -4,7 +4,7 @@ CC = cc
 # CC = /usr/local/bin/gcc  # Use gcc
 # CC = /usr/bin/clang      # use clang/llvm
 
-CFLAGS ?= -g -Wall -Wno-unused-variable -O2 -std=gnu99
+CFLAGS ?= -g -Wall -Wno-unused-variable -O2 -std=gnu11 #-std=gnu99
 # CFLAGS ?= -g -Wall -O2 -std=gnu99
 SRCDIR = src
 BINDIR = bin
@@ -14,7 +14,7 @@ version = 0.3
 tarname = $(package)
 distdir = $(tarname)-$(version)
 
-all: basename cat cd chgrp chown cp df env false free ln mkdir mv od printenv pwd rm sleep stat sync touch true uname unlink uptime wc whoami yes
+all: basename cat cd chgrp chown cp df env false free ln ls mkdir mv od printenv pwd rm sleep stat sync touch true uname unlink uptime wc whoami yes
 
 dist: $(distdir).tar.gz
 
@@ -53,6 +53,8 @@ free:
 	$(CC) $(CFLAGS) -o $(BINDIR)/free $(SRCDIR)/free.c
 ln:
 	$(CC) $(CFLAGS) -o $(BINDIR)/ln $(SRCDIR)/ln.c
+ls:
+	$(CC) $(CFLAGS) -o $(BINDIR)/ls $(SRCDIR)/ls.c -lcurses
 mkdir:
 	$(CC) $(CFLAGS) -o $(BINDIR)/mkdir $(SRCDIR)/mkdir.c
 mount:
