@@ -1,0 +1,45 @@
+.TH BASENAME 1 "March 2015" "User Manuals"
+
+
+.SH NAME
+basename \- strip directory and suffix from filenames
+
+
+.SH SYNOPSIS
+.B basename
+[-s SUFFIX | --suffix=SUFFIX][
+.I path
+]
+
+
+.SH DESCRIPTION
+.B basename
+prints a path name with any leading directory components removed.  If specified with
+.I -s
+or
+.I --suffix=SUFFIX
+also removes trailing SUFFIX.
+
+.SH EXAMPLES
+basename /usr/bin/sort         Output: 'sort'.
+.sp
+basename -s .h include/stdio.h Output: 'stdio'.
+
+.SH OPTIONS
+.TP
+\fB-h or --help\fP
+Print quick usage details to the screen.
+.TP
+\fB-V or --version\fP
+Print version information to the screen.
+.TP
+\fB-s or --suffix\fP
+Remove trailing suffix
+
+.SH BUGS
+
+
+.SH AUTHOR
+Darren Kirby <bulliver@gmail.com>
+
+.SH "SEE ALSO"
