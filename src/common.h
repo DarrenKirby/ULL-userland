@@ -78,7 +78,7 @@ int  dump_args(int argc, char *argv[]);           /* Aid for debugging */
 char *trim_whitespace(char *str);                 /* Removes leading and trailing whitespace from a string */
 char *path_alloc(int *sizep);                     /* Allocates memory for a pathname */
 char *file_perm_str(mode_t perm, int flags);      /* Displays a symbolic string of permission ie: rwxrw-rw- */
-char *filetype(mode_t st_mode);                   /* Retuns the plain-english filetype from the stat struct */
+char *filetype(mode_t st_mode, int flag);         /* Retuns the plain-english filetype from the stat struct */
 int file_perm_oct(mode_t perm);                   /* Returns octal representation of permissions */
 char *get_username(uid_t uid);                    /* Returns username from uid */
 char *get_groupname(gid_t gid);                   /* Returns groupname from gid */
@@ -226,17 +226,25 @@ int file_perm_oct(mode_t perm) {
     return oct_perm;
 }
 
-char *filetype(mode_t st_mode) {
-      switch (st_mode & S_IFMT) {
-           case S_IFBLK:  return "block device";     break;
-           case S_IFCHR:  return "character device"; break;
-           case S_IFDIR:  return "directory";        break;
-           case S_IFIFO:  return "FIFO/pipe";        break;
-           case S_IFLNK:  return "symlink";          break;
-           case S_IFREG:  return "regular file";     break;
-           case S_IFSOCK: return "socket";           break;
-           default:       return "unknown";          break;
-           }
+char *filetype(mode_t st_mode, int flag) {
+    switch (st_mode & S_IFMT) {
+        case S_IFBLK:
+            return (flag == 1) ? "block device"     : "b";
+        case S_IFCHR:
+            return (flag == 1) ? "character device" : "c";
+        case S_IFDIR:
+            return (flag == 1) ? "directory"        : "d" ;
+        case S_IFIFO:
+            return (flag == 1) ? "FIFO/pipe"        : "p" ;
+        case S_IFLNK:
+            return (flag == 1) ? "symlink"          : "l" ;
+        case S_IFREG:
+            return (flag == 1) ? "regular file"     : "-" ;
+        case S_IFSOCK:
+            return (flag == 1) ? "socket"           : "s" ;
+        default:
+            return (flag == 1) ? "unknown"          : "?" ;
+    }
 }
 
 char *get_username(uid_t uid) {
