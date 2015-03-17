@@ -30,15 +30,23 @@
 
 struct optstruct {
     unsigned int ls_long:1;
-    unsigned int human_readable:1;
+    unsigned int human:1;
     unsigned int all:1;
     unsigned int one:1;
+    unsigned int inode:1;
+    unsigned int dereference:1;
 } opts;
 
 
 static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
 Options:\n\
+    -l, --long\t\toutput long format listing\n\
+    -H, --human-readable\t\tdisplay filesize in kilobytes and megabytes if appropriate (implies --long)\n\
+    -a, --all\t\tinclude dotfiles and implied `.' and `..' entries\n\
+    -1, --one\t\tlist files one per line\n\
+    -i, --inode\t\tdisplay inode numbers (implies --long)\n\
+    -d, --dereference\tshow information for the file links reference rather than for the link itself\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
@@ -67,14 +75,16 @@ int main(int argc, char *argv[]) {
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
         {"all", 0, NULL, 'a'},
-        {"human-readable", 0, NULL, 'H'},
+        {"human", 0, NULL, 'H'},
         {"long", 0, NULL, 'l'},
-        {"one-per-line", 0, NULL, '1'},
+        {"one", 0, NULL, '1'},
+        {"inode", 0, NULL, 'i'},
+        {"dereference", 0, NULL, 'd'},
         {0,0,0,0}
     };
 
 
-    while ((opt = getopt_long(argc, argv, "VhalH1", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "VhalH1id", longopts, NULL)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
@@ -94,8 +104,14 @@ int main(int argc, char *argv[]) {
             case '1':
                 opts.one = 1;
                 break;
+            case 'i':
+                opts.inode = 1;
+                break;
+            case 'd':
+                opts.dereference = 1;
+                break;
             case 'H':
-                opts.human_readable = 1;
+                opts.human = 1;
                 opts.ls_long = 1; /* '-H' implies '-l' ls_long */
                 opts.one = 1;     /* '-H' implies '-1' one     */
                 break;
@@ -113,6 +129,9 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    printf("filemax: %d\n", filemax);
+    printf("pathmax: %d\n", pathmax);
+
     /* get width of terminal */
     setupterm(NULL, fileno(stdout), (int *)0);
     int work_col = tigetnum("cols") - 30;
@@ -123,10 +142,10 @@ int main(int argc, char *argv[]) {
     DIR *dp;
     struct dirent *list;
 
-    char path_to_ls[PATH_MAX];
+    char path_to_ls[pathmax];
 
     if (argv[optind] != NULL) {
-        strncpy(path_to_ls, argv[optind], PATH_MAX);
+        strncpy(path_to_ls, argv[optind], pathmax);
     } else {
         strncpy(path_to_ls, ".", 1);
     }
@@ -154,6 +173,7 @@ int main(int argc, char *argv[]) {
             longest_so_far = n;
         }
     }
+
     n_per_line = work_col / (longest_so_far+2); /* number of filenames per column */
     rewinddir(dp);
 
@@ -180,24 +200,51 @@ int main(int argc, char *argv[]) {
             printf("%s\n", filenames[f]);
         }
     } else if (opts.ls_long == 1) {
-        char cwd[PATH_MAX];
+        char cwd[pathmax];
         char *cwd_p;
         cwd_p = cwd;
         char string_time[13];
 
-        getcwd(cwd_p, PATH_MAX);
+        getcwd(cwd_p, pathmax);
         chdir(path_to_ls);
+
         struct stat buf;
+        struct tm *now;
+        struct tm *fil;
+        time_t now_t;
+        (void) time(&now_t);
+        now = localtime(&now_t);
+        int current_year = now->tm_year + 1900;
+
         for (f = 0; f < n_files; f++) {
-            stat(filenames[f], &buf);
+            if (opts.dereference == 1) {
+                if (stat(filenames[f], &buf) == -1) {
+                    perror("stat");
+                }
+            } else {
+                if (lstat(filenames[f], &buf) == -1) {
+                    perror("stat");
+                }
+            }
+
+            if (opts.inode == 1) {
+                printf("%8d ", (int) buf.st_ino);
+            }
             printf("%s", filetype(buf.st_mode, 0));
             printf("%s ", file_perm_str(buf.st_mode, 1));
             printf("%2ld ", (long) buf.st_nlink);
             printf("%s %s ", get_username(buf.st_uid), get_groupname(buf.st_gid));
-            (opts.human_readable == 0) ?
+            (opts.human == 0) ?
                 printf("%6lld ", (long long) buf.st_size) :       /* bytes */
-                format((long long)buf.st_size) ;   /* ie: 16k */
-            strftime(string_time, sizeof("Jan 01 12:00"), "%b %d %H:%M", localtime(&buf.st_mtime));
+                format((long long)buf.st_size) ;                  /* ie: 16k */
+
+            fil = localtime(&buf.st_mtime);
+            if (current_year != (fil->tm_year + 1900)) {
+                strftime(string_time, sizeof("Jan 01  1970"), "%b %d  %Y", localtime(&buf.st_mtime));
+            } else {
+                strftime(string_time, sizeof("Jan 01 12:00"), "%b %d %H:%M", localtime(&buf.st_mtime));
+            }
+
             printf("%s ", string_time);
             printf("%s", filenames[f]);
             printf("\n");
