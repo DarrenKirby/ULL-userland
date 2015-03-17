@@ -42,7 +42,7 @@ static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
 Options:\n\
     -l, --long\t\toutput long format listing\n\
-    -H, --human-readable\t\tdisplay filesize in kilobytes and megabytes if appropriate (implies --long)\n\
+    -H, --human\t\tdisplay filesize in kilobytes and megabytes if appropriate (implies --long)\n\
     -a, --all\t\tinclude dotfiles and implied `.' and `..' entries\n\
     -1, --one\t\tlist files one per line\n\
     -i, --inode\t\tdisplay inode numbers (implies --long)\n\
@@ -52,17 +52,28 @@ Options:\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
-void format(long long int bytes) {
+static void format(long long int bytes) {
     char size_string[10];
     double result;
     if (bytes < 1024) {
-        sprintf(size_string, "%lld", bytes);
+        if (sprintf(size_string, "%lld", bytes) < 0) {
+            perror("sprintf"); exit(EXIT_FAILURE);
+        }
     } else if ((bytes > 1025) && (bytes <= 1025000)) {
         result = bytes / 1024.0;
-        sprintf(size_string, "%5.1fK", result);
+        if (sprintf(size_string, "%5.1fK", result) < 0) {
+            perror("sprintf"); exit(EXIT_FAILURE);
+        }
     } else if ((bytes > 1025000) && (bytes <= 1025000000)) {
         result = bytes / 1024.0 / 1024.0;
-        sprintf(size_string, "%5.1fM", result);
+        if (sprintf(size_string, "%5.1fM", result) < 0) {
+            perror("sprintf"); exit(EXIT_FAILURE);
+        }
+    } else {
+        result = bytes / 1024.0 / 1024.0 / 1024.0;
+        if (sprintf(size_string, "%5.1fG", result) < 0) {
+            perror("sprintf"); exit(EXIT_FAILURE);
+        }
     }
     printf("%s ", size_string);
 }
@@ -70,6 +81,7 @@ void format(long long int bytes) {
 int main(int argc, char *argv[]) {
     int opt;
     opts.all = 0;
+    unsigned int screen_width = 0;
 
     struct option longopts[] = {
         {"help", 0, NULL, 'h'},
@@ -80,11 +92,11 @@ int main(int argc, char *argv[]) {
         {"one", 0, NULL, '1'},
         {"inode", 0, NULL, 'i'},
         {"dereference", 0, NULL, 'd'},
+        {"width", required_argument, NULL, 'w'},
         {0,0,0,0}
     };
 
-
-    while ((opt = getopt_long(argc, argv, "VhalH1id", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "VhalH1idw:", longopts, NULL)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
@@ -110,6 +122,9 @@ int main(int argc, char *argv[]) {
             case 'd':
                 opts.dereference = 1;
                 break;
+            case 'w':
+                screen_width = (int)strtol(optarg, NULL, 10);
+                break;
             case 'H':
                 opts.human = 1;
                 opts.ls_long = 1; /* '-H' implies '-l' ls_long */
@@ -129,15 +144,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    printf("filemax: %d\n", filemax);
-    printf("pathmax: %d\n", pathmax);
-
     /* get width of terminal */
-    setupterm(NULL, fileno(stdout), (int *)0);
-    int work_col = tigetnum("cols") - 30;
-    int n_per_line = 0;
-    int longest_so_far = 0;
-    int n;
+    if (screen_width == 0) {
+        setupterm(NULL, fileno(stdout), (int *)0);
+        screen_width = tigetnum("cols");
+    }
 
     DIR *dp;
     struct dirent *list;
@@ -152,9 +163,13 @@ int main(int argc, char *argv[]) {
 
     if ((dp = opendir(path_to_ls)) == NULL){
         perror("opendir");
+        exit(EXIT_FAILURE);
     }
 
-    int n_files = 0; /* num files */
+    int n_files = 0;          /* number of files to print */
+    int n_per_line = 0;       /* number of files per line */
+    int longest_so_far = 0;   /* longest filename seen so far */
+    int n;                    /* return value of strlen() calls */
 
     while ((list = readdir(dp)) != NULL) {
         /* first time around   */
@@ -174,7 +189,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    n_per_line = work_col / (longest_so_far+2); /* number of filenames per column */
+    n_per_line = screen_width / (longest_so_far+2); /* number of filenames per column */
     rewinddir(dp);
 
     char filenames[n_files][filemax+1];
@@ -196,17 +211,27 @@ int main(int argc, char *argv[]) {
     int f;
 
     if ((opts.one == 1) && (opts.ls_long != 1)) {
+    /* We are displaying short format, one file per line */
         for (int f = 0; f < n_files; f++) {
             printf("%s\n", filenames[f]);
         }
+
     } else if (opts.ls_long == 1) {
+    /* We are displaying long format, one file per line */
+
         char cwd[pathmax];
         char *cwd_p;
         cwd_p = cwd;
-        char string_time[13];
 
-        getcwd(cwd_p, pathmax);
-        chdir(path_to_ls);
+        if (getcwd(cwd_p, pathmax) == NULL) {
+            perror("getcwd");
+            exit(EXIT_FAILURE);
+        }
+
+        if (chdir(path_to_ls) == -1) {
+            perror("chdir");
+            exit(EXIT_FAILURE);
+        }
 
         struct stat buf;
         struct tm *now;
@@ -215,15 +240,18 @@ int main(int argc, char *argv[]) {
         (void) time(&now_t);
         now = localtime(&now_t);
         int current_year = now->tm_year + 1900;
+        char string_time[13];
 
         for (f = 0; f < n_files; f++) {
             if (opts.dereference == 1) {
                 if (stat(filenames[f], &buf) == -1) {
                     perror("stat");
+                    exit(EXIT_FAILURE);
                 }
             } else {
                 if (lstat(filenames[f], &buf) == -1) {
                     perror("stat");
+                    exit(EXIT_FAILURE);
                 }
             }
 
@@ -249,9 +277,14 @@ int main(int argc, char *argv[]) {
             printf("%s", filenames[f]);
             printf("\n");
         }
-        chdir(cwd);
+
+        if (chdir(cwd) == -1) {
+            perror("chdir");
+            exit(EXIT_FAILURE); /* no biggie, already printed the output... */
+        }
 
     } else {
+    /* We are displaying short format, as many files as we can fit per line */
         int i = 1;
 
         for (f = 0; f < n_files; f++) {
