@@ -27,6 +27,7 @@
 static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
 Options:\n\
+    -d, --dereference\tstat file link points to rather than link itself\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);

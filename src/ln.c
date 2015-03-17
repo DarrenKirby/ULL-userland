@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
 
 
     } else if ((argc - optind)== 1) { /* 2nd form */
-        char target[PATH_MAX];
+        char target[pathmax];
         char *target_p = target;
         target_p = basename(argv[optind]);
 

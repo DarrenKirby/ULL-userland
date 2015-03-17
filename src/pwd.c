@@ -1,7 +1,7 @@
 /***************************************************************************
  *   pwd.c - print name of current/working directory                       *
  *                                                                         *
- *   Copyright (C) 2014 by Darren Kirby                                    *
+ *   Copyright (C) 2014-2015 by Darren Kirby                               *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -19,6 +19,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
 
 #define APPNAME "pwd"
 #include "common.h"
@@ -60,10 +61,14 @@ int main(int argc, char *argv[]) {
                 break;
         }
     }
-    ptr = path_alloc(&size);
-    if (getcwd(ptr, size) == NULL)
+
+    char cwd[pathmax];
+    char *cwd_p;
+    cwd_p = cwd;
+
+    if (getcwd(cwd_p, pathmax) == NULL)
         g_error("getcwd failed");
 
-    printf("%s\n", ptr);
+    printf("%s\n", cwd);
     return EXIT_SUCCESS;
 }

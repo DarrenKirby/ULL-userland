@@ -54,11 +54,7 @@ Options:\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
-//int print_fs_fields(buf, i) {
-//    unsigned int b_size = buf[i].
-//    
-//    printf("", buf[i].);
-//}
+
 
 int main(int argc, char *argv[]) {
     int opt;

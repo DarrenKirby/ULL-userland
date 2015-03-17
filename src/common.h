@@ -54,15 +54,15 @@
 #include <ftw.h>
 
 /* determine portable max path length */
-#ifdef PATH_MAX
-static int pathmax = PATH_MAX;
+#ifdef _XOPEN_PATH_MAX
+static int pathmax = _XOPEN_PATH_MAX;
 #else
-static int pathmax = 0;
+static int pathmax = 255;
 #endif
 
 /* determine portable max filename length */
-#ifdef _POSIX_NAME_MAX
-static int filemax = _POSIX_NAME_MAX;
+#ifdef _XOPEN_NAME_MAX
+static int filemax = _XOPEN_NAME_MAX;
 #else
 static int filemax = 255;
 #endif
@@ -106,43 +106,6 @@ int dump_args(int argc, char *argv[]) {
     }
     return 0;
 }
-
-/* allocate memory for pathnames. This is from APUE */
-#define SUSV3          200112L
-#define PATH_MAX_GUESS 1024
-static long posix_version = 0;
-
-char *path_alloc(int *sizep) {
-    char *ptr;
-    int size;
-
-    if (posix_version == 0)
-        posix_version = sysconf(_SC_VERSION);
-
-    if (pathmax == 0) {
-        errno = 0;
-        if ((pathmax = pathconf("/", _PC_PATH_MAX)) < 0) {
-            if (errno == 0)
-                pathmax = PATH_MAX_GUESS;
-            else
-                g_error("pathconf error for _PC_PATH_MAX");
-        } else {
-            pathmax++;
-        }
-    }
-    if (posix_version < SUSV3)
-        size = pathmax + 1;
-    else
-        size = PATH_MAX;
-
-    if ((ptr = malloc(size)) == NULL)
-        g_error("malloc error for pathname");
-
-    if (sizep != NULL)
-        *sizep = size;
-    return(ptr);
-}
-/* end APUE code */
 
 /* trims leading and tailing whitespace from strings */
 char *trim_whitespace(char *str) {

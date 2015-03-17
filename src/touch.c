@@ -84,7 +84,7 @@ static void to_time(char * r_file) {
 int main(int argc, char *argv[]) {
     int opt;
     opts.current = 1;
-    char r_file[PATH_MAX];
+    char r_file[pathmax];
 
     struct option longopts[] = {
         {"help", 0, NULL, 'h'},
@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
             case 'r':
                 opts.reference = 1;
                 opts.current = 0;
-                strncpy(r_file, optarg, PATH_MAX);
+                strncpy(r_file, optarg, pathmax);
                 break;
             case ':':
                  /* getopt_long prints own error message */
