@@ -53,7 +53,7 @@ join      :: not started
 link      :: not started
 ln        :: in progress
 logname   :: not started
-ls        :: not started
+ls        :: in progress
 md5sum    :: not started
 mkdir     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 mkfifo    :: not started
