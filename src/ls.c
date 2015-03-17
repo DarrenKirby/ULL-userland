@@ -111,13 +111,19 @@ int main(int argc, char *argv[]) {
     DIR *dp;
     struct dirent *list;
 
+    char path_to_ls[PATH_MAX];
+
     if (argv[optind] != NULL) {
-        dp = opendir(argv[optind]);
+        strncpy(path_to_ls, argv[optind], PATH_MAX);
+        //dp = opendir(argv[optind]);
     } else {
-        dp = opendir(".");
+        strncpy(path_to_ls, ".", 1);
+        //dp = opendir(".");
     }
 
+    dp = opendir(path_to_ls);
     int n_files = 0; /* num files */
+
     while ((list = readdir(dp)) != NULL) {
         /* first time around   */
         /* get max file length */
@@ -153,9 +159,35 @@ int main(int argc, char *argv[]) {
     }
     closedir(dp);
 
-    for (int f = 0; f < n_files; f++) {
-        printf("%s\n", filenames[f]);
+    if ((opts.one == 1) && (opts.ls_long != 1)) {
+        for (int f = 0; f < n_files; f++) {
+            printf("%s\n", filenames[f]);
+        }
+    } else if (opts.ls_long == 1) {
+        char cwd[PATH_MAX];
+        char *cwd_p;
+        cwd_p = cwd;
+        char string_time[13];
+
+        getcwd(cwd_p, PATH_MAX);
+        chdir(path_to_ls);
+        struct stat buf;
+        for (int f = 0; f < n_files; f++) {
+            stat(filenames[f], &buf);
+            printf("%s", filetype(buf.st_mode, 0));
+            printf("%s ", file_perm_str(buf.st_mode, 1));
+            printf("%2ld ", (long) buf.st_nlink);
+            printf("%s %s ", get_username(buf.st_uid), get_groupname(buf.st_gid));
+            printf("%6lld ", (long long) buf.st_size);
+
+            strftime(string_time, sizeof("Jan 01 12:00"), "%b %d %H:%M", localtime(&buf.st_mtime));
+            printf("%s ", string_time);
+            printf("%s", filenames[f]);
+            printf("\n");
+        }
+        chdir(cwd);
     }
+
 
 
     //int n_per_line = work_col / (longest_so_far+2); /* number of filenames per column */
