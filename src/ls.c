@@ -44,9 +44,20 @@ Options:\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
-//char * get_filenames_to_ls(static char dir) {
-//
-//}
+void format(long long int bytes) {
+    char size_string[10];
+    double result;
+    if (bytes < 1024) {
+        sprintf(size_string, "%lld", bytes);
+    } else if ((bytes > 1025) && (bytes <= 1025000)) {
+        result = bytes / 1024.0;
+        sprintf(size_string, "%5.1fK", result);
+    } else if ((bytes > 1025000) && (bytes <= 1025000000)) {
+        result = bytes / 1024.0 / 1024.0;
+        sprintf(size_string, "%5.1fM", result);
+    }
+    printf("%s ", size_string);
+}
 
 int main(int argc, char *argv[]) {
     int opt;
@@ -82,6 +93,7 @@ int main(int argc, char *argv[]) {
                 break;
             case '1':
                 opts.one = 1;
+                break;
             case 'H':
                 opts.human_readable = 1;
                 opts.ls_long = 1; /* '-H' implies '-l' ls_long */
@@ -103,10 +115,10 @@ int main(int argc, char *argv[]) {
 
     /* get width of terminal */
     setupterm(NULL, fileno(stdout), (int *)0);
-    int work_col = tigetnum("cols") - 40;
-
+    int work_col = tigetnum("cols") - 30;
+    int n_per_line = 0;
     int longest_so_far = 0;
-    int n, i;
+    int n;
 
     DIR *dp;
     struct dirent *list;
@@ -115,13 +127,14 @@ int main(int argc, char *argv[]) {
 
     if (argv[optind] != NULL) {
         strncpy(path_to_ls, argv[optind], PATH_MAX);
-        //dp = opendir(argv[optind]);
     } else {
         strncpy(path_to_ls, ".", 1);
-        //dp = opendir(".");
     }
 
-    dp = opendir(path_to_ls);
+    if ((dp = opendir(path_to_ls)) == NULL){
+        perror("opendir");
+    }
+
     int n_files = 0; /* num files */
 
     while ((list = readdir(dp)) != NULL) {
@@ -141,6 +154,7 @@ int main(int argc, char *argv[]) {
             longest_so_far = n;
         }
     }
+    n_per_line = work_col / (longest_so_far+2); /* number of filenames per column */
     rewinddir(dp);
 
     char filenames[n_files][filemax+1];
@@ -159,6 +173,8 @@ int main(int argc, char *argv[]) {
     }
     closedir(dp);
 
+    int f;
+
     if ((opts.one == 1) && (opts.ls_long != 1)) {
         for (int f = 0; f < n_files; f++) {
             printf("%s\n", filenames[f]);
@@ -172,46 +188,36 @@ int main(int argc, char *argv[]) {
         getcwd(cwd_p, PATH_MAX);
         chdir(path_to_ls);
         struct stat buf;
-        for (int f = 0; f < n_files; f++) {
+        for (f = 0; f < n_files; f++) {
             stat(filenames[f], &buf);
             printf("%s", filetype(buf.st_mode, 0));
             printf("%s ", file_perm_str(buf.st_mode, 1));
             printf("%2ld ", (long) buf.st_nlink);
             printf("%s %s ", get_username(buf.st_uid), get_groupname(buf.st_gid));
-            printf("%6lld ", (long long) buf.st_size);
-
+            (opts.human_readable == 0) ?
+                printf("%6lld ", (long long) buf.st_size) :       /* bytes */
+                format((long long)buf.st_size) ;   /* ie: 16k */
             strftime(string_time, sizeof("Jan 01 12:00"), "%b %d %H:%M", localtime(&buf.st_mtime));
             printf("%s ", string_time);
             printf("%s", filenames[f]);
             printf("\n");
         }
         chdir(cwd);
+
+    } else {
+        int i = 1;
+
+        for (f = 0; f < n_files; f++) {
+            printf("%-*s", longest_so_far+2, filenames[f]);
+            if (i % n_per_line == 0) {
+                printf("\n");
+            }
+            i++;
+        }
+        if ((i-1) % n_per_line != 0) {
+            printf("\n");
+        }
     }
-
-
-
-    //int n_per_line = work_col / (longest_so_far+2); /* number of filenames per column */
-    ///* second time around */
-    //int i = 1;
-    //while ((list = readdir(dp)) != NULL) {
-    //
-    //    if (opts.all == 0) {
-    //
-    //        if (strncmp(".",  list->d_name, 1) == 0 ||
-    //            strncmp("..", list->d_name, 2) == 0) {
-    //            continue;
-    //           }
-    //    }
-    //    printf("%-*s", longest_so_far+2, list->d_name);
-    //    if (i % n_per_line == 0) {
-    //        printf("\n");
-    //    }
-    //    i++;
-    //}
-    //if ((i-1) % n_per_line != 0) {
-    //    printf("\n");
-    //}
-
 
     return EXIT_SUCCESS;
 }
