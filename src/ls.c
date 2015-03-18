@@ -37,6 +37,11 @@ struct optstruct {
     unsigned int dereference:1;
 } opts;
 
+struct filestruct {
+    char         filename[PATHMAX];
+    u_int        type;
+    ssize_t      size;
+} file_s;
 
 static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
@@ -78,10 +83,11 @@ static void format(long long int bytes) {
     printf("%s ", size_string);
 }
 
+
 int main(int argc, char *argv[]) {
     int opt;
     opts.all = 0;
-    unsigned int screen_width = 0;
+    u_int screen_width = 0;
 
     struct option longopts[] = {
         {"help", 0, NULL, 'h'},
@@ -131,11 +137,17 @@ int main(int argc, char *argv[]) {
                 opts.one = 1;     /* '-H' implies '-1' one     */
                 break;
             case ':':
-                 /* getopt_long prints own error message */
+                 /*
+                  * getopt_long prints own error message
+                  *
+                  */
                 exit(EXIT_FAILURE);
                 break;
             case '?':
-                 /* getopt_long prints own error message */
+                 /*
+                  * getopt_long prints own error message
+                  *
+                  */
                 exit(EXIT_FAILURE);
             default:
                 show_help();
@@ -144,7 +156,9 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    /* get width of terminal */
+    /*
+     * get width of terminal
+     */
     if (screen_width == 0) {
         setupterm(NULL, fileno(stdout), (int *)0);
         screen_width = tigetnum("cols");
@@ -153,10 +167,10 @@ int main(int argc, char *argv[]) {
     DIR *dp;
     struct dirent *list;
 
-    char path_to_ls[pathmax];
+    char path_to_ls[PATHMAX];
 
     if (argv[optind] != NULL) {
-        strncpy(path_to_ls, argv[optind], pathmax);
+        strncpy(path_to_ls, argv[optind], PATHMAX);
     } else {
         strncpy(path_to_ls, ".", 1);
     }
@@ -172,8 +186,10 @@ int main(int argc, char *argv[]) {
     int n;                    /* return value of strlen() calls */
 
     while ((list = readdir(dp)) != NULL) {
-        /* first time around   */
-        /* get max file length */
+        /*
+         * first time around
+         * get max file length
+         */
         if (opts.all == 0) {
 
             if (strncmp(".",  list->d_name, 1) == 0 ||
@@ -192,7 +208,7 @@ int main(int argc, char *argv[]) {
     n_per_line = screen_width / (longest_so_far+2); /* number of filenames per column */
     rewinddir(dp);
 
-    char filenames[n_files][filemax+1];
+    char filenames[n_files][FILEMAX+1];
     n = 0;
 
     while ((list = readdir(dp)) != NULL) {
@@ -203,7 +219,7 @@ int main(int argc, char *argv[]) {
                 continue;
                }
         }
-        strncpy(filenames[n], list->d_name, filemax+1);
+        strncpy(filenames[n], list->d_name, FILEMAX+1);
         n++;
     }
     closedir(dp);
@@ -211,19 +227,23 @@ int main(int argc, char *argv[]) {
     int f;
 
     if ((opts.one == 1) && (opts.ls_long != 1)) {
-    /* We are displaying short format, one file per line */
+        /*
+         * We are displaying short format, one file per line
+         */
         for (int f = 0; f < n_files; f++) {
             printf("%s\n", filenames[f]);
         }
 
     } else if (opts.ls_long == 1) {
-    /* We are displaying long format, one file per line */
+        /*
+         * We are displaying long format, one file per line
+         */
 
-        char cwd[pathmax];
+        char cwd[PATHMAX];
         char *cwd_p;
         cwd_p = cwd;
 
-        if (getcwd(cwd_p, pathmax) == NULL) {
+        if (getcwd(cwd_p, PATHMAX) == NULL) {
             perror("getcwd");
             exit(EXIT_FAILURE);
         }
@@ -284,7 +304,9 @@ int main(int argc, char *argv[]) {
         }
 
     } else {
-    /* We are displaying short format, as many files as we can fit per line */
+        /*
+         * We are displaying short format, as many files as we can fit per line
+         */
         int i = 1;
 
         for (f = 0; f < n_files; f++) {

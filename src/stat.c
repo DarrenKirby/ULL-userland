@@ -75,7 +75,7 @@ static void stat_file(char *filename, int follow_links) {
     printf("IO Block: %ld\t\t", (long) buf.st_blksize);
     printf("%s\n", filetype(buf.st_mode, 1));
 
-    printf("Device: %li/%li\t\t", (long) major(buf.st_dev), (long) minor(buf.st_dev));
+    printf("Device: %d/%d\t\t", major(buf.st_dev), minor(buf.st_dev));
     printf("Inode: %ld\t\t", (long) buf.st_ino);
     printf("Links: %ld\n", (long) buf.st_nlink);
 

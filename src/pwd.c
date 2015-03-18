@@ -62,11 +62,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    char cwd[pathmax];
+    char cwd[PATHMAX];
     char *cwd_p;
     cwd_p = cwd;
 
-    if (getcwd(cwd_p, pathmax) == NULL)
+    if (getcwd(cwd_p, PATHMAX) == NULL)
         g_error("getcwd failed");
 
     printf("%s\n", cwd);

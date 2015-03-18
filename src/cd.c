@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    char pathbuf[pathmax];
+    char pathbuf[PATHMAX];
     char *path = pathbuf;
 
     if (argc == 1) {
@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
     } else if (strcmp(argv[1], "-") == 0) {
         path = getenv("OLDPWD");
     } else {
-        strncpy(path, argv[1], pathmax);
+        strncpy(path, argv[1], PATHMAX);
     }
 
     /* due to the fact the shell runs all commands in a new process, we can't actually

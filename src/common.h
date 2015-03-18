@@ -55,17 +55,39 @@
 
 /* determine portable max path length */
 #ifdef _XOPEN_PATH_MAX
-static int pathmax = _XOPEN_PATH_MAX;
+#define   PATHMAX   _XOPEN_PATH_MAX
 #else
-static int pathmax = 255;
+#define   PATHMAX   255
 #endif
 
 /* determine portable max filename length */
 #ifdef _XOPEN_NAME_MAX
-static int filemax = _XOPEN_NAME_MAX;
+#define FILEMAX  _XOPEN_NAME_MAX
 #else
-static int filemax = 255;
+#define FILEMAX  255
 #endif
+
+/*
+ * ANSI colour codes
+ */
+
+/* normal */
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+
+/* bold */
+#define ANSI_COLOR_RED_B     "\x1b[31;1m"
+#define ANSI_COLOR_GREEN_B   "\x1b[32;1m"
+#define ANSI_COLOR_YELLOW_B  "\x1b[33;1m"
+#define ANSI_COLOR_BLUE_B    "\x1b[34;1m"
+#define ANSI_COLOR_MAGENTA_B "\x1b[35;1m"
+#define ANSI_COLOR_CYAN_B    "\x1b[36;1m"
+
+#define ANSI_COLOR_RESET   "\x1b[0m"
 
 /* For longopts */
 #define _GNU_SOURCE
