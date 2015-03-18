@@ -1,13 +1,10 @@
 These are the ULL core utilities.
 
-These programs are one man's silly attempt to rewrite the GNU coreutils,
+These programs are one man's silly attempt to rewrite the a UNIX userland
 for use as the userland for ULL (Userland Linux), a bastard hybrid of the
-Linux kernel and a *BDSish userland.
+Linux kernel, GLIBC, and a *BDSish userland.
 
-Some of these programs are not portable away from the Linux OS.  As I find
-the time I intend to make these programs run on Linux, OS X, *BSD, and
-Solaris.  I can not realistically deliver a time frame for this.  Again, this
-portability is to be an educational exercise for me.
+I intend to make these programs run on Linux, OS X, and *BSD.
 
 See the file TODO for more details on programs I intend to write, and status
 of 'in progress' programs, as well as notes on portability.
