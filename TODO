@@ -15,7 +15,7 @@ on portablility but a lot of the apps are flaky or don't even compile
 on OS X and FeeBSD. See notes below...
 ========================================================================
 
-[         :: not started
+[         :: not started  NOTE: shell builtin, will probably not implement
 base64    :: not started
 basename  :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 cat       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
@@ -92,7 +92,7 @@ sync      :: completed    # Linux: compiles, works | OS X: compiles, works | Fre
 tac       :: not started
 tail      :: not started
 tee       :: not started
-test      :: not started
+test      :: not started  NOTE: shell builtin, will probably not implement
 time      :: not started
 touch     :: not started
 tr        :: not started
