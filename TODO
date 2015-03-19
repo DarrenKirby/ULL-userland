@@ -16,8 +16,10 @@ on OS X and FeeBSD. See notes below...
 ========================================================================
 
 [         :: not started  NOTE: shell builtin, will probably not implement
+at        :: not started
 base64    :: not started
 basename  :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
+cal       :: not started
 cat       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 cd        :: completed    # Linux: compiles | OS X: compiles | FreeBSD: compiles (But ueless on all: read cd.c source)
 chgrp     :: completed    # Linux ?? | OS X: compiles, works | FreeBSD ??
@@ -34,10 +36,12 @@ dd        :: not started
 df        :: in progress
 dir       :: not started
 dircolors :: not started
-dirname   :: not started
+dirname   :: completed    # Linux ?? | OS X: compiles, works | FreeBSD ??
+dmesg     :: not started
+domainname:: not started
 du        :: not started
 echo      :: not started
-env       :: in progress
+env       :: in progress  # Works on Linux, not on OS X. FreeBSD??
 expand    :: not started
 expr      :: not started
 factor    :: not started
@@ -47,33 +51,40 @@ fold      :: not started
 free      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, ??
 head      :: not started
 hostid    :: not started
+hostname  :: not started
 id        :: not started
+ifconfig  :: not started
 install   :: not started
 join      :: not started
-link      :: not started
-ln        :: in progress
+kill      :: not started
+link      :: completed    # Linux ?? | OS X: compiles, works | FreeBSD ??
+ln        :: completed    # Linux ?? | OS X: compiles, works | FreeBSD ??
 logname   :: not started
-ls        :: in progress
+ls        :: completed    # Linux ?? | OS X: compiles, works | FreeBSD ??
 md5sum    :: not started
 mkdir     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 mkfifo    :: not started
 mknod     :: not started
+mount     :: not started
 mv        :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 nice      :: not started
 nl        :: not started
 nohup     :: not started
-od        :: in progress
+od        :: in progress  # flaky!!!
 paste     :: not started
 pathchk   :: not started
+ping      :: not started
 pinky     :: not started
 pr        :: not started
+ps        :: not started
 printenv  :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 printf    :: not started
 ptx       :: not started
 pwd       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 readlink  :: not started
-rm        :: in progress
+rm        :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 rmdir     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
+route     :: not started
 seq       :: not started
 sha1sum   :: not started
 sha224sum :: not started
@@ -92,6 +103,7 @@ sync      :: completed    # Linux: compiles, works | OS X: compiles, works | Fre
 tac       :: not started
 tail      :: not started
 tee       :: not started
+telnet    :: not started
 test      :: not started  NOTE: shell builtin, will probably not implement
 time      :: not started
 touch     :: not started
@@ -99,15 +111,18 @@ tr        :: not started
 true      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 tsort     :: not started
 tty       :: not started
+umount    :: not started
 uname     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, segfaults
 unexpand  :: not started
 uniq      :: not started
 unlink    :: completed    # Linux ?? | OS X: compiles, works | FreeBSD: ??
 uptime    :: completed    # Linux: compiles, works | OS X: does not compile | FreeBSD: does not compile
 users     :: not started
-vdir      :: not started
+vdir      :: not started  # will likely not implement - same as 'ls -l'
 wc        :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
+which     :: not started
 who       :: not started
+whois     :: not started
 whoami    :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 yes       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 
