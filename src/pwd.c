@@ -35,8 +35,6 @@ Report bugs to <bulliver@gmail.com>\n", APPNAME);
 
 int main(int argc, char *argv[]) {
     int opt;
-    int size;
-    char *ptr;
 
     struct option longopts[] = {
         {"help", 0, NULL, 'h'},
@@ -50,15 +48,12 @@ int main(int argc, char *argv[]) {
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
                 printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
-                break;
             case 'h':
                 show_help();
                 exit(EXIT_SUCCESS);
-                break;
             default:
                 show_help();
                 exit(EXIT_FAILURE);
-                break;
         }
     }
 

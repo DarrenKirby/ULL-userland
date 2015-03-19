@@ -1,5 +1,5 @@
 /***************************************************************************
- *   ls.c - list files and directories                                     *
+ *    -                                      *
  *                                                                         *
  *   Copyright (C) 2014-2015 by Darren Kirby                               *
  *   bulliver@gmail.com                                                    *
@@ -21,7 +21,7 @@
  ***************************************************************************/
 
 
-#define APPNAME "ls"
+#define APPNAME ""
 #include "common.h"
 
 struct optstruct {

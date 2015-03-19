@@ -62,9 +62,9 @@
 
 /* determine portable max filename length */
 #ifdef _XOPEN_NAME_MAX
-#define FILEMAX  _XOPEN_NAME_MAX
+#define   FILEMAX  _XOPEN_NAME_MAX
 #else
-#define FILEMAX  255
+#define   FILEMAX  255
 #endif
 
 /*
@@ -233,19 +233,20 @@ char *filetype(mode_t st_mode, int flag) {
 }
 
 char *get_username(uid_t uid) {
-    struct passwd *pwd;
-    errno = 0;
-    pwd = getpwuid(uid);
-    if (pwd == NULL) {
-        if (errno == 0) {
-            return "unknown username";
-        } else {
-            g_error("username lookup failed");
-            exit(EXIT_FAILURE);
-        }
-    }
+        struct passwd *pwd;
+        errno = 0;
+        pwd = getpwuid(uid);
 
-    return pwd->pw_name;
+        if (pwd == NULL) {
+                if (errno == 0) {
+                        return "unknown username";
+                } else {
+                        g_error("username lookup failed");
+                        exit(EXIT_FAILURE);
+                }
+        }
+
+        return pwd->pw_name;
 }
 
 char *get_groupname(gid_t gid) {

@@ -1,7 +1,7 @@
 /***************************************************************************
  *   rm.c - remove files or directories                                    *
  *                                                                         *
- *   Copyright (C) 2014 by Darren Kirby                                    *
+ *   Copyright (C) 2014-2015 by Darren Kirby                               *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -20,11 +20,11 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+
 #define APPNAME "rm"
 #include "common.h"
 
-
-void showHelp(void) {
+static void showHelp(void) {
     printf("Usage: %s [OPTION]... [FILE]...\n\n\
     Remove (unlink) the FILE(s).\n\n\
 Options:\n\
@@ -42,9 +42,7 @@ struct optstruct {
     int recursive;
     int force;
     int interactive;
-};
-
-struct optstruct opts = {0,0,0,0};
+} opts;
 
 int rm(char *file) {
     int es;
@@ -72,7 +70,7 @@ int main(int argc, char *argv[]) {
         {0,0,0,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "hrvRif", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "hrvVRif", longopts, NULL)) != -1) {
         switch(opt) {
             case 'r':
             case 'R':
@@ -121,5 +119,6 @@ int main(int argc, char *argv[]) {
             }
         }
     }
+
     return EXIT_SUCCESS;
 }
