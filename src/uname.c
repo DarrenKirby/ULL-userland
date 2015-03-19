@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-/* OS-sniffing macros gleamed from http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system */ 
+/* OS-sniffing macros gleamed from http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system */
 
 
 #define APPNAME "uname"
@@ -130,8 +130,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    char *line = NULL;
-    size_t len = 0;
+
 
     struct cpuinfo {
         char vendor[50];
@@ -141,6 +140,9 @@ int main(int argc, char *argv[]) {
 #if defined (__linux__)
     struct cpuinfo cpu;
 
+    char *line = NULL;
+    size_t len = 0;
+
     FILE *fp;
     fp = fopen("/proc/cpuinfo", "r");  /* Not portable */
 
@@ -149,20 +151,20 @@ int main(int argc, char *argv[]) {
         strcpy(cpu.name, "Unknown\0");
     } else {
         const char delimiters[] = ":\n";
-        
+
         getline(&line, &len, fp);    /* line 1 */
         getline(&line, &len, fp);    /* line 2 */
 
         char *token;
         token = strtok(line, delimiters);
-        token = strtok (NULL, delimiters); 
+        token = strtok (NULL, delimiters);
         token = trim_whitespace(token);
         strcpy(cpu.vendor, token);
 
         getline(&line, &len, fp);    /* line 3 */
         getline(&line, &len, fp);    /* line 4 */
         getline(&line, &len, fp);    /* line 5 */
-        
+
         token = strtok(line, delimiters);
         token = strtok (NULL, delimiters);
         token = trim_whitespace(token);
@@ -172,7 +174,7 @@ int main(int argc, char *argv[]) {
 
     fclose(fp);
 #endif
-    
+
     struct utsname uts;
     uname(&uts);
 
@@ -216,7 +218,7 @@ int main(int argc, char *argv[]) {
     }
     if (optflags.i) {
 #if defined (__linux__)
-        printf("%s ", cpu.vendor); 
+        printf("%s ", cpu.vendor);
 #elif defined (BSD) && defined (__unix__)
         ;
 #elif defined (__APPLE__) && defined (__MACH__)
@@ -245,5 +247,3 @@ int main(int argc, char *argv[]) {
 
     return EXIT_SUCCESS;
 }
-
-
