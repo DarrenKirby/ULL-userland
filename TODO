@@ -25,9 +25,12 @@ cd        :: completed    # Linux: compiles | OS X: compiles | FreeBSD: compiles
 chgrp     :: completed    # Linux ?? | OS X: compiles, works | FreeBSD ??
 chmod     :: not started
 chown     :: completed    # Linux ?? | OS X: compiles, works | FreeBSD ??
+chpass    :: not started
 chroot    :: not started
 cksum     :: not started
 comm      :: not started
+command   :: not started  # shell builtin
+cmp       :: not started
 cp        :: in progress
 csplit    :: not started
 cut       :: not started
@@ -40,7 +43,7 @@ dirname   :: completed    # Linux ?? | OS X: compiles, works | FreeBSD ??
 dmesg     :: not started
 domainname:: not started
 du        :: not started
-echo      :: not started
+echo      :: not started  # shell builtin...
 env       :: in progress  # Works on Linux, not on OS X. FreeBSD??
 expand    :: not started
 expr      :: not started
@@ -49,6 +52,7 @@ false     :: completed    # Linux: compiles, works | OS X: compiles, works | Fre
 fmt       :: not started
 fold      :: not started
 free      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, ??
+fuser     :: not started
 head      :: not started
 hostid    :: not started
 hostname  :: not started
@@ -59,9 +63,11 @@ join      :: not started
 kill      :: not started
 link      :: completed    # Linux ?? | OS X: compiles, works | FreeBSD ??
 ln        :: completed    # Linux ?? | OS X: compiles, works | FreeBSD ??
+logger    :: not started
 logname   :: not started
 ls        :: completed    # Linux ?? | OS X: compiles, works | FreeBSD ??
 md5sum    :: not started
+mesg      :: not started
 mkdir     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 mkfifo    :: not started
 mknod     :: not started
@@ -70,7 +76,7 @@ mv        :: completed    # Linux: compiles, works | OS X: compiles, works | Fre
 nice      :: not started
 nl        :: not started
 nohup     :: not started
-od        :: in progress  # flaky!!!
+od        :: in progress  # flaky!!! Fix endianess
 paste     :: not started
 pathchk   :: not started
 ping      :: not started
@@ -82,6 +88,7 @@ printf    :: not started
 ptx       :: not started
 pwd       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 readlink  :: not started
+renice    :: not started
 rm        :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 rmdir     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 route     :: not started
@@ -102,11 +109,13 @@ sum       :: not started
 sync      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 tac       :: not started
 tail      :: not started
+talk      :: not started
 tee       :: not started
 telnet    :: not started
 test      :: not started  NOTE: shell builtin, will probably not implement
 time      :: not started
 touch     :: not started
+tput      :: not started
 tr        :: not started
 true      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 tsort     :: not started
@@ -124,6 +133,7 @@ which     :: not started
 who       :: not started
 whois     :: not started
 whoami    :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
+write     :: not started
 yes       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 
 ========================================================================
