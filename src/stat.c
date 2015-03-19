@@ -93,7 +93,7 @@ static void stat_file(char *filename, int follow_links) {
 
 int main(int argc, char *argv[]) {
     int opt;
-    int follow_links = 0;
+    u_int follow_links = 0;
 
     struct option longopts[] = {
         {"help", 0, NULL, 'h'},
