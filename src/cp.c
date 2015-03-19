@@ -1,7 +1,7 @@
 /***************************************************************************
  *   cp.c - copy files to a new location                                   *
  *                                                                         *
- *   Copyright (C) 2014 by Darren Kirby                                    *
+ *   Copyright (C) 2014-2015 by Darren Kirby                               *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -19,6 +19,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
 
 #define APPNAME "cp"
 #include "common.h"
