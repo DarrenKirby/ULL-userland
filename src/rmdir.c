@@ -35,7 +35,7 @@ Report bugs to <bulliver@gmail.com>\n", APPNAME);
 
 int main(int argc, char *argv[]) {
     int opt;
-    int verbose = 0;
+    u_int verbose = 0;
 
     struct option longopts[] = {
         {"verbose", 0, NULL, 'v'},
