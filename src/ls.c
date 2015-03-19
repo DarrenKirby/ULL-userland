@@ -180,10 +180,10 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    int n_files = 0;          /* number of files to print */
-    int n_per_line = 0;       /* number of files per line */
-    int longest_so_far = 0;   /* longest filename seen so far */
-    int n;                    /* return value of strlen() calls */
+    u_int n_files = 0;          /* number of files to print */
+    u_int n_per_line = 0;       /* number of files per line */
+    u_int longest_so_far = 0;   /* longest filename seen so far */
+    int n;                      /* return value of strlen() calls */
 
     while ((list = readdir(dp)) != NULL) {
         /*
@@ -224,7 +224,7 @@ int main(int argc, char *argv[]) {
     }
     closedir(dp);
 
-    int f;
+    u_int f;
 
     if ((opts.one == 1) && (opts.ls_long != 1)) {
         /*
@@ -259,7 +259,7 @@ int main(int argc, char *argv[]) {
         time_t now_t;
         (void) time(&now_t);
         now = localtime(&now_t);
-        int current_year = now->tm_year + 1900;
+        u_int current_year = now->tm_year + 1900;
         char string_time[13];
 
         for (f = 0; f < n_files; f++) {
@@ -307,7 +307,7 @@ int main(int argc, char *argv[]) {
         /*
          * We are displaying short format, as many files as we can fit per line
          */
-        int i = 1;
+        u_int i = 1;
 
         for (f = 0; f < n_files; f++) {
             printf("%-*s", longest_so_far+2, filenames[f]);
