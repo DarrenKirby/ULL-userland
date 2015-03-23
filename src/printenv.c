@@ -1,7 +1,7 @@
 /***************************************************************************
  *   printenv.c - print all or part of environment                         *
  *                                                                         *
- *   Copyright (C) 2014 by Darren Kirby                                    *
+ *   Copyright (C) 2014-2015 by Darren Kirby                               *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -20,11 +20,35 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+
 #define APPNAME "printenv"
 #include "common.h"
 
+extern char **environ;
 
-void show_help(void) {
+/* Cycle through and print all env variables */
+static int print_all_env(void) {
+
+    while (*environ) {
+        printf("%s\n", *environ);
+        environ++;
+    }
+    return EXIT_SUCCESS;
+}
+
+/* Print a single env variable */
+static int print_env(char *name) {
+    char *var, *value;
+    var = name;
+    value = getenv(var);
+    if (value)
+        printf("%s\n", value);
+    else
+        return EXIT_FAILURE;
+    return EXIT_SUCCESS;
+}
+
+static void show_help(void) {
     printf("Usage: %s [VARIABLE]...\n\
    or: %s OPTION\n\n\
     Print the value of VARIABLE.\n\
@@ -50,25 +74,23 @@ int main(int argc, char *argv[]) {
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
                 printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
-                break;
             case 'h':
                 show_help();
                 exit(EXIT_SUCCESS);
-                break;
             default:
                 show_help();
                 exit(EXIT_FAILURE);
-                break;
         }
     }
 
     if (argc == 2) {
-        print_env(argv[1]); /* Defined in env.h */
+        print_env(argv[1]);
     }else if (argc == 1) {
-        print_all_env();    /* Defined in env.h */
+        print_all_env();
     } else {
         g_error("takes either zero or one argument");
         show_help(); exit(EXIT_FAILURE);
     }
     return EXIT_SUCCESS;
 }
+

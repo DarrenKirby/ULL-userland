@@ -1,7 +1,7 @@
 /***************************************************************************
  *   env.c - run a program in a modified environment                       *
  *                                                                         *
- *   Copyright (C) 2014 by Darren Kirby                                    *
+ *   Copyright (C) 2014-2015 by Darren Kirby                               *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -20,16 +20,22 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+
 #define APPNAME "env"
 #include "common.h"
 
-#if defined(__APPLE__) && defined(__MACH__)
-int main() {
-    printf("Bug: Not working on OS X (and probably *BSD)\nneed to find substitute for clearenv()");
+extern char **environ;
+
+/* Cycle through and print all env variables */
+static int print_all_env(void) {
+
+    while (*environ) {
+        printf("%s\n", *environ);
+        environ++;
+    }
     return EXIT_SUCCESS;
 }
 
-#else
 static void show_help(void) {
     printf("Usage: %s [OPTION]... [NAME=VALUE]... [COMMAND [ARG]...]\n\n\
     Set each NAME to VALUE in the environment and run COMMAND.\n\n\
@@ -55,10 +61,17 @@ int main(int argc, char *argv[]) {
     while ((opt = getopt_long(argc, argv, "iu:Vh", longopts, NULL)) != -1) {
         switch(opt) {
             case 'i':
+#if defined (__linux__)
                 es = clearenv();
                 if (es != 0) {
                     g_error("Could not clear environment");
                 }
+#else
+                while (*environ) {
+                    unsetenv(*environ);
+                    environ++;
+                }
+#endif
                 break;
             case 'u':
                 es = unsetenv(optarg);
@@ -72,19 +85,18 @@ int main(int argc, char *argv[]) {
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
                 printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
-                break;
-            case 'h': show_help(); exit(EXIT_SUCCESS); break;
-            default : show_help(); exit(EXIT_FAILURE); break;
+            case 'h': show_help(); exit(EXIT_SUCCESS);
+            default : show_help(); exit(EXIT_FAILURE);
         }
     }
-    dump_args(argc, argv);
-    printf("optind: %i\n", optind);
 
     if (argc == optind) {      /* Just dump all env variables */
-        print_all_env();
+        if (print_all_env() != 0) {
+            perror("print_all_env");
+            exit(EXIT_FAILURE);
+        }
     }
-
 
     return EXIT_SUCCESS;
 }
-#endif
+
