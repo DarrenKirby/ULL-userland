@@ -1,7 +1,7 @@
 /***************************************************************************
  *   cat.c - concatenate files and print on the standard output            *
  *                                                                         *
- *   Copyright (C) 2014 by Darren Kirby                                    *
+ *   Copyright (C) 2014-2015 by Darren Kirby                               *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -20,10 +20,11 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+
 #define APPNAME "cat"
 #include "common.h"
 
-void show_help(void) {
+static void show_help(void) {
     printf("Usage: %s [OPTION]... [FILE]...\n \
 Concatenate FILE(s), or standard input to standard output.\n\n \
 Options:\n\
@@ -39,7 +40,7 @@ int number_lines = 0;
 FILE *name;
 char c;
 
-void cat_stdin(int line_number, int unbuffered) {
+static void cat_stdin(int line_number, int unbuffered) {
     if (unbuffered == 1) {
         setvbuf(stdout, NULL, _IONBF, 1);
     }
@@ -57,7 +58,7 @@ void cat_stdin(int line_number, int unbuffered) {
     exit(EXIT_SUCCESS);
 }
 
-int cat_file(char *filename, unsigned int line_number) {
+static int cat_file(char *filename, unsigned int line_number) {
     if ( (name = fopen(filename, "r")) == NULL ) {
         f_error(filename, NULL);
     }
