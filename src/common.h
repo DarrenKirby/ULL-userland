@@ -36,6 +36,7 @@
 #endif
 
 /* Common includes */
+/*@-skipposixheaders@*/
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -115,7 +116,7 @@ void g_error(char *message) {
 /* File error */
 void f_error(char *filename, char *message) {
     char error[50];
-    sprintf(error, "%s: %s%s", APPNAME, (message == NULL) ? "" : message, filename);
+    snprintf(error, 50, "%s: %s%s", APPNAME, (message == NULL) ? "" : message, filename);
     perror(error);
 }
 
