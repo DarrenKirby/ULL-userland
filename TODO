@@ -44,7 +44,7 @@ dmesg     :: not started
 domainname:: not started
 du        :: not started
 echo      :: not started  # shell builtin...
-env       :: in progress  # Works on Linux, not on OS X. FreeBSD??
+env       :: in progress  # Works on Linux, and OS X
 expand    :: not started
 expr      :: not started
 factor    :: not started
@@ -114,7 +114,7 @@ tee       :: not started
 telnet    :: not started
 test      :: not started  NOTE: shell builtin, will probably not implement
 time      :: not started
-touch     :: not started
+touch     :: completed    #
 tput      :: not started
 tr        :: not started
 true      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
