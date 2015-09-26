@@ -1,11 +1,11 @@
 CC = cc
 
 # hard coded path for testing
-# CC = /usr/local/bin/gcc  # Use gcc
+#CC = /usr/local/bin/gcc  # Use gcc
 # CC = /usr/bin/clang      # use clang/llvm
 
 CFLAGS ?= -g -Wall -Wno-unused-variable -O2 -std=gnu11 #-std=gnu99
-# CFLAGS ?= -g -Wall -O2 -std=gnu99
+#CFLAGS ?= -g -Wall -O2 -std=gnu11
 SRCDIR = src
 BINDIR = bin
 
@@ -14,7 +14,7 @@ version = 0.3
 tarname = $(package)
 distdir = $(tarname)-$(version)
 
-all: basename cat cd chgrp chown cp df dirname env false free link ln ls mkdir mv od printenv pwd rm sleep stat sync touch true uname unlink uptime wc whoami yes
+all: basename cat cd chgrp chown cp df dirname env false free link ln ls mkdir mv od printenv pwd rm sleep stat sync touch true uname unlink uptime vdir wc whoami yes
 
 dist: $(distdir).tar.gz
 
@@ -91,6 +91,8 @@ unlink:
 	$(CC) $(CFLAGS) -o $(BINDIR)/unlink $(SRCDIR)/unlink.c
 uptime:
 	$(CC) $(CFLAGS) -o $(BINDIR)/uptime $(SRCDIR)/uptime.c
+vdir:
+	$(CC) $(CFLAGS) -o $(BINDIR)/vdir $(SRCDIR)/vdir.c
 wc:
 	$(CC) $(CFLAGS) -o $(BINDIR)/wc $(SRCDIR)/wc.c
 whoami:
