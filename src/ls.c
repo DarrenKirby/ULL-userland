@@ -44,7 +44,7 @@ struct filestruct {
 } file_s;
 
 static void show_help(void) {
-    printf("Usage: %s [OPTION]...\n\n\
+    printf("Usage: %s [OPTION]... [FILE]...\n\n\
 Options:\n\
     -l, --long\t\toutput long format listing\n\
     -H, --human\t\tdisplay filesize in kilobytes and megabytes if appropriate (implies --long)\n\
@@ -80,7 +80,7 @@ static void format(long long int bytes) {
             perror("sprintf"); exit(EXIT_FAILURE);
         }
     }
-    printf("%s ", size_string);
+    printf("%6s ", size_string);
 }
 
 
