@@ -215,9 +215,9 @@ int file_perm_oct(mode_t perm) {
 char *filetype(mode_t st_mode, int flag) {
     switch (st_mode & S_IFMT) {
         case S_IFBLK:
-            return (flag == 1) ? "block device"     : "b";
+            return (flag == 1) ? "block device"     : "b" ;
         case S_IFCHR:
-            return (flag == 1) ? "character device" : "c";
+            return (flag == 1) ? "character device" : "c" ;
         case S_IFDIR:
             return (flag == 1) ? "directory"        : "d" ;
         case S_IFIFO:
