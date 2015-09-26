@@ -127,7 +127,7 @@ uniq      :: not started
 unlink    :: completed    # Linux ?? | OS X: compiles, works | FreeBSD: ??
 uptime    :: completed    # Linux: compiles, works | OS X: does not compile | FreeBSD: does not compile
 users     :: not started
-vdir      :: not started  # will likely not implement - same as 'ls -l'
+vdir      :: in progress  # Mostly working including colour output
 wc        :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 which     :: not started
 who       :: not started
