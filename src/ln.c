@@ -107,10 +107,19 @@ int main(int argc, char *argv[]) {
                     exit(EXIT_FAILURE);
             }
         }
-        if (opts.symbolic)
-            symlink(argv[optind], argv[optind + 1]);
-        else
-            link(argv[optind], argv[optind + 1]);
+
+        if (opts.symbolic) {
+            if (symlink(argv[optind], argv[optind + 1]) == -1) {
+                perror("symlink");
+                exit(EXIT_FAILURE);
+            }
+        } else {
+            if (link(argv[optind], argv[optind + 1]) == -1) {
+                perror("link");
+                exit(EXIT_FAILURE);
+            }
+        }
+
         if (opts.verbose)
             printf("linked `%s' to `%s'\n", argv[optind], argv[optind + 1]);
 
@@ -136,10 +145,19 @@ int main(int argc, char *argv[]) {
                     exit(EXIT_FAILURE);
             }
         }
-        if (opts.symbolic)
-            symlink(argv[optind], target_p);
-        else
-            link(argv[optind], target_p);
+
+        if (opts.symbolic) {
+            if (symlink(argv[optind], target_p) == -1) {
+                perror("symlink");
+                exit(EXIT_FAILURE);
+            }
+        } else {
+            if (link(argv[optind], target_p) == -1) {
+                perror("link");
+                exit(EXIT_FAILURE);
+            }
+        }
+
         if (opts.verbose)
             printf("linked `%s' to `%s'\n", argv[optind], target_p);
 
