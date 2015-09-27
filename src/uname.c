@@ -152,8 +152,14 @@ int main(int argc, char *argv[]) {
     } else {
         const char delimiters[] = ":\n";
 
-        getline(&line, &len, fp);    /* line 1 */
-        getline(&line, &len, fp);    /* line 2 */
+        if (getline(&line, &len, fp) == -1) {    /* line 1 throwaway*/
+            perror("getline");
+            exit(EXIT_FAILURE);
+        }
+        if (getline(&line, &len, fp) == -1) {    /* line 2 throwaway*/
+            perror("getline");
+            exit(EXIT_FAILURE);
+        }
 
         char *token;
         token = strtok(line, delimiters);
@@ -161,9 +167,18 @@ int main(int argc, char *argv[]) {
         token = trim_whitespace(token);
         strcpy(cpu.vendor, token);
 
-        getline(&line, &len, fp);    /* line 3 */
-        getline(&line, &len, fp);    /* line 4 */
-        getline(&line, &len, fp);    /* line 5 */
+        if (getline(&line, &len, fp) == -1) {    /* line 3 throwaway*/
+            perror("getline");
+            exit(EXIT_FAILURE);
+        }
+        if (getline(&line, &len, fp) == -1) {    /* line 4 throwaway*/
+            perror("getline");
+            exit(EXIT_FAILURE);
+        }
+        if (getline(&line, &len, fp) == -1) {    /* line 5 throwaway*/
+            perror("getline");
+            exit(EXIT_FAILURE);
+        }
 
         token = strtok(line, delimiters);
         token = strtok (NULL, delimiters);
