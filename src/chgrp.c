@@ -22,11 +22,12 @@
 
 
 #define APPNAME "chgrp"
-#include "common.h"
 
 /* Needed for nftw() */
-#define _XOPEN_SOURCE 600
+#define _XOPEN_SOURCE 500
+#include <ftw.h>
 
+#include "common.h"
 
 struct group *grp_buf;
 char to_grp[100];
