@@ -74,7 +74,10 @@ int main(int argc, char *argv[]) {
     int n_args = argc - optind; /* Number of arguments */
 
     if (n_args == 0 || strcmp(argv[optind], "-") == 0) {          /* Read path from STDIN */
-        fgets(name, PATHMAX, stdin);
+        if (fgets(name, PATHMAX, stdin) == NULL) {
+            perror("fgets");
+            exit(EXIT_FAILURE);
+        }
         sdn = 1;
     } else {
 	    strcpy(name, argv[optind]);
