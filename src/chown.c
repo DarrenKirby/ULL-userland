@@ -22,6 +22,11 @@
 
 
 #define APPNAME "chown"
+
+/* Needed for nftw() */
+#define _XOPEN_SOURCE 500
+#include <ftw.h>
+
 #include "common.h"
 
 struct group *grp_buf;
