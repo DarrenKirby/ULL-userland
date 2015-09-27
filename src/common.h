@@ -37,6 +37,7 @@
 
 /* Common includes */
 /*@-skipposixheaders@*/
+#include <utmp.h>
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,7 +53,6 @@
 #include <grp.h>
 #include <libgen.h>
 #include <fcntl.h>
-#include <ftw.h>
 
 /* determine portable max path length */
 #ifdef _XOPEN_PATH_MAX
