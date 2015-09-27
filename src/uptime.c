@@ -22,6 +22,8 @@
 
 
 #define APPNAME "uptime"
+
+#include <sys/sysinfo.h>
 #include "common.h"
 
 #if defined(__APPLE__) && defined(__MACH__)
@@ -32,7 +34,7 @@ int main() {
 
 #else
 
-#include <sys/sysinfo.h>
+
 
 #define ONEDAY  86400
 #define ONEHOUR  3600
