@@ -33,6 +33,17 @@ struct optstruct {
 } opts;
 
 #if defined (__linux__)
+
+static unsigned long int fmt(unsigned long n) {
+    if (opts.C == 2) {
+        return n / 1024;
+    } else if (opts.C == 1) {
+        return n * 1024;
+    } else {
+        return n;
+    }
+}
+
 static int get_free(void) {
     struct meminfo {
         unsigned long int memtotal;
@@ -115,15 +126,6 @@ static int get_free(void) {
     return 0;
 }
 
-static unsigned long int fmt(unsigned long n) {
-    if (opts.C == 2) {
-        return n / 1024;
-    } else if (opts.C == 1) {
-        return n * 1024;
-    } else {
-        return n;
-    }
-}
 
 #elif defined (__APPLE__) && defined (__MACH__)
 #include <sys/sysctl.h>
