@@ -31,7 +31,6 @@ on portablility but a lot of the apps are flaky or don't even compile
 on OS X and FeeBSD. See notes below...
 ========================================================================
 
-**[**         :: not started  NOTE: shell builtin, will probably not implement
 **at**        :: not started
 **base64**    :: not started
 **basename**  :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
@@ -45,7 +44,6 @@ on OS X and FeeBSD. See notes below...
 **chroot**    :: not started
 **cksum**     :: not started
 **comm**      :: not started
-**command**   :: not started  # shell builtin
 **cmp**       :: not started
 **cp**        :: in progress
 **csplit**    :: not started
@@ -59,7 +57,6 @@ on OS X and FeeBSD. See notes below...
 **dmesg**     :: not started
 **domainname**:: not started
 **du**        :: not started
-**echo**      :: not started  # shell builtin...
 **env**       :: in progress  # Works on Linux, and OS X
 **expand**    :: not started
 **expr**      :: not started
@@ -128,29 +125,28 @@ on OS X and FeeBSD. See notes below...
 **talk**      :: not started
 **tee**       :: not started
 **telnet**    :: not started
-**test**      :: not started  NOTE: shell builtin, will probably not implement
 **time**      :: not started
 **touch**     :: completed    #
 **tput**      :: not started
 **tr**        :: not started
 **true**      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
-tsort     :: not started
-tty       :: not started
-umount    :: not started
-uname     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, segfaults
-unexpand  :: not started
-uniq      :: not started
-unlink    :: in progress  # Linux ?? | OS X: compiles, works | FreeBSD: ??
-uptime    :: completed    # Linux: compiles, works | OS X: does not compile | FreeBSD: does not compile
-users     :: not started
-vdir      :: in progress  # Mostly working including colour output
-wc        :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
-which     :: not started
-who       :: not started
-whois     :: not started
-whoami    :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
-write     :: not started
-yes       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
+**tsort**     :: not started
+**tty**       :: not started
+**umount**    :: not started
+**uname**     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, segfaults
+**unexpand**  :: not started
+**uniq**      :: not started
+**unlink**    :: in progress  # Linux ?? | OS X: compiles, works | FreeBSD: ??
+**uptime**    :: completed    # Linux: compiles, works | OS X: does not compile | FreeBSD: does not compile
+**users**     :: not started
+**vdir**      :: in progress  # Mostly working including colour output
+**wc**        :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
+**which**     :: not started
+**who**       :: not started
+**whois**     :: not started
+**whoami**    :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
+**write**     :: not started
+**yes**       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 
 ========================================================================
 
