@@ -20,12 +20,32 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef _COMMON_H
-#define _COMMON_H
+#ifndef _MY_COMMON_H
+#define _MY_COMMON_H
+
+/* Common includes */
+
+#include <stdio.h>
+//#include <utmp.h>
+//#include <sys/types.h>
+#include <stdlib.h>
+#include <errno.h>
+//#include <limits.h>
+#include <string.h>
+#include <ctype.h>
+//#include <unistd.h>
+#include <sys/stat.h>
+//#include <time.h>
+//#include <sys/time.h>
+#include <pwd.h>
+#include <grp.h>
+#include <libgen.h>
+//#include <fcntl.h>
 
 /* Version information */
 #define APPSUITE   "ull-userland"
 #define APPVERSION "0.3"
+#define APPNAME    ""
 
 /* For OS X */
 #if defined(__APPLE__) && defined(__MACH__)
@@ -35,24 +55,6 @@
 #define st_birthtim  st_birthtimespec
 #endif
 
-/* Common includes */
-/*@-skipposixheaders@*/
-#include <utmp.h>
-#include <sys/types.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <limits.h>
-#include <string.h>
-#include <ctype.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <time.h>
-#include <sys/time.h>
-#include <pwd.h>
-#include <grp.h>
-#include <libgen.h>
-#include <fcntl.h>
 
 /* determine portable max path length */
 #ifdef _XOPEN_PATH_MAX
@@ -105,6 +107,9 @@ char *filetype(mode_t st_mode, int flag);         /* Retuns the plain-english fi
 int file_perm_oct(mode_t perm);                   /* Returns octal representation of permissions */
 char *get_username(uid_t uid);                    /* Returns username from uid */
 char *get_groupname(gid_t gid);                   /* Returns groupname from gid */
+
+//int snprintf(char * restrict str, size_t size, const char * restrict format, ...);
+
 
 /* Comonly used function definitions */
 
@@ -215,21 +220,21 @@ int file_perm_oct(mode_t perm) {
 char *filetype(mode_t st_mode, int flag) {
     switch (st_mode & S_IFMT) {
         case S_IFBLK:
-            return (flag == 1) ? "block device"     : "b" ;
+            return (flag == 1) ? (char *)"block device"     : (char *)"b" ;
         case S_IFCHR:
-            return (flag == 1) ? "character device" : "c" ;
+            return (flag == 1) ? (char *)"character device" : (char *)"c" ;
         case S_IFDIR:
-            return (flag == 1) ? "directory"        : "d" ;
+            return (flag == 1) ? (char *)"directory"        : (char *)"d" ;
         case S_IFIFO:
-            return (flag == 1) ? "FIFO/pipe"        : "p" ;
+            return (flag == 1) ? (char *)"FIFO/pipe"        : (char *)"p" ;
         case S_IFLNK:
-            return (flag == 1) ? "symlink"          : "l" ;
+            return (flag == 1) ? (char *)"symlink"          : (char *)"l" ;
         case S_IFREG:
-            return (flag == 1) ? "regular file"     : "-" ;
+            return (flag == 1) ? (char *)"regular file"     : (char *)"-" ;
         case S_IFSOCK:
-            return (flag == 1) ? "socket"           : "s" ;
+            return (flag == 1) ? (char *)"socket"           : (char *)"s" ;
         default:
-            return (flag == 1) ? "unknown"          : "?" ;
+            return (flag == 1) ? (char *)"unknown"          : (char *)"?" ;
     }
 }
 
@@ -240,9 +245,9 @@ char *get_username(uid_t uid) {
 
         if (pwd == NULL) {
                 if (errno == 0) {
-                        return "unknown username";
+                        return (char *)"unknown username";
                 } else {
-                        g_error("username lookup failed");
+                        g_error((char *)"username lookup failed");
                         exit(EXIT_FAILURE);
                 }
         }
@@ -256,14 +261,15 @@ char *get_groupname(gid_t gid) {
     grp = getgrgid(gid);
     if (grp == NULL) {
         if (errno == 0) {
-            return "unknown groupname";
+            return (char *)"unknown groupname";
         } else {
-            g_error("groupname lookup failed");
+            g_error((char *)"groupname lookup failed");
             exit(EXIT_FAILURE);
         }
     }
     return grp->gr_name;
 }
 
+#undef APPNAME /* kludge to get rid of 'macro redefined' warnings */
 
-#endif /* _COMMON_H */
+#endif /* _MY_COMMON_H */
