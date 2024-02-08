@@ -20,8 +20,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#define APPNAME "wc"
+
 #include "common.h"
+#define APPNAME "wc"
 
 /* Our count struct is used both for storing boolean
    values regarding _if_ we want to count something,

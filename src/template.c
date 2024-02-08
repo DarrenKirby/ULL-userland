@@ -21,8 +21,9 @@
  ***************************************************************************/
 
 
-#define APPNAME ""
+
 #include "common.h"
+#define APPNAME ""
 
 struct optstruct {
 } opts;

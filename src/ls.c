@@ -21,12 +21,17 @@
  ***************************************************************************/
 
 
-#define APPNAME "ls"
-#include "common.h"
 
+
+#include <sys/types.h>
 #include <term.h>
 #include <curses.h>
 #include <dirent.h>
+#include <time.h>
+
+#include "common.h"
+
+#define APPNAME "ls"
 
 struct optstruct {
     unsigned int ls_long:1;

@@ -21,10 +21,14 @@
  ***************************************************************************/
 
 
-#define APPNAME "uptime"
 
+#ifdef __linux__
 #include <sys/sysinfo.h>
+#endif
+
 #include "common.h"
+
+#define APPNAME "uptime"
 
 #if defined(__APPLE__) && defined(__MACH__)
 int main() {

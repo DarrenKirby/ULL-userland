@@ -24,8 +24,10 @@
  *       so use this program with a non-ambiguous
  *       path like: './bin/false' or similar */
 
-#define APPNAME "false"
+
 #include "common.h"
+
+#define APPNAME "false"
 
 void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n \

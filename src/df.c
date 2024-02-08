@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#define APPNAME "df"
+
 
 #if defined (__linux__)
 #include "mount.h"
@@ -32,6 +32,8 @@
 
 #include "common.h"
 
+#define APPNAME "df"
+
 struct packed_flags {
     unsigned int b : 1; /* block size (k, m, g, t, p, e, z, y (*1024) or K, M, G..etc (*1000)) */
     unsigned int r : 1; /* human readable (*1024) */
@@ -42,7 +44,7 @@ struct packed_flags {
     unsigned int a : 1; /* include dummy file systems */
 };
 
-struct packed_flags flags = {0,0,0,0,0,0};
+struct packed_flags flags = {0,0,0,0,0,0,0};
 int fmt = 0;
 char get_option_char;
 

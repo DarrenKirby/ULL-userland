@@ -20,8 +20,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#define APPNAME "unlink"
+
 #include "common.h"
+#define APPNAME "unlink"
 
 void show_help(void) {
     printf("Usage: %s [OPTION]\n \

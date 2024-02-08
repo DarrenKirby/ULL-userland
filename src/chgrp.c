@@ -20,14 +20,15 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-
-#define APPNAME "chgrp"
-
-/* Needed for nftw() */
-#define _XOPEN_SOURCE 500
 #include <ftw.h>
 
 #include "common.h"
+#define APPNAME "chgrp"
+
+/* Needed for nftw() */
+#ifdef __linux__
+#define _XOPEN_SOURCE 500
+#endif
 
 struct group *grp_buf;
 char to_grp[100];
@@ -50,8 +51,10 @@ Options:\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
-static int chgrp_recurse(const char *path, const struct stat *stat_buf, int type, struct FTW *ftw_buf) {
-        if (type == FTW_NS) {
+static int chgrp_recurse(const char *path, const struct stat *statptr, int type, struct FTW *pfwt) {
+//static int chgrp_recurse(const char *path, int type) {
+
+    if (type == FTW_NS) {
         printf("stat failed on `%s' (permissions?)\n", path);
         /* non-fatal */
         return 0;
@@ -116,9 +119,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if (strncpy(to_grp, argv[optind], 100) < 0) {
-        perror("strncpy failed");
-    }
+    strncpy(to_grp, argv[optind], 100);
 
     grp_buf = getgrnam(argv[optind]);
     if (grp_buf == NULL) {
@@ -128,8 +129,8 @@ int main(int argc, char *argv[]) {
     optind++;
 
     if (opts.recursive == 1) {
-        struct stat stat_buf;
-        struct FTW ftw_buf;
+        //struct stat stat_buf;
+        //struct FTW ftw_buf;
 
         if (opts.nodereference == 1) {
             if (nftw(argv[optind], chgrp_recurse, 10, FTW_PHYS) != 0) {

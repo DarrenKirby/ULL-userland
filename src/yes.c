@@ -20,9 +20,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#define APPNAME "yes"
-#include "common.h"
 
+#include "common.h"
+#define APPNAME "yes"
 
 void show_help(void) {
     printf("Usage: %s [String]...\n\

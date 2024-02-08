@@ -21,8 +21,10 @@
  ***************************************************************************/
 
 
-#define APPNAME "free"
+
 #include "common.h"
+
+#define APPNAME "free"
 
 struct optstruct {
     int C;         /* -b, -k, or -m */
@@ -187,8 +189,8 @@ static int get_used_mem(void) {
     ssize_t linelen;
 
     /* first line is throwaway */
-    if (!(linelen = getline(&line, &linecap, fd)) > 0) {
-	perror("linelength");
+    if ((linelen = getline(&line, &linecap, fd)) < 0) {
+        perror("linelength");
     }
     long int value[3];
 
@@ -215,14 +217,14 @@ static long int fmt(long int n) {
 
 static int get_free(void) {
     if (get_total_mem() != 0)
-	printf("Could not get total memory\n");
+        printf("Could not get total memory\n");
     if (get_used_mem() != 0)
-	printf("Could not obtain used memory\n");
+        printf("Could not obtain used memory\n");
     if (get_swap() != 0)
-	printf("Could not obtain swap memory\n");
-	printf("\t%10s\t%10s\t%10s\n", "Total", "Used", "Free");
-	printf("Mem:\t%10ld\t%10ld\t%10ld\n", fmt(m_info.mem_total),fmt(m_info.mem_used),fmt(m_info.mem_free));
-	printf("Swap:\t%10ld\t%10ld\t%10ld\n", fmt(m_info.swap_total),fmt(m_info.swap_used),fmt(m_info.swap_free));
+        printf("Could not obtain swap memory\n");
+    printf("\t%10s\t%10s\t%10s\n", "Total", "Used", "Free");
+    printf("Mem:\t%10ld\t%10ld\t%10ld\n", fmt(m_info.mem_total),fmt(m_info.mem_used),fmt(m_info.mem_free));
+    printf("Swap:\t%10ld\t%10ld\t%10ld\n", fmt(m_info.swap_total),fmt(m_info.swap_used),fmt(m_info.swap_free));
     return 0;
 }
 

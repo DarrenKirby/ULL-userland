@@ -21,8 +21,10 @@
  ***************************************************************************/
 
 
-#define APPNAME "printenv"
+
 #include "common.h"
+
+#define APPNAME "printenv"
 
 extern char **environ;
 

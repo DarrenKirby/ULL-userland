@@ -21,13 +21,18 @@
  ***************************************************************************/
 
 
-#define APPNAME "chown"
+
 
 /* Needed for nftw() */
+#ifdef __linux__
 #define _XOPEN_SOURCE 500
+#endif
 #include <ftw.h>
 
+
 #include "common.h"
+
+#define APPNAME "chown"
 
 struct group *grp_buf;
 struct passwd *own_buf;
@@ -129,10 +134,8 @@ int main(int argc, char *argv[]) {
         /* user:group */
         po = strtok(argv[optind], ":");
         pg = strtok(NULL, ":");
-        if (strncpy(to_own, po, 100) < 0)
-            perror("strncpy failed");
-        if (strncpy(to_grp, pg, 100)< 0)
-            perror("strncpy failed");
+        strncpy(to_own, po, 100);
+        strncpy(to_grp, pg, 100);
 
         opts.group_too = 1;
     } else {
@@ -154,8 +157,8 @@ int main(int argc, char *argv[]) {
     }
 
     if (opts.recursive == 1) {
-        struct stat stat_buf;
-        struct FTW ftw_buf;
+        //struct stat stat_buf;
+        //struct FTW ftw_buf;
 
         if (opts.nodereference == 1) {
             if (nftw(argv[optind], chown_recurse, 10, FTW_PHYS) != 0) {

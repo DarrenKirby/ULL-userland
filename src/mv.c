@@ -21,8 +21,10 @@
  ***************************************************************************/
 
 
-#define APPNAME "mv"
+
 #include "common.h"
+
+#define APPNAME "mv"
 
 struct optstruct {
     int force;
@@ -97,7 +99,7 @@ int main(int argc, char *argv[]) {
     int isdir = 0;                 /* Final arg a directory? */
     char *from;                    /* From name */
     char *to;                      /* To name */
-    char tmp[FILEMAX];             /* Tmp name for 'to' when it is a directory */
+    char tmp[FILEMAX + 1];             /* Tmp name for 'to' when it is a directory */
 
     struct stat s;
 

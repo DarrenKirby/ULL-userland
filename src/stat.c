@@ -20,9 +20,11 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <time.h>
+#include <sys/types.h>
 
-#define APPNAME "stat"
 #include "common.h"
+#define APPNAME "stat"
 
 static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
@@ -69,17 +71,17 @@ static void stat_file(char *filename, int follow_links) {
         }
     }
 
-    printf("File:  '%s'\n", filename);
-    printf("Size:   %lld\t\t", (long long) buf.st_size);
+    printf("  File: '%s'\n", filename);
+    printf("  Size: %lld\t\t", (long long) buf.st_size);
     printf("Blocks: %lld\t\t", (long long)buf.st_blocks);
     printf("IO Block: %ld\t\t", (long) buf.st_blksize);
     printf("%s\n", filetype(buf.st_mode, 1));
 
     printf("Device: %d/%d\t\t", major(buf.st_dev), minor(buf.st_dev));
-    printf("Inode: %ld\t\t", (long) buf.st_ino);
+    printf("Inode: %ld\t", (long) buf.st_ino);
     printf("Links: %ld\n", (long) buf.st_nlink);
 
-    printf("Perms:  %#o/%s\t", file_perm_oct(buf.st_mode), file_perm_str(buf.st_mode, 1));
+    printf(" Perms: %#o/%s\t", file_perm_oct(buf.st_mode), file_perm_str(buf.st_mode, 1));
     printf("Uid: %ld/%s\t", (long) buf.st_uid, get_username(buf.st_uid));
     printf("Gid: %ld/%s\n", (long) buf.st_gid, get_groupname(buf.st_gid));
 

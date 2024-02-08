@@ -21,8 +21,9 @@
  ***************************************************************************/
 
 
-#define APPNAME "rm"
+
 #include "common.h"
+#define APPNAME "rm"
 
 static void showHelp(void) {
     printf("Usage: %s [OPTION]... [FILE]...\n\n\

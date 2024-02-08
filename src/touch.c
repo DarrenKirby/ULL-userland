@@ -20,9 +20,11 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <fcntl.h>
+#include <sys/time.h>
 
-#define APPNAME "touch"
 #include "common.h"
+#define APPNAME "touch"
 
 struct optstruct {
     unsigned int access:1;

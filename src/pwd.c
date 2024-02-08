@@ -21,8 +21,9 @@
  ***************************************************************************/
 
 
-#define APPNAME "pwd"
+
 #include "common.h"
+#define APPNAME "pwd"
 
 void show_help(void) {
     printf("Usage: %s [OPTION]\n\n\

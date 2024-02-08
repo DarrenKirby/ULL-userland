@@ -21,10 +21,12 @@
  ***************************************************************************/
 
 
-#define APPNAME "vdir"
-#include "common.h"
-
+#include <sys/types.h>
+#include <time.h>
 #include <dirent.h>
+
+#include "common.h"
+#define APPNAME "vdir"
 
 struct optstruct {
     unsigned int human:1;

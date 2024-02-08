@@ -1,13 +1,16 @@
-CC = cc
+# CC ?= gcc
 
 # hard coded path for testing
-#CC = /usr/local/bin/gcc  # Use gcc
-# CC = /usr/bin/clang      # use clang/llvm
+CC = /usr/local/opt/gcc/bin/gcc-13  # Use gcc
+# CC = /usr/bin/clang                 # use clang/llvm
+CFLAGS ?= -O2 -Wall -Wextra -pedantic -Wno-unused-parameter
 
-CFLAGS ?= -g -Wall -Wno-unused-variable -O2 -std=gnu11 #-std=gnu99
-#CFLAGS ?= -g -Wall -O2 -std=gnu11
+#CFLAGS ?= -O2 -Wall -Wextra -Werror -pedantic -Wno-unused-parameter #-std=gnu99
+#CFLAGS ?= -g  -O2 -std=gnu11
 SRCDIR = src
 BINDIR = bin
+
+
 
 package = ull-userland
 version = 0.3

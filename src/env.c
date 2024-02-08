@@ -21,8 +21,10 @@
  ***************************************************************************/
 
 
-#define APPNAME "env"
+
 #include "common.h"
+
+#define APPNAME "env"
 
 extern char **environ;
 
