@@ -1,7 +1,7 @@
 /***************************************************************************
  *   wc.c - print newline, word, and byte counts                           *
  *                                                                         *
- *   Copyright (C) 2014 by Darren Kirby                                    *
+ *   Copyright (C) 2014 - 2024 by Darren Kirby                             *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *

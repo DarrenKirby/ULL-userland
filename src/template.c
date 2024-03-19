@@ -1,7 +1,7 @@
 /***************************************************************************
  *    -                                      *
  *                                                                         *
- *   Copyright (C) 2014-2015 by Darren Kirby                               *
+ *   Copyright (C) 2014 - 2024 by Darren Kirby                             *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
