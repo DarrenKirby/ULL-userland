@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
         switch(opt) {
             case 's':
                 sfx = 1;
-                strncpy(suffix, optarg, PATHMAX);
+                strncpy(suffix, optarg, PATHMAX - 1); // leave room in buffer for null byte
                 break;
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
