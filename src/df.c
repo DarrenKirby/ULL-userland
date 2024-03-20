@@ -22,6 +22,7 @@
 
 
 
+#include <stdio.h>
 #if defined (__linux__)
 #include "mount.h"
 #else
@@ -56,7 +57,12 @@ Options:\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
-
+long int calculate_percent(long int total, long int free) {
+    long int result;
+    long int used = (total - free);
+    result = ((double)used / (double)total) * 100;
+    return result;
+}
 
 int main(int argc, char *argv[]) {
     int opt;
@@ -164,16 +170,29 @@ int main(int argc, char *argv[]) {
     printf("sizeof foo: %lu\n", sizeof(foo));
 
 #else
-    struct statfs *foo = malloc(sizeof(struct statfs));
+    struct statfs *mounted_filesystems = malloc(sizeof(struct statfs));
     if (argc == optind) /* display all mounted file systems */
-        n_mounts = getfsstat(foo, 8096, MNT_NOWAIT);
+        n_mounts = getfsstat(mounted_filesystems, 8096, MNT_NOWAIT);
 
-    printf("Found %i mounted file systems\n", n_mounts);
-    printf("sizeof foo: %lu\n", sizeof(foo));
+    //printf("Found %i mounted file systems\n", n_mounts);
+    //printf("sizeof statfs struct: %lu\n", sizeof(mounted_filesystems));
 
 #endif
-    //for (int i = 0; i < n_mounts; i++)
-    //printf("%s\n", foo[0].f_fstypename);
+    printf("%*s %*s %*s %*s %*s    %s\n", 16, "Filesystem",
+           12, "1K-blocks",
+           12, "Used",
+           12, "Available",
+           6, "Use%",
+           "Mounted on");
+    //printf("Filesystem\t1K-blocks\tUsed\t\tAvailable\tUse%%\tMounted on\n");
+    for (int i = 0; i < n_mounts; i++) {
+        printf("%*s %*llu %*llu %*llu %*lu%%   %s\n", 16, mounted_filesystems[i].f_mntfromname,
+               12, mounted_filesystems[i].f_blocks,
+               12, mounted_filesystems[i].f_blocks - mounted_filesystems[i].f_bfree,
+               12, mounted_filesystems[i].f_bfree,
+               6, calculate_percent(mounted_filesystems[i].f_blocks, mounted_filesystems[i].f_bfree),
+               mounted_filesystems[i].f_mntonname);
+    }
     //printf("%s\n", foo[1].f_fstypename);
     //printf("%s\n", foo[2].f_fstypename);
     //printf("%s\n", foo[3].f_fstypename);
