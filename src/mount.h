@@ -31,6 +31,9 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include "common.h"
+
+
 #define FS_TYPE_LEN      90
 #define MNT_FLAGS_LEN    256
 
