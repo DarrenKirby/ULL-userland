@@ -36,8 +36,8 @@
 
 struct group *grp_buf;
 struct passwd *own_buf;
-char to_grp[100];
-char to_own[100];
+char to_grp[FILEMAX];
+char to_own[FILEMAX];
 
 char *pg;
 char *po;
@@ -117,6 +117,7 @@ int main(int argc, char *argv[]) {
                 break;
             case 'd':
                 opts.nodereference = 1;
+                break;
             case ':':
                  /* getopt_long prints own error message */
                 exit(EXIT_FAILURE);
@@ -134,13 +135,13 @@ int main(int argc, char *argv[]) {
         /* user:group */
         po = strtok(argv[optind], ":");
         pg = strtok(NULL, ":");
-        strncpy(to_own, po, 100);
-        strncpy(to_grp, pg, 100);
+        strncpy(to_own, po, FILEMAX + 1);
+        strncpy(to_grp, pg, FILEMAX + 1);
 
         opts.group_too = 1;
     } else {
         /* only specified user (new owner) */
-        strncpy(to_own, argv[optind], 100);
+        strncpy(to_own, argv[optind], FILEMAX + 1);
     }
     optind++;
 
