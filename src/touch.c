@@ -86,7 +86,7 @@ static void to_time(char * r_file) {
 int main(int argc, char *argv[]) {
     int opt;
     opts.current = 1;
-    char r_file[PATHMAX];
+    char r_file[PATHMAX + 1];
 
     struct option longopts[] = {
         {"help", 0, NULL, 'h'},
