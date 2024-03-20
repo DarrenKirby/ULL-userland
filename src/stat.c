@@ -20,6 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+
 #include <time.h>
 #include <sys/types.h>
 
@@ -36,18 +37,17 @@ Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
 #define TIME_SIZE sizeof("1970-01-01 00:00:00.000000000 UTC")
-#define NANO 1000000000L
 
 static char *format_time(struct timespec *ts) {
     struct tm bdt;
-    static char str[TIME_SIZE + 1];
+    static char str[TIME_SIZE + 10];
 
     if (localtime_r(&(ts->tv_sec), &bdt) == NULL) {
         g_error("error converting time");
         exit(EXIT_FAILURE);
     }
 
-    snprintf(str, TIME_SIZE, "%i-%02i-%02i %02i:%02i:%02i.%09ld %s",
+    snprintf(str, TIME_SIZE + 4, "%i-%02i-%02i %02i:%02i:%02i.%09li %s",
         (bdt.tm_year + 1900), bdt.tm_mon, bdt.tm_mday,
         bdt.tm_hour, bdt.tm_min, bdt.tm_sec,
         ts->tv_nsec, bdt.tm_zone
