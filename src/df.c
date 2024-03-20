@@ -109,6 +109,7 @@ int main(int argc, char *argv[]) {
                     case 'Z': fmt = 15; break;
                     case 'Y': fmt = 16; break;
                 }
+                break;
             case 'r':
                 flags.r = 1;
                 break;
@@ -123,6 +124,7 @@ int main(int argc, char *argv[]) {
                 break;
             case 'm':
                 fmt = 2;
+                break;
             case 'g':
                 fmt = 3;
                 break;
@@ -134,8 +136,10 @@ int main(int argc, char *argv[]) {
                 break;
             case 't':
                 flags.t = 1;
+                break;
             case 'a':
                 flags.a = 1;
+                break;
             case ':':
                  /* getopt_long prints own error message */
                 exit(EXIT_FAILURE);
