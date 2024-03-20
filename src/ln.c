@@ -39,10 +39,10 @@ static void show_help(void) {
 }
 
 struct optstruct {
-    int symbolic:1;
-    int force:1;
-    int verbose:1;
-    int interactive:1;
+    unsigned int symbolic:1;
+    unsigned int force:1;
+    unsigned int verbose:1;
+    unsigned int interactive:1;
 } opts;
 
 int main(int argc, char *argv[]) {
