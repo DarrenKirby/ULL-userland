@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 
+#include <stddef.h>
 #include <sys/types.h>
 #include <time.h>
 #include <dirent.h>
@@ -82,7 +83,7 @@ static void p_colour(char * filename, mode_t st_mode) {
 }
 
 static void format(long long int bytes) {
-    char size_string[10];
+    char size_string[22];
     double result;
     if (bytes < 1024) {
         if (sprintf(size_string, "%lld", bytes) < 0) {
@@ -160,12 +161,12 @@ int main(int argc, char *argv[]) {
     DIR *dp;
     struct dirent *list;
 
-    char path_to_ls[PATHMAX];
+    char path_to_ls[PATHMAX + 1];
 
     if (argv[optind] != NULL) {
         strncpy(path_to_ls, argv[optind], PATHMAX);
     } else {
-        strncpy(path_to_ls, ".", 1);
+        strncpy(path_to_ls, ".", 2);
     }
 
     if ((dp = opendir(path_to_ls)) == NULL){
@@ -182,8 +183,8 @@ int main(int argc, char *argv[]) {
          */
         if (opts.all == 0) {
 
-            if (strncmp(".",  list->d_name, 1) == 0 ||
-                strncmp("..", list->d_name, 2) == 0) {
+            if (strncmp(".",  list->d_name, 2) == 0 ||
+                strncmp("..", list->d_name, 3) == 0) {
                 continue;
                }
         }
@@ -193,18 +194,18 @@ int main(int argc, char *argv[]) {
 
     rewinddir(dp);
 
-    char filenames[n_files][FILEMAX+1];
+    char filenames[n_files][PATHMAX + 1];
     u_int n = 0;
 
     while ((list = readdir(dp)) != NULL) {
         if (opts.all == 0) {
 
-            if (strncmp(".",  list->d_name, 1) == 0 ||
-                strncmp("..", list->d_name, 2) == 0) {
+            if (strncmp(".",  list->d_name, 2) == 0 ||
+                strncmp("..", list->d_name, 3) == 0) {
                 continue;
                }
         }
-        strncpy(filenames[n], list->d_name, FILEMAX+1);
+        strncpy(filenames[n], list->d_name, PATHMAX);
         n++;
     }
     closedir(dp);
@@ -229,10 +230,10 @@ int main(int argc, char *argv[]) {
     time_t now_t;
     (void) time(&now_t);
     now = localtime(&now_t);
-    u_int current_year = now->tm_year + 1900;
+    int current_year = now->tm_year + 1900;
     char string_time[13];
 
-    for (int f = 0; f < n_files; f++) {
+    for (size_t f = 0; f < n_files; f++) {
         if (opts.dereference == 1) {
             if (stat(filenames[f], &buf) == -1) {
                 perror("stat");
@@ -253,7 +254,7 @@ int main(int argc, char *argv[]) {
         printf("%2ld ", (long) buf.st_nlink);
         printf("%s %s ", get_username(buf.st_uid), get_groupname(buf.st_gid));
         (opts.human == 0) ?
-            printf("%6lld ", (long long) buf.st_size) :       /* bytes */
+            (void)printf("%6lld ", (long long) buf.st_size) :       /* bytes */
             format((long long)buf.st_size) ;                  /* ie: 16k */
 
         fil = localtime(&buf.st_mtime);
