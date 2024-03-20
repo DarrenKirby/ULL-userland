@@ -31,7 +31,7 @@
 #endif
 
 struct group *grp_buf;
-char to_grp[100];
+char to_grp[FILEMAX];
 
 struct optstruct {
     int nodereference;
@@ -106,6 +106,7 @@ int main(int argc, char *argv[]) {
                 break;
             case 'd':
                 opts.nodereference = 1;
+                break;
             case ':':
                  /* getopt_long prints own error message */
                 exit(EXIT_FAILURE);
@@ -119,7 +120,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    strncpy(to_grp, argv[optind], 100);
+    strncpy(to_grp, argv[optind], FILEMAX + 1);
 
     grp_buf = getgrnam(argv[optind]);
     if (grp_buf == NULL) {
