@@ -63,7 +63,7 @@ struct count count_all(char *filename) {
 
     int c;
     int state = 0;
-    int current_line_count = 0;
+    unsigned int current_line_count = 0;
 
 
     while ((c = getc(fp)) != EOF) {
