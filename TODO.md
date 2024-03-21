@@ -11,7 +11,7 @@ Apple clang version 14.0.3 (clang-1403.0.22.14.1)
 Target: x86_64-apple-darwin22.1.0
 
 I'll putter around as I find time to do so. In the meantime,
-I've decided to keep my original note from 2014 for  historic
+I've decided to keep my original note from 2014 for historic
 and sentimental reasons:
 
 =======================================================================
@@ -36,7 +36,7 @@ on OS X and FeeBSD. See notes below...
 **basename**  :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 **cal**       :: not started
 **cat**       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
-**cd**        :: completed    # Linux: compiles | OS X: compiles | FreeBSD: compiles (But ueless on all: read cd.c source)
+**cd**        :: completed    # Linux: compiles | OS X: compiles | FreeBSD: compiles (But useless on all: read cd.c source)
 **chgrp**     :: completed    # Linux ?? | OS X: compiles, works | FreeBSD ??
 **chmod**     :: not started
 **chown**     :: completed    # Linux ?? | OS X: compiles, works | FreeBSD ??
@@ -137,7 +137,7 @@ on OS X and FeeBSD. See notes below...
 **unexpand**  :: not started
 **uniq**      :: not started
 **unlink**    :: in progress  # Linux ?? | OS X: compiles, works | FreeBSD: ??
-**uptime**    :: completed    # Linux: compiles, works | OS X: does not compile | FreeBSD: does not compile
+**uptime**    :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: untested
 **users**     :: not started
 **vdir**      :: in progress  # Mostly working including colour output
 **wc**        :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
