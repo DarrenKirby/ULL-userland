@@ -36,17 +36,17 @@
 
 struct group *grp_buf;
 struct passwd *own_buf;
-char to_grp[FILEMAX];
-char to_own[FILEMAX];
+char to_grp[FILEMAX + 1];
+char to_own[FILEMAX + 1];
 
 char *pg;
 char *po;
 
 struct optstruct {
-    int nodereference;
-    int recursive;
-    int verbose;
-    int group_too;
+    unsigned int nodereference;
+    unsigned int recursive;
+    unsigned int verbose;
+    unsigned int group_too;
 } opts;
 
 
@@ -69,12 +69,24 @@ static int chown_recurse(const char *path, const struct stat *stat_buf, int type
     }
 
     if (type == FTW_SL && opts.nodereference == 1) {
-        if (lchown(path, own_buf->pw_uid, (opts.group_too == 1 ? grp_buf->gr_gid : -1)) != 0) {
+        if (opts.group_too == 1) {
+            if (lchown(path, own_buf->pw_uid, grp_buf->gr_gid) != 0) {
                 perror("chown failed");
             }
+        } else {
+            if (lchown(path, own_buf->pw_uid, -1) != 0) {
+                perror("chown failed");
+            }
+        }
     } else {
-        if (chown(path, own_buf->pw_uid, (opts.group_too == 1 ? grp_buf->gr_gid : -1)) != 0) {
-            perror("chown failed");
+        if (opts.group_too == 1) {
+            if (chown(path, own_buf->pw_uid, grp_buf->gr_gid) != 0) {
+                perror("chown failed");
+            }
+        } else {
+            if (chown(path, own_buf->pw_uid, -1) != 0) {
+                perror("chown failed");
+            }
         }
     }
 
@@ -135,13 +147,13 @@ int main(int argc, char *argv[]) {
         /* user:group */
         po = strtok(argv[optind], ":");
         pg = strtok(NULL, ":");
-        strncpy(to_own, po, FILEMAX + 1);
-        strncpy(to_grp, pg, FILEMAX + 1);
+        strncpy(to_own, po, FILEMAX);
+        strncpy(to_grp, pg, FILEMAX);
 
         opts.group_too = 1;
     } else {
         /* only specified user (new owner) */
-        strncpy(to_own, argv[optind], FILEMAX + 1);
+        strncpy(to_own, argv[optind], FILEMAX);
     }
     optind++;
 
@@ -175,13 +187,25 @@ int main(int argc, char *argv[]) {
 
     while (optind < argc) {
         if (opts.nodereference == 1) {
-            if (lchown(argv[optind], own_buf->pw_uid, (opts.group_too == 1 ? grp_buf->gr_gid : -1)) != 0) {
+            if (opts.group_too == 1) {
+                if (lchown(argv[optind], own_buf->pw_uid, grp_buf->gr_gid) != 0) {
                 perror("chown failed");
+                }
+            } else {
+                if (lchown(argv[optind], own_buf->pw_uid, -1) != 0) {
+                perror("chown failed");
+                }
             }
 
-        }else {
-            if (chown(argv[optind], own_buf->pw_uid, (opts.group_too == 1 ? grp_buf->gr_gid : -1)) != 0) {
+        } else {
+            if (opts.group_too == 1) {
+                if (chown(argv[optind], own_buf->pw_uid, grp_buf->gr_gid) != 0) {
                 perror("chown failed");
+                }
+            } else {
+                if (chown(argv[optind], own_buf->pw_uid, -1) != 0) {
+                perror("chown failed");
+                }
             }
         }
 
