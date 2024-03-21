@@ -21,7 +21,7 @@
  ***************************************************************************/
 
 
-
+#include <stddef.h>
 #ifdef __linux__
 #include <sys/sysinfo.h>
 #endif
@@ -31,52 +31,28 @@
 #define APPNAME "uptime"
 
 #if defined(__APPLE__) && defined(__MACH__)
-int main() {
-    printf("Bug: Not working on OS X (and probably *BSD)\nneed to find substitute for clearenv()");
-    return EXIT_SUCCESS;
+
+#include <time.h>
+#include <sys/sysctl.h>
+#include <utmpx.h>
+
+
+int get_num_users() {
+    struct utmpx *utmpstruct;
+    int numuser = 0;
+    setutxent();
+    while ((utmpstruct = getutxent())) {
+        if ((utmpstruct->ut_type == USER_PROCESS) &&
+            (utmpstruct->ut_user[0] != '\0'))
+            numuser++;
+    }
+    endutxent();
+    return numuser;
 }
 
 #else
 
-
-
-#define ONEDAY  86400
-#define ONEHOUR  3600
-#define ONEMINUTE  60
-#define LOADS_SCALE 65536.0
-
-int error;
-
-static int getTime(void) {
-    struct tm *tm_ptr;
-    time_t the_time;
-
-    (void) time(&the_time);
-    tm_ptr = localtime(&the_time);
-
-    printf(" %02d:%02d:%02d", tm_ptr->tm_hour, tm_ptr->tm_min, tm_ptr->tm_sec);
-    return EXIT_SUCCESS;
-}
-
-static int getUptime(void) {
-    struct sysinfo s_info;
-    error = sysinfo(&s_info);
-
-    int days, hours, minutes;
-    long int upmind, upminh, uptimes;
-
-    uptimes = s_info.uptime; /* returned in seconds */
-    days = uptimes / ONEDAY;
-    upmind = uptimes - (days * ONEDAY);
-    hours = upmind / ONEHOUR;
-    upminh = upmind - hours * ONEHOUR;
-    minutes = upminh / ONEMINUTE;
-
-    float av1, av2, av3;
-    av1 = s_info.loads[0] / LOADS_SCALE;
-    av2 = s_info.loads[1] / LOADS_SCALE;
-    av3 = s_info.loads[2] / LOADS_SCALE;
-
+int get_num_users() {
     /* This next block is stolen fron GNU uptime */
     struct utmp *utmpstruct;
     int numuser = 0;
@@ -87,9 +63,88 @@ static int getUptime(void) {
             numuser++;
     }
     endutent();
+    return numuser;
 
-    printf(" up %i day%s, %02i:%02i, %i user%s, load average: %2.2f, %2.2f, %2.2f\n",
-            days, (days != 1) ? "s" : "", hours, minutes, numuser, (numuser != 1) ? "s" : "", av1, av2, av3);
+}
+
+#endif
+
+
+#define ONEDAY  86400
+#define ONEHOUR  3600
+#define ONEMINUTE  60
+#define LOADS_SCALE 65536.0
+
+int error;
+
+static int get_time(void) {
+    struct tm *tm_ptr;
+    time_t the_time;
+
+    (void) time(&the_time);
+    tm_ptr = localtime(&the_time);
+
+    printf(" %02d:%02d:%02d", tm_ptr->tm_hour, tm_ptr->tm_min, tm_ptr->tm_sec);
+    return EXIT_SUCCESS;
+}
+
+static int print_uptime(void) {
+
+    int numuser;
+    int days, hours, minutes;
+    long int upmind, upminh, uptimes;
+
+    float av1, av2, av3;
+#ifdef __linux__
+    // get uptime linux
+    struct sysinfo s_info;
+    error = sysinfo(&s_info);
+
+    uptimes = s_info.uptime; /* returned in seconds */
+
+    // get load average linux
+    av1 = s_info.loads[0] / LOADS_SCALE;
+    av2 = s_info.loads[1] / LOADS_SCALE;
+    av3 = s_info.loads[2] / LOADS_SCALE;
+#else
+    // get uptime OS X/*BSD
+    struct timeval boottime;
+    size_t len = sizeof(boottime);
+    int mib[2] = { CTL_KERN, KERN_BOOTTIME };
+
+    if( sysctl(mib, 2, &boottime, &len, NULL, 0) < 0 ) {
+        printf("Error getting uptime");
+    }
+
+    time_t bsec = boottime.tv_sec, csec = time(NULL);
+    uptimes = difftime(csec, bsec);
+
+    // get load average OS X/*BSD
+    struct loadavg loads;
+    size_t lenl = sizeof(loads);
+    int mib2[2] = { CTL_VM, VM_LOADAVG };
+
+    if (sysctl(mib2, 2, &loads, &lenl, NULL, 0) < 0) {
+        printf("Error getting load average");
+    }
+
+    av1 = loads.ldavg[0] / (float)loads.fscale;
+    av2 = loads.ldavg[1] / (float)loads.fscale;
+    av3 = loads.ldavg[2] / (float)loads.fscale;
+
+#endif
+
+    days = uptimes / ONEDAY;
+    upmind = uptimes - (days * ONEDAY);
+    hours = upmind / ONEHOUR;
+    upminh = upmind - hours * ONEHOUR;
+    minutes = upminh / ONEMINUTE;
+
+    numuser = get_num_users();
+
+    printf("  up %i day%s %02i:%02i,  %i user%s,  load average: %2.2f, %2.2f, %2.2f\n",
+             days, (days != 1) ? "s" : "", hours, minutes, numuser, (numuser != 1) ? "s" : "", av1, av2, av3);
+
     return error;
 }
 
@@ -124,11 +179,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    getTime();
-    error = getUptime();
+    get_time();
+    error = print_uptime();
     if (error == 0)
         return EXIT_SUCCESS;
     else
         return EXIT_FAILURE;
 }
-#endif
+
