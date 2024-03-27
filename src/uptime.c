@@ -22,22 +22,25 @@
 
 
 #include <stddef.h>
-#ifdef __linux__
+#include <utmpx.h>
+#include <time.h>
+
+#ifdef  __linux__
 #include <sys/sysinfo.h>
+#else
+#include <sys/sysctl.h>
 #endif
 
 #include "common.h"
 
 #define APPNAME "uptime"
 
-#if defined(__APPLE__) && defined(__MACH__)
+#define ONEDAY  86400
+#define ONEHOUR  3600
+#define ONEMINUTE  60
+#define LOADS_SCALE 65536.0
 
-#include <time.h>
-#include <sys/sysctl.h>
-#include <utmpx.h>
-
-
-int get_num_users() {
+int get_num_users(void) {
     struct utmpx *utmpstruct;
     int numuser = 0;
     setutxent();
@@ -50,32 +53,6 @@ int get_num_users() {
     return numuser;
 }
 
-#else
-
-int get_num_users() {
-    /* This next block is stolen fron GNU uptime */
-    struct utmp *utmpstruct;
-    int numuser = 0;
-    setutent();
-    while ((utmpstruct = getutent())) {
-        if ((utmpstruct->ut_type == USER_PROCESS) &&
-            (utmpstruct->ut_name[0] != '\0'))
-            numuser++;
-    }
-    endutent();
-    return numuser;
-
-}
-
-#endif
-
-
-#define ONEDAY  86400
-#define ONEHOUR  3600
-#define ONEMINUTE  60
-#define LOADS_SCALE 65536.0
-
-int error;
 
 static int get_time(void) {
     struct tm *tm_ptr;
@@ -88,8 +65,10 @@ static int get_time(void) {
     return EXIT_SUCCESS;
 }
 
+
 static int print_uptime(void) {
 
+    int error = 0;
     int numuser;
     int days, hours, minutes;
     long int upmind, upminh, uptimes;
@@ -114,6 +93,7 @@ static int print_uptime(void) {
 
     if( sysctl(mib, 2, &boottime, &len, NULL, 0) < 0 ) {
         printf("Error getting uptime");
+        error = -1;
     }
 
     time_t bsec = boottime.tv_sec, csec = time(NULL);
@@ -126,6 +106,7 @@ static int print_uptime(void) {
 
     if (sysctl(mib2, 2, &loads, &lenl, NULL, 0) < 0) {
         printf("Error getting load average");
+        error = -1;
     }
 
     av1 = loads.ldavg[0] / (float)loads.fscale;
@@ -142,11 +123,12 @@ static int print_uptime(void) {
 
     numuser = get_num_users();
 
-    printf("  up %i day%s %02i:%02i,  %i user%s,  load average: %2.2f, %2.2f, %2.2f\n",
-             days, (days != 1) ? "s" : "", hours, minutes, numuser, (numuser != 1) ? "s" : "", av1, av2, av3);
+    printf("  up %i day%s %02i:%02i,  %i user%s,  load average: %2.2f, %2.2f, %2.2f\n", days,
+        (days != 1) ? "s" : "", hours, minutes, numuser, (numuser != 1) ? "s" : "", av1, av2, av3);
 
     return error;
 }
+
 
 static void showHelp(void) {
     printf("Usage: %s [-V, --version] [-h, --help]\n\n \
@@ -154,6 +136,7 @@ static void showHelp(void) {
     -h, --help\t\tdisplay this help\n\n \
     Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
+
 
 int main(int argc, char *argv[]) {
     int opt;
@@ -180,8 +163,7 @@ int main(int argc, char *argv[]) {
     }
 
     get_time();
-    error = print_uptime();
-    if (error == 0)
+    if (print_uptime() == 0)
         return EXIT_SUCCESS;
     else
         return EXIT_FAILURE;
