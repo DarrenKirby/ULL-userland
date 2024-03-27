@@ -162,12 +162,12 @@ int main(int argc, char *argv[]) {
 
     int n_mounts = 0;
 #if defined (__linux__)
-    struct statfs_ext *foo = NULL;
+    struct statfs_ext *mounted_filesystems = malloc(sizeof(struct statfs_ext));
     if (argc == optind) /* display all mounted file systems */
-        n_mounts = getfsstat_linux(foo, 8096);
+        n_mounts = getfsstat_linux(mounted_filesystems, 8096);
 
     printf("Found %i mounted file systems\n", n_mounts);
-    printf("sizeof foo: %lu\n", sizeof(foo));
+    printf("sizeof foo: %lu\n", sizeof(mounted_filesystems));
 
 #else
     struct statfs *mounted_filesystems = malloc(sizeof(struct statfs));
