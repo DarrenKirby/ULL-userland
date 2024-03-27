@@ -20,6 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+
 #include <stdlib.h>
 #include <utmpx.h>
 #include <time.h>
@@ -35,6 +36,7 @@ struct optstruct {
     unsigned int quick;
 } opts;
 
+
 static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
 Show all logged in users\n \
@@ -45,7 +47,8 @@ Options:\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
-void print_boot_time() {
+
+void print_boot_time(void) {
     struct timeval boottime;
     struct tm *tm_ptr;
 
@@ -64,12 +67,12 @@ void print_boot_time() {
            tm_ptr->tm_min, tm_ptr->tm_sec);
 }
 
-void print_users() {
+
+void print_users(void) {
     struct utmpx *utmpstruct;
     time_t the_time;
     struct tm *tm_ptr;
 
-    int numuser = 0;
     setutxent();
     while ((utmpstruct = getutxent())) {
         if ((utmpstruct->ut_type == USER_PROCESS) &&
@@ -82,10 +85,10 @@ void print_users() {
                         tm_ptr->tm_min, tm_ptr->tm_sec);
             }
 
-            numuser++;
     }
     endutxent();
 }
+
 
 int main(int argc, char *argv[]) {
     int opt;
