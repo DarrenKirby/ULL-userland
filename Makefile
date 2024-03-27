@@ -1,23 +1,25 @@
 # CC ?= gcc
 
 # hard coded path for testing
-CC = /usr/local/opt/gcc/bin/gcc-13  # Use gcc
-# CC = /usr/bin/clang                 # use clang/llvm
+CC ?= /usr/local/opt/gcc/bin/gcc-13  # Use gcc
+# CC ?= /usr/bin/clang                 # use clang/llvm
 CFLAGS ?= -O2 -Wall -Wextra -pedantic -Wno-unused-parameter
 
 #CFLAGS ?= -O2 -Wall -Wextra -Werror -pedantic -Wno-unused-parameter #-std=gnu99
 #CFLAGS ?= -g  -O2 -std=gnu11
-SRCDIR = src
-BINDIR = bin
+SRCDIR := src
+BINDIR := bin
 
+package := ull-userland
+version := 0.3
+tarname := $(package)
+distdir := $(tarname)-$(version)
 
+all: prep basename cat cd chgrp chown cp df dirname env false free link ln ls mkdir mv od printenv \
+     pwd rm sleep stat sync touch true uname unlink uptime vdir wc who whoami yes
 
-package = ull-userland
-version = 0.3
-tarname = $(package)
-distdir = $(tarname)-$(version)
-
-all: basename cat cd chgrp chown cp df dirname env false free link ln ls mkdir mv od printenv pwd rm sleep stat sync touch true uname unlink uptime vdir wc whoami yes
+prep:
+	mkdir -p `pwd`$(BINDIR)
 
 dist: $(distdir).tar.gz
 
@@ -98,6 +100,8 @@ vdir:
 	$(CC) $(CFLAGS) -o $(BINDIR)/vdir $(SRCDIR)/vdir.c
 wc:
 	$(CC) $(CFLAGS) -o $(BINDIR)/wc $(SRCDIR)/wc.c
+who:
+	$(CC) $(CFLAGS) -o $(BINDIR)/who $(SRCDIR)/who.c
 whoami:
 	$(CC) $(CFLAGS) -o $(BINDIR)/whoami $(SRCDIR)/whoami.c
 yes:
