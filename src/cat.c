@@ -40,7 +40,7 @@ Report bugs to <bulliver@gmail.com>\n", APPNAME);
 
 int number_lines = 0;
 FILE *name;
-char c;
+signed char c;
 
 static void cat_stdin(int line_number, int unbuffered) {
     if (unbuffered == 1) {
