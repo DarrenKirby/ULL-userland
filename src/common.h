@@ -45,7 +45,9 @@
 /* Version information */
 #define APPSUITE   "ull-userland"
 #define APPVERSION "0.3"
-#define APPNAME    ""
+/* External declaration of APPNAME */
+/* This solves all issues of trying to use a macro */
+extern const char *APPNAME;
 
 /* For OS X */
 #if defined(__APPLE__) && defined(__MACH__)
@@ -97,8 +99,8 @@
 #include <getopt.h>
 
 /* prototypes */
-void g_error(char *message);                      /* Displays a general error */
-void f_error(char *filename, char *message);      /* Displays a general error involving a file */
+void gen_error(char *message);                 /* Displays a general error */
+void f_error(char *filename, char *message); /* Displays a general error involving a file */
 int  dump_args(int argc, char *argv[]);           /* Aid for debugging */
 char *trim_whitespace(char *str);                 /* Removes leading and trailing whitespace from a string */
 char *path_alloc(int *sizep);                     /* Allocates memory for a pathname */
@@ -108,20 +110,18 @@ int file_perm_oct(mode_t perm);                   /* Returns octal representatio
 char *get_username(uid_t uid);                    /* Returns username from uid */
 char *get_groupname(gid_t gid);                   /* Returns groupname from gid */
 
-//int snprintf(char * restrict str, size_t size, const char * restrict format, ...);
 
-
-/* Comonly used function definitions */
+/* Commonly used function definitions */
 
 /* Generic error */
-void g_error(char *message) {
+void gen_error(char *message) {
     printf("%s: %s\n", APPNAME, message);
 }
 
 /* File error */
 void f_error(char *filename, char *message) {
     char error[50];
-    snprintf(error, 50, "%s: %s%s", APPNAME, (message == NULL) ? "" : message, filename);
+    snprintf(error, 50, "%s: %s %s", APPNAME, (message == NULL) ? "" : message, filename);
     perror(error);
 }
 
@@ -247,7 +247,7 @@ char *get_username(uid_t uid) {
                 if (errno == 0) {
                         return (char *)"unknown username";
                 } else {
-                        g_error((char *)"username lookup failed");
+                        gen_error((char *)"username lookup failed");
                         exit(EXIT_FAILURE);
                 }
         }
@@ -263,13 +263,11 @@ char *get_groupname(gid_t gid) {
         if (errno == 0) {
             return (char *)"unknown groupname";
         } else {
-            g_error((char *)"groupname lookup failed");
+            gen_error((char *)"groupname lookup failed");
             exit(EXIT_FAILURE);
         }
     }
     return grp->gr_name;
 }
-
-#undef APPNAME /* kludge to get rid of 'macro redefined' warnings */
 
 #endif /* _MY_COMMON_H */
