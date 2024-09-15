@@ -20,18 +20,18 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+
+/* Needed for nftw() */
+#ifdef __linux__
 #define _XOPEN_SOURCE 500
+#endif
 
 #include <ftw.h>
 #include <unistd.h>
 
 #include "common.h"
-#define APPNAME "chgrp"
 
-/* Needed for nftw() */
-// #ifdef __linux__
-// #define _XOPEN_SOURCE 500
-// #endif
+const char *APPNAME = "chgrp";
 
 struct group *grp_buf;
 char to_grp[FILEMAX+1];
@@ -55,7 +55,6 @@ Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
 static int chgrp_recurse(const char *path, const struct stat *statptr, int type, struct FTW *pfwt) {
-//static int chgrp_recurse(const char *path, int type) {
 
     if (type == FTW_NS) {
         printf("stat failed on `%s' (permissions?)\n", path);
@@ -133,8 +132,6 @@ int main(int argc, char *argv[]) {
     optind++;
 
     if (opts.recursive == 1) {
-        //struct stat stat_buf;
-        //struct FTW ftw_buf;
 
         if (opts.nodereference == 1) {
             if (nftw(argv[optind], chgrp_recurse, 10, FTW_PHYS) != 0) {
