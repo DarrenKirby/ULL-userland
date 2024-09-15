@@ -20,18 +20,21 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#define _XOPEN_SOURCE 500
+
 #include <ftw.h>
+#include <unistd.h>
 
 #include "common.h"
 #define APPNAME "chgrp"
 
 /* Needed for nftw() */
-#ifdef __linux__
-#define _XOPEN_SOURCE 500
-#endif
+// #ifdef __linux__
+// #define _XOPEN_SOURCE 500
+// #endif
 
 struct group *grp_buf;
-char to_grp[FILEMAX];
+char to_grp[FILEMAX+1];
 
 struct optstruct {
     int nodereference;
@@ -120,7 +123,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    strncpy(to_grp, argv[optind], FILEMAX + 1);
+    strncpy(to_grp, argv[optind], FILEMAX);
 
     grp_buf = getgrnam(argv[optind]);
     if (grp_buf == NULL) {
