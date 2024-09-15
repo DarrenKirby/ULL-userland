@@ -23,6 +23,8 @@
 
 #include "common.h"
 
+#include <unistd.h>
+
 #define APPNAME "cd"
 
 void show_help(void) {
