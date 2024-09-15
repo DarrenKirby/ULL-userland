@@ -169,19 +169,19 @@ int getfsstat_linux(struct statfs_ext *buf, long int bufsize) {
         
         sas[i2] = *f_tmp;
 
-        printf("f_type:    %#x\n", (unsigned int)sas[i2].f_type);
-        printf("f_bsize:   %lu\n", sas[i2].f_bsize);
-        printf("f_blocks:  %d\n", (int)sas[i2].f_blocks);
-        printf("f_bfree:   %d\n", (int)sas[i2].f_bfree);
-        printf("f_bavail:  %d\n", (int)sas[i2].f_bavail);
-        printf("f_files:   %d\n", (int)sas[i2].f_files);
-        printf("f_ffree:   %d\n", (int)sas[i2].f_ffree);
-        //printf("f_fsid1:   %lu\n", f_tmp->f_fsid);
-        printf("f_namelen  %lu\n", sas[i2].f_namelen);
-        printf("f_frsize   %lu\n", sas[i2].f_frsize);
-        printf("f_fstypename:  %s\n", sas[i2].f_fstypename);
-        printf("f_mntonname:   %s\n", sas[i2].f_mntonname);
-        printf("f_mntfromname: %s\n", sas[i2].f_mntfromname);
+        printf("f_type:        %#x\n", (unsigned int)sas[i2].f_type);
+        printf("f_bsize:       %lu\n", sas[i2].f_bsize);
+        printf("f_blocks:      %d\n",  (int)sas[i2].f_blocks);
+        printf("f_bfree:       %d\n",  (int)sas[i2].f_bfree);
+        printf("f_bavail:      %d\n",  (int)sas[i2].f_bavail);
+        printf("f_files:       %d\n",  (int)sas[i2].f_files);
+        printf("f_ffree:       %d\n",  (int)sas[i2].f_ffree);
+        //printf("f_fsid1:     %lu\n", f_tmp->f_fsid);
+        printf("f_namelen      %lu\n", sas[i2].f_namelen);
+        printf("f_frsize       %lu\n", sas[i2].f_frsize);
+        printf("f_fstypename:  %s\n",  sas[i2].f_fstypename);
+        printf("f_mntonname:   %s\n",  sas[i2].f_mntonname);
+        printf("f_mntfromname: %s\n",  sas[i2].f_mntfromname);
     }
     
     free(s_tmp);
@@ -196,8 +196,8 @@ int getfsstat_linux(struct statfs_ext *buf, long int bufsize) {
     printf("f_fstypename:  %s\n", sas[7].f_fstypename);
     printf("f_fstypename:  %s\n", sas[8].f_fstypename);
     printf("f_fstypename:  %s\n", sas[9].f_fstypename);
-    printf("Size of sas: %lu\n", sizeof(sas));
-    printf("Size of buf: %lu\n", sizeof(buf));
+    printf("Size of sas:   %lu\n", sizeof(sas));
+    printf("Size of buf:   %lu\n", sizeof(buf));
     //buf = **sas;
     free(sas);
     return i2;
