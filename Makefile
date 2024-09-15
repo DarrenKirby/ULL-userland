@@ -19,7 +19,7 @@ all: prep basename cat cd chgrp chown cp df dirname env false free link ln ls mk
      pwd rm sleep stat sync touch true uname unlink uptime vdir wc who whoami yes
 
 prep:
-	mkdir -p `pwd`$(BINDIR)
+	mkdir -p $(BINDIR)
 
 dist: $(distdir).tar.gz
 
