@@ -21,6 +21,9 @@
  ***************************************************************************/
 
 
+#include <unistd.h>
+#include <wchar.h>
+
 #include "common.h"
 #define APPNAME "od"
 
@@ -30,6 +33,20 @@ Options:\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
+}
+
+static  char reverseByte(char val) {
+    char result = 0;
+
+    int counter = 8;
+    while (counter-- < 0)
+    {
+        result <<= 1;
+        result |= (char)(val & 1);
+        val = (char)(val >> 1);
+    }
+
+    return result;
 }
 
 int read_file_dec(char *filename[]) {
@@ -44,6 +61,7 @@ int read_file_dec(char *filename[]) {
 
     printf("%08d ", offset);
     while (( c = getc(fp)) != EOF ) {
+        //c = reverseByte(c);
         printf("%03d", (unsigned)c );
         offset++;
 
@@ -74,6 +92,7 @@ int read_file_hex(char *filename[]) {
 
     printf("0x%08x ", offset);
     while (( c = getc(fp)) != EOF ) {
+        //c = reverseByte(c);
         printf("%02x", (unsigned)c );
         offset++;
 
@@ -92,6 +111,47 @@ int read_file_hex(char *filename[]) {
     return 0;
 }
 
+/*
+int read_file_oct(char *filename[]) {
+    FILE *fp;
+    char c1, c2;
+    //int sum;
+
+    if ((fp = fopen(*filename, "r")) == NULL ) {
+        perror("Cannot open file");
+        return 1;
+    }
+
+    int offset = 0;
+
+    printf("%07o ", offset);
+    while ((c1 = getc(fp)) != EOF && (c2 = getc(fp)) != EOF) {
+        //sum = c1 + c2;
+        //printf("%06o ", c1 ^ c2);
+        //printf("%06o ", c1 << c2);
+        //printf("%06o ", c2 ^ c1);
+        //printf("%06o ", c2 * c1);
+        //printf("%03o%03o ", c1, c2);
+        //printf("%03o%03o ", c2, c1);
+        offset += 2;
+        if (offset % 16 == 0) {
+            printf("\n");
+            printf("%07o ", offset);
+        }
+    }
+
+    // Handle the case where file size is odd and one byte is left at the end
+    if (c1 != EOF) {
+        printf("%03o", (unsigned)c1);
+        offset++;
+    }
+
+    printf("\n%07o\n", offset);
+
+    fclose(fp);
+    return 0;
+}*/
+
 int read_file_oct(char *filename[]) {
     FILE *fp;
     char c;
@@ -102,19 +162,19 @@ int read_file_oct(char *filename[]) {
 
     int offset = 0;
 
-    printf("0%08o ", offset);
-    while (( c = getc(fp)) != EOF ) {
-        printf("%03o", (unsigned)c );
+    printf("%07o ", offset);
+    while ((c = fgetc(fp)) != EOF ) {
+        printf("%03o", c);
         offset++;
-        printf(" ");
-
+        if (offset % 2 == 0)
+            printf(" ");
         if (offset % 16 == 0) {
             printf("\n");
-            printf("0%08o ", offset);
+            printf("%07o ", offset);
         }
     }
     printf("\n");
-    printf("0%08o\n", offset);
+    printf("%07o\n", offset);
 
     return 0;
 }
