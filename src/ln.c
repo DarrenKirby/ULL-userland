@@ -24,7 +24,7 @@
 
 #include "common.h"
 
-#define APPNAME "ln"
+const char *APPNAME = "ln";
 
 static void show_help(void) {
     printf("Usage: %s [OPTION]... TARGET LINK_NAME\t(1st form)\n \

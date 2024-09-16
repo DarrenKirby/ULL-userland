@@ -22,7 +22,7 @@
 
 
 #include "common.h"
-#define APPNAME "wc"
+const char *APPNAME = "wc";
 
 /* Our count struct is used both for storing boolean
    values regarding _if_ we want to count something,

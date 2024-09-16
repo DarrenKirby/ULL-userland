@@ -28,6 +28,7 @@
 #include <sys/mount.h>
 #include <sys/ucred.h>
 
+const char *APPNAME = "mount";
 
 int main(int argc, char *argv[]) {
     int n_mounts;            /* number of currently mounted filesystems */

@@ -24,7 +24,7 @@
 
 #include "common.h"
 
-#define APPNAME "printenv"
+const char *APPNAME = "printenv";
 
 extern char **environ;
 
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
     }else if (argc == 1) {
         print_all_env();
     } else {
-        g_error("takes either zero or one argument");
+        gen_error("takes either zero or one argument");
         show_help(); exit(EXIT_FAILURE);
     }
     return EXIT_SUCCESS;

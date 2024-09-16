@@ -29,7 +29,7 @@
 
 #include "common.h"
 
-#define APPNAME "ls"
+const char *APPNAME = "ls";
 
 struct optstruct {
     unsigned int ls_long:1;

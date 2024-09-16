@@ -24,7 +24,7 @@
 #include <sys/time.h>
 
 #include "common.h"
-#define APPNAME "touch"
+const char *APPNAME = "touch";
 
 struct optstruct {
     unsigned int access:1;

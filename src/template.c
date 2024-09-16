@@ -23,7 +23,7 @@
 
 
 #include "common.h"
-#define APPNAME ""
+const char *APPNAME =  "";
 
 struct optstruct {
 } opts;

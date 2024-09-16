@@ -27,7 +27,7 @@
 #include <dirent.h>
 
 #include "common.h"
-#define APPNAME "vdir"
+const char *APPNAME = "vdir";
 
 struct optstruct {
     unsigned int human:1;

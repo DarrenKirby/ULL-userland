@@ -25,7 +25,7 @@
 
 #include <unistd.h>
 
-#define APPNAME "cd"
+const char *APPNAME = "cd";
 
 void show_help(void) {
     printf("Usage: %s [OPTION] [DIRECTORY]\n\n\

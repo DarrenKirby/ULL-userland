@@ -33,7 +33,7 @@
 
 #include "common.h"
 
-#define APPNAME "df"
+const char *APPNAME = "df";
 
 struct packed_flags {
     unsigned int b : 1; /* block size (k, m, g, t, p, e, z, y (*1024) or K, M, G..etc (*1000)) */

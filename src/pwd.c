@@ -23,7 +23,7 @@
 
 
 #include "common.h"
-#define APPNAME "pwd"
+const char *APPNAME = "pwd";
 
 void show_help(void) {
     printf("Usage: %s [OPTION]\n\n\
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
     cwd_p = cwd;
 
     if (getcwd(cwd_p, PATHMAX) == NULL)
-        g_error("getcwd failed");
+        gen_error("getcwd failed");
 
     printf("%s\n", cwd);
     return EXIT_SUCCESS;

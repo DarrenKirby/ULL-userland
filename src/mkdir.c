@@ -23,7 +23,7 @@
 
 
 #include "common.h"
-#define APPNAME "mkdir"
+const char *APPNAME = "mkdir";
 
 static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n \
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (argc == optind)
-        g_error("must supply at least one directory argument");
+        gen_error("must supply at least one directory argument");
 
     while (optind < argc) {
         mkdir(argv[optind], mode);

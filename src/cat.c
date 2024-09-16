@@ -23,8 +23,7 @@
 
 
 #include "common.h"
-
-#define APPNAME "cat"
+const char *APPNAME = "cat";
 
 static void show_help(void) {
     printf("Usage: %s [OPTION]... [FILE]...\n \

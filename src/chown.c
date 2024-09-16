@@ -32,7 +32,7 @@
 
 #include "common.h"
 
-#define APPNAME "chown"
+const char *APPNAME = "chown";
 
 struct group *grp_buf;
 struct passwd *own_buf;

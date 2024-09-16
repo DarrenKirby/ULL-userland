@@ -27,7 +27,7 @@
 
 #include "common.h"
 
-#define APPNAME "false"
+const char *APPNAME = "false";
 
 void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n \

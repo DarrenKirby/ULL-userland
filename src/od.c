@@ -25,7 +25,7 @@
 #include <wchar.h>
 
 #include "common.h"
-#define APPNAME "od"
+const char *APPNAME = "od";
 
 void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\

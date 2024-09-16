@@ -25,7 +25,7 @@
 #include <sys/types.h>
 
 #include "common.h"
-#define APPNAME "stat"
+const char *APPNAME = "stat";
 
 static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
@@ -43,7 +43,7 @@ static char *format_time(struct timespec *ts) {
     static char str[TIME_SIZE + 10];
 
     if (localtime_r(&(ts->tv_sec), &bdt) == NULL) {
-        g_error("error converting time");
+        gen_error("error converting time");
         exit(EXIT_FAILURE);
     }
 

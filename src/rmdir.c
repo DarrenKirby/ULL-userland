@@ -22,7 +22,7 @@
 
 
 #include "common.h"
-#define APPNAME "rmdir"
+const char *APPNAME = "rmdir";
 
 void show_help(void) {
     printf("Usage: %s [OPTION]... DIRECTORY...\n\n\

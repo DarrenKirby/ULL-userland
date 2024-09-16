@@ -25,7 +25,7 @@
 
 #include <unistd.h>
 #include "common.h"
-#define APPNAME "sleep"
+const char *APPNAME = "sleep";
 
 
 #define MINUTES 60

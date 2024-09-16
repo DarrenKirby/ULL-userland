@@ -24,7 +24,7 @@
 
 #include "common.h"
 
-#define APPNAME "mv"
+const char *APPNAME = "mv";
 
 struct optstruct {
     int force;
@@ -99,12 +99,12 @@ int main(int argc, char *argv[]) {
     int isdir = 0;                 /* Final arg a directory? */
     char *from;                    /* From name */
     char *to;                      /* To name */
-    char tmp[FILEMAX + 1];             /* Tmp name for 'to' when it is a directory */
+    char tmp[FILEMAX + 1];         /* Tmp name for 'to' when it is a directory */
 
     struct stat s;
 
     if (n_args < 2) {
-        g_error("at least two arguments required\n");
+        gen_error("at least two arguments required\n");
         show_help();
         exit(EXIT_FAILURE);
     }

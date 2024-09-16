@@ -22,7 +22,7 @@
 
 
 #include "common.h"
-#define APPNAME "yes"
+const char *APPNAME = "yes";
 
 void show_help(void) {
     printf("Usage: %s [String]...\n\

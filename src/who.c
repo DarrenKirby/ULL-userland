@@ -30,7 +30,7 @@
 #endif
 
 #include "common.h"
-#define APPNAME "who"
+const char *APPNAME = "who";
 
 struct optstruct {
     unsigned int quick;

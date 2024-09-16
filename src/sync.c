@@ -22,7 +22,7 @@
 
 
 #include "common.h"
-#define APPNAME "sync"
+const char *APPNAME = "sync";
 
 void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\

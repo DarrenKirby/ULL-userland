@@ -24,7 +24,7 @@
 
 #include "common.h"
 
-#define APPNAME "link"
+const char *APPNAME = "link";
 
 static void show_help(void) {
     printf("Usage: %s OPTION\n\

@@ -22,7 +22,7 @@
 
 
 #include "common.h"
-#define APPNAME "unlink"
+const char *APPNAME = "unlink";
 
 void show_help(void) {
     printf("Usage: %s [OPTION]\n \

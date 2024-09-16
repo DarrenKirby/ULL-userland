@@ -24,7 +24,7 @@
 
 #include "common.h"
 
-#define APPNAME "env"
+const char *APPNAME = "env";
 
 extern char **environ;
 
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
                 if (es != 0) {
                     char message[50];
                     sprintf(message, "Cound not unset %s", optarg);
-                    g_error(message);
+                    gen_error(message);
                 }
                 break;
             case 'V':

@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-/* OS-sniffing macros gleamed from http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system */
+/* OS-sniffing macros gleaned from http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system */
 
 
 
@@ -34,7 +34,7 @@
 
 #include "common.h"
 
-#define APPNAME "uname"
+const char *APPNAME = "uname";
 
 struct packed_flags {
     unsigned int s : 1;

@@ -23,7 +23,7 @@
 
 
 #include "common.h"
-#define APPNAME "dirname"
+const char *APPNAME = "dirname";
 
 static void show_help(void) {
     printf("Usage: %s OPTION\n\

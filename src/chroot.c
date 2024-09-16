@@ -23,7 +23,7 @@
 #include <unistd.h>
 
 #include "common.h"
-#define APPNAME "chroot"
+const char *APPNAME = "chroot";
 
 struct optstruct {
 } opts;

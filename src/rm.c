@@ -23,7 +23,7 @@
 
 
 #include "common.h"
-#define APPNAME "rm"
+const char *APPNAME = "rm";
 
 static void showHelp(void) {
     printf("Usage: %s [OPTION]... [FILE]...\n\n\

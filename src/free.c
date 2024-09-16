@@ -24,7 +24,7 @@
 
 #include "common.h"
 
-#define APPNAME "free"
+const char *APPNAME = "free";
 
 struct optstruct {
     int C;         /* -b, -k, or -m */

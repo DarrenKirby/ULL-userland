@@ -33,7 +33,7 @@
 
 #include "common.h"
 
-#define APPNAME "uptime"
+const char *APPNAME = "uptime";
 
 #define ONEDAY  86400
 #define ONEHOUR  3600
