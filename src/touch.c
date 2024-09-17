@@ -20,6 +20,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+ /* TODO: --time, --date, --nodereference */
+
+
 #include <fcntl.h>
 #include <sys/time.h>
 
@@ -152,8 +155,13 @@ int main(int argc, char *argv[]) {
                     if (utimes(argv[optind], NULL) != 0)
                         perror("utimes");
                 } else {
+#if defined (__linux__)
+                    if (utimensat(AT_FDCWD, argv[optind], times, 0) != 0)
+                        perror("utimes");
+#else
                     if (utimes(argv[optind], times) != 0)
                         perror("utimes");
+#endif // defined
                 }
             } else {
                 perror("touch");
@@ -168,8 +176,13 @@ int main(int argc, char *argv[]) {
                 if (futimes(fd, NULL) != 0)
                     perror("futimes");
             } else {
+#if defined (__linux__)
+                    if (futimens(fd, times) != 0)
+                        perror("futimens failed");
+#else
                 if (futimes(fd, times) != 0)
                     perror("futimes");
+#endif // defined
             }
         }
         optind++;

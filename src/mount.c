@@ -26,19 +26,31 @@
 
 #include <sys/param.h>
 #include <sys/mount.h>
+#ifndef __linux__
 #include <sys/ucred.h>
+#endif // __linux__
+
+#include "mount.h"
 
 const char *APPNAME = "mount";
 
 int main(int argc, char *argv[]) {
     int n_mounts;            /* number of currently mounted filesystems */
+#ifdef __linux__
+    struct statfs_ext *mounted_fs = malloc(sizeof(struct statfs_ext));
+#else
     struct statfs *mounted_fs = malloc(sizeof(struct statfs));
+#endif // __linux__
     if (mounted_fs == NULL) {
         printf("malloc failed\n");
         exit(1);
     }
 
+#ifdef __linux__
+    n_mounts = getfsstat_linux(mounted_fs, 8096);
+#else
     n_mounts = getfsstat(mounted_fs, 8096, MNT_NOWAIT);
+#endif // __linux__
     if (n_mounts == -1) {
         printf("getfsstat failed");
         exit(1);
@@ -49,7 +61,7 @@ int main(int argc, char *argv[]) {
         printf("%s on %s (%s", mounted_fs[i].f_mntfromname, mounted_fs[i].f_mntonname, mounted_fs[i].f_fstypename);
 
         // print out FS flags - still more to add
-        if ((mounted_fs[i].f_flags & MNT_AUTOMOUNTED) != 0)
+        /*if ((mounted_fs[i].f_flags & MNT_AUTOMOUNTED) != 0)
             printf(", automounted");
         if ((mounted_fs[i].f_flags & MNT_DONTBROWSE) != 0)
             printf(", nobrowse");
@@ -66,7 +78,7 @@ int main(int argc, char *argv[]) {
         if ((mounted_fs[i].f_flags & MNT_ROOTFS) != 0)
             printf(", root");
 
-        printf(")\n");
+        printf(")\n");*/
 
     }
 

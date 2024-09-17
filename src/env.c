@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
 #if defined (__linux__)
                 es = clearenv();
                 if (es != 0) {
-                    g_error("Could not clear environment");
+                    gen_error("Could not clear environment");
                 }
 #else
                 while (*environ) {

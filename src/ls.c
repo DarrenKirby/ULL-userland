@@ -26,6 +26,7 @@
 #include <curses.h>
 #include <dirent.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "common.h"
 
@@ -40,11 +41,11 @@ struct optstruct {
     unsigned int dereference:1;
 } opts;
 
-struct filestruct {
-    char         filename[PATHMAX];
+/*struct filestruct {
+    char         filename[PATHMAX + 1];
     u_int        type;
     ssize_t      size;
-} file_s;
+} file_s;*/
 
 static void show_help(void) {
     printf("Usage: %s [OPTION]... [FILE]...\n\n\
@@ -210,7 +211,7 @@ int main(int argc, char *argv[]) {
     n_per_line = screen_width / (longest_so_far+2); /* number of filenames per column */
     rewinddir(dp);
 
-    char filenames[n_files][PATHMAX + 1];
+    char filenames[n_files][PATHMAX + 2]; // dirent strings are 256 bytes
     n = 0;
 
     while ((list = readdir(dp)) != NULL) {
@@ -221,7 +222,7 @@ int main(int argc, char *argv[]) {
                 continue;
                }
         }
-        strncpy(filenames[n], list->d_name, PATHMAX);
+        strncpy(filenames[n], list->d_name, PATHMAX + 1);
         n++;
     }
     closedir(dp);
@@ -241,7 +242,7 @@ int main(int argc, char *argv[]) {
          * We are displaying long format, one file per line
          */
 
-        char cwd[PATHMAX];
+        char cwd[PATHMAX + 1];
         char *cwd_p;
         cwd_p = cwd;
 

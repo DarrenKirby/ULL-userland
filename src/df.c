@@ -21,8 +21,8 @@
  ***************************************************************************/
 
 
+#include <unistd.h>
 
-#include <stdio.h>
 #if defined (__linux__)
 #include "mount.h"
 #else
@@ -166,8 +166,8 @@ int main(int argc, char *argv[]) {
     if (argc == optind) /* display all mounted file systems */
         n_mounts = getfsstat_linux(mounted_filesystems, 8096);
 
-    printf("Found %i mounted file systems\n", n_mounts);
-    printf("sizeof foo: %lu\n", sizeof(mounted_filesystems));
+    //printf("Found %i mounted file systems\n", n_mounts);
+    //printf("sizeof foo: %lu\n", sizeof(mounted_filesystems));
 
 #else
     struct statfs *mounted_filesystems = malloc(sizeof(struct statfs));
@@ -186,7 +186,11 @@ int main(int argc, char *argv[]) {
            "Mounted on");
     //printf("Filesystem\t1K-blocks\tUsed\t\tAvailable\tUse%%\tMounted on\n");
     for (int i = 0; i < n_mounts; i++) {
+#ifdef __linux__
+        printf("%*s %*lu %*lu %*lu %*lu%%   %s\n", 16, mounted_filesystems[i].f_mntfromname,
+#else
         printf("%*s %*llu %*llu %*llu %*lu%%   %s\n", 16, mounted_filesystems[i].f_mntfromname,
+#endif
                12, mounted_filesystems[i].f_blocks,
                12, mounted_filesystems[i].f_blocks - mounted_filesystems[i].f_bfree,
                12, mounted_filesystems[i].f_bfree,

@@ -27,8 +27,9 @@
 #ifdef __linux__
 #define _XOPEN_SOURCE 500
 #endif
-#include <ftw.h>
 
+#include <ftw.h>
+#include <unistd.h>
 
 #include "common.h"
 

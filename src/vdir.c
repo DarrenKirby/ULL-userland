@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-
+#include <unistd.h>
 #include <stddef.h>
 #include <sys/types.h>
 #include <time.h>
@@ -194,7 +194,7 @@ int main(int argc, char *argv[]) {
 
     rewinddir(dp);
 
-    char filenames[n_files][PATHMAX + 1];
+    char filenames[n_files][PATHMAX+2];
     u_int n = 0;
 
     while ((list = readdir(dp)) != NULL) {
@@ -205,7 +205,7 @@ int main(int argc, char *argv[]) {
                 continue;
                }
         }
-        strncpy(filenames[n], list->d_name, PATHMAX);
+        strncpy(filenames[n], list->d_name, PATHMAX+1);
         n++;
     }
     closedir(dp);

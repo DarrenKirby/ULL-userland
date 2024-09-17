@@ -21,7 +21,7 @@
  ***************************************************************************/
 
 
-
+#include <unistd.h>
 #include "common.h"
 
 const char *APPNAME = "mv";
