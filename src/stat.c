@@ -82,12 +82,12 @@ static void stat_file(char *filename, int follow_links) {
     printf("%s\n", filetype(buf.st_mode, 1));
 
     printf("Device: %d/%d\t\t", major(buf.st_dev), minor(buf.st_dev));
-    printf("Inode: %ld\t", (long) buf.st_ino);
-    printf("Links: %ld\n", (long) buf.st_nlink);
+    printf("Inode: %ld\t\t", (long) buf.st_ino);
+    printf("  Links: %ld\n", (long) buf.st_nlink);
 
     printf(" Perms: %#o/%s\t", file_perm_oct(buf.st_mode), file_perm_str(buf.st_mode, 1));
-    printf("Uid: %ld/%s\t", (long) buf.st_uid, get_username(buf.st_uid));
-    printf("Gid: %ld/%s\n", (long) buf.st_gid, get_groupname(buf.st_gid));
+    printf("Uid: %ld/%s\t\t", (long) buf.st_uid, get_username(buf.st_uid));
+    printf("  Gid: %ld/%s\n", (long) buf.st_gid, get_groupname(buf.st_gid));
 
     printf("Access: %s\n", format_time(&buf.st_atim));
     printf("Modify: %s\n", format_time(&buf.st_mtim));
@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
         {0,0,0,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "Vh", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "Vhd", longopts, NULL)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
