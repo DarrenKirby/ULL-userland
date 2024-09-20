@@ -20,7 +20,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
- /* TODO: --time, --date, --nodereference */
+ /* TODO: --time, --date, --nodereference
+    -nocreate
+  */
 
 
 #include <fcntl.h>
@@ -49,12 +51,12 @@ struct timeval times[2];
 static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n \
 Options:\n \
-    -a, --access\tonly change access time\n \
-    -m, --modification\tonly change modification time\n \
-    -c, --nocreate\tdon't create the file if it doesn't exist\n \
+    -a, --access\t\tonly change access time\n \
+    -m, --modification\t\tonly change modification time\n \
+    -c, --nocreate\t\tdon't create the file if it doesn't exist\n \
     -n, --nodereference\taffect each symbolic link instead of any referenced file\n \
-    -h, --help\t\tdisplay this help\n\
-    -V, --version\tdisplay version information\n\n\
+    -h, --help\t\t\tdisplay this help\n \
+    -V, --version\t\tdisplay version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
