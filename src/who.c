@@ -84,7 +84,7 @@ void print_boot_time(void) {
 
     tm_ptr = localtime(&bsec);
 
-    printf("         system boot  %i-%02d-%02d %02d:%02d:%02d\n", (1900 + tm_ptr->tm_year),
+    printf("         system boot    %i-%02d-%02d %02d:%02d:%02d\n", (1900 + tm_ptr->tm_year),
            (1 + tm_ptr->tm_mon), tm_ptr->tm_mday, tm_ptr->tm_hour,
            tm_ptr->tm_min, tm_ptr->tm_sec);
 #endif // __linux__
