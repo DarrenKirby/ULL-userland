@@ -1,12 +1,15 @@
 # CC ?= gcc
 
 # hard coded path for testing
-CC ?= /usr/local/opt/gcc/bin/gcc-13  # Use gcc
-# CC ?= /usr/bin/clang                 # use clang/llvm
-CFLAGS ?= -O2 -Wall -Wextra -pedantic -Wno-unused-parameter
+CC ?= /usr/local/opt/gcc/bin/gcc-14
 
-#CFLAGS ?= -O2 -Wall -Wextra -Werror -pedantic -Wno-unused-parameter #-std=gnu99
-#CFLAGS ?= -g  -O2 -std=gnu11
+# defaults
+CC ?= clang
+CC ?= gcc
+
+#
+CFLAGS ?= -O2 -Wall -Wextra -Wundef -Wshadow -Wpedantic -Wno-unused-parameter -std=gnu11
+
 SRCDIR := src
 BINDIR := bin
 
@@ -15,8 +18,8 @@ version := 0.3
 tarname := $(package)
 distdir := $(tarname)-$(version)
 
-all: prep basename cat cd chgrp chown cp df dirname env false free link ln ls mkdir mount mv printenv \
-     pwd rm sleep stat sync touch true uname unlink uptime vdir wc who whoami yes
+all: prep basename cat cd chgrp chown cp df dirname env false free link ln ls mkdir mv printenv \
+     pwd rm sleep stat sync tee touch true uname unlink uptime vdir wc who whoami yes
 
 prep:
 	mkdir -p $(BINDIR)
@@ -86,6 +89,8 @@ stat:
 	$(CC) $(CFLAGS) -o $(BINDIR)/stat $(SRCDIR)/stat.c
 sync:
 	$(CC) $(CFLAGS) -o $(BINDIR)/sync $(SRCDIR)/sync.c
+tee:
+	$(CC) $(CFLAGS) -o $(BINDIR)/tee $(SRCDIR)/tee.c
 touch:
 	$(CC) $(CFLAGS) -o $(BINDIR)/touch $(SRCDIR)/touch.c
 true:
