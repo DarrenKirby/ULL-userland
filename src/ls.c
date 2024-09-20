@@ -233,7 +233,7 @@ int main(int argc, char *argv[]) {
         /*
          * We are displaying short format, one file per line
          */
-        for (u_int f = 0; f < n_files; f++) {
+        for (f = 0; f < n_files; f++) {
             printf("%s\n", filenames[f]);
         }
 
