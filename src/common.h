@@ -45,8 +45,8 @@
 /* Version information */
 #define APPSUITE   "ull-userland"
 #define APPVERSION "0.3"
-/* External declaration of APPNAME */
-/* This solves all issues of trying to use a macro */
+/* External declaration of APPNAME
+ * This solves all issues of trying to use a macro */
 extern const char *APPNAME;
 
 /* For OS X */
@@ -99,16 +99,16 @@ extern const char *APPNAME;
 #include <getopt.h>
 
 /* prototypes */
-void gen_error(char *message);                 /* Displays a general error */
-void f_error(char *filename, char *message); /* Displays a general error involving a file */
-int  dump_args(int argc, char *argv[]);           /* Aid for debugging */
-char *trim_whitespace(char *str);                 /* Removes leading and trailing whitespace from a string */
-char *path_alloc(int *sizep);                     /* Allocates memory for a pathname */
-char *file_perm_str(mode_t perm, int flags);      /* Displays a symbolic string of permission ie: rwxrw-rw- */
-char *filetype(mode_t st_mode, int flag);         /* Retuns the plain-english filetype from the stat struct */
-int file_perm_oct(mode_t perm);                   /* Returns octal representation of permissions */
-char *get_username(uid_t uid);                    /* Returns username from uid */
-char *get_groupname(gid_t gid);                   /* Returns groupname from gid */
+void  gen_error(char *message);                    /* Displays a general error */
+void  f_error(char *filename, char *message);      /* Displays a general error involving a file */
+int   dump_args(int argc, char *argv[]);           /* Aid for debugging */
+char  *trim_whitespace(char *str);                 /* Removes leading and trailing whitespace from a string */
+char  *path_alloc(int *sizep);                     /* Allocates memory for a pathname */
+char  *file_perm_str(mode_t perm, int flags);      /* Displays a symbolic string of permission ie: rwxrw-rw- */
+char  *filetype(mode_t st_mode, int flag);         /* Retuns the plain-english filetype from the stat struct */
+int   file_perm_oct(mode_t perm);                  /* Returns octal representation of permissions */
+char  *get_username(uid_t uid);                    /* Returns username from uid */
+char  *get_groupname(gid_t gid);                   /* Returns groupname from gid */
 
 
 /* Commonly used function definitions */
