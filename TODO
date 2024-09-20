@@ -84,7 +84,7 @@ mesg      :: not started
 mkdir     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 mkfifo    :: not started
 mknod     :: not started
-mount     :: not started
+mount     :: in progress
 mv        :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 nice      :: not started
 nl        :: not started
@@ -123,10 +123,10 @@ sync      :: completed    # Linux: compiles, works | OS X: compiles, works | Fre
 tac       :: not started
 tail      :: not started
 talk      :: not started
-tee       :: completed    # Linux: compiles, works|OS X: compiles, works, FreeBSD: ?
+tee       :: completed    # Linux: compiles, works | OS X: compiles, works, FreeBSD: ?
 telnet    :: not started
 time      :: not started
-touch     :: completed    #
+touch     :: in progress  # Compiles and works on Linux and OS X. Not all options implemented yet.
 tput      :: not started
 tr        :: not started
 true      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
@@ -142,7 +142,7 @@ users     :: not started
 vdir      :: in progress  # Mostly working including colour output
 wc        :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 which     :: not started
-who       :: not started
+who       :: completed    # Linux: compiles, works | OS X: compiles, works, FreeBSD: ?
 whois     :: not started
 whoami    :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 write     :: not started
