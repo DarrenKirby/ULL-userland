@@ -23,9 +23,13 @@
 #ifndef _MOUNT_H
 #define _MOUNT_H
 
-#include <stdio.h>
+#ifdef __linux__
 #include <sys/statfs.h>      /* for statfs struct */
 #include <linux/limits.h>    /* for PATH_MAX */
+#else
+#include <sys/param.h>
+#include <sys/mount.h>
+#endif
 #include <errno.h>           /* for perror() */
 #include <stdlib.h>          /* for EXIT_FAILURE */
 #include <string.h>
@@ -89,7 +93,7 @@ int merge_statfs_structs(struct statfs *buf, struct statfs_ext **buf_full) {
     return 0;
 }
 
-int getfsstat_linux(struct statfs_ext *buf, long int bufsize) {
+int getfsstat_linux(struct statfs_ext *buf) {
     FILE *fp;
     int  n_lines = 0;
     char lines[512];

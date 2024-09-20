@@ -20,22 +20,23 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
-
 #include <sys/param.h>
 #include <sys/mount.h>
+
 #ifndef __linux__
 #include <sys/ucred.h>
+#else
+#include "mount.h"
 #endif // __linux__
 
-#include "mount.h"
 
 const char *APPNAME = "mount";
 
 int main(int argc, char *argv[]) {
-    int n_mounts;            /* number of currently mounted filesystems */
+    int n_mounts; /* number of currently mounted filesystems */
 #ifdef __linux__
     struct statfs_ext *mounted_fs = malloc(sizeof(struct statfs_ext));
 #else
@@ -47,9 +48,10 @@ int main(int argc, char *argv[]) {
     }
 
 #ifdef __linux__
-    n_mounts = getfsstat_linux(mounted_fs, 8096);
+    n_mounts = getfsstat_linux(mounted_fs);
 #else
-    n_mounts = getfsstat(mounted_fs, 8096, MNT_NOWAIT);
+    n_mounts = getfsstat(NULL, 0, MNT_NOWAIT);
+    n_mounts = getfsstat(mounted_fs, sizeof(struct statfs)*n_mounts, MNT_NOWAIT);
 #endif // __linux__
     if (n_mounts == -1) {
         printf("getfsstat failed");
@@ -60,8 +62,9 @@ int main(int argc, char *argv[]) {
     for (i = 0; i < n_mounts; i++) {
         printf("%s on %s (%s", mounted_fs[i].f_mntfromname, mounted_fs[i].f_mntonname, mounted_fs[i].f_fstypename);
 
+#ifndef __linux__
         // print out FS flags - still more to add
-        /*if ((mounted_fs[i].f_flags & MNT_AUTOMOUNTED) != 0)
+        if ((mounted_fs[i].f_flags & MNT_AUTOMOUNTED) != 0)
             printf(", automounted");
         if ((mounted_fs[i].f_flags & MNT_DONTBROWSE) != 0)
             printf(", nobrowse");
@@ -77,8 +80,8 @@ int main(int argc, char *argv[]) {
             printf(", quota");
         if ((mounted_fs[i].f_flags & MNT_ROOTFS) != 0)
             printf(", root");
-
-        printf(")\n");*/
+#endif
+        printf(")\n");
 
     }
 
