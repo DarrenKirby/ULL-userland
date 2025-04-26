@@ -18,7 +18,7 @@ version := 0.3
 tarname := $(package)
 distdir := $(tarname)-$(version)
 
-all: prep basename cat cd chgrp chown cp df dirname env false free link ln ls mkdir mv printenv \
+all: prep basename cat cd chgrp chown cp df dirname env false free link ln ls mount mkdir mv printenv \
      pwd rm sleep stat sync tee touch true uname unlink uptime vdir wc who whoami yes
 
 prep:
