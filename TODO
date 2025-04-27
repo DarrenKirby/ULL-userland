@@ -45,7 +45,7 @@ chroot    :: not started
 cksum     :: not started
 comm      :: not started
 cmp       :: not started
-cp        :: in progress
+cp        :: in progress  # Linux: compiles, works | OS X ? | FreeBSD ?
 csplit    :: not started
 cut       :: not started
 date      :: not started
@@ -87,7 +87,7 @@ mknod     :: not started
 mount     :: in progress
 mv        :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 nice      :: not started
-nl        :: not started
+nl        :: in progress  # Linux: compiles, works | OS X: ? | FreeBSD: ?
 nohup     :: not started
 od        :: in progress  # flaky!!! Fix endianess
 paste     :: not started
