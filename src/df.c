@@ -21,16 +21,21 @@
  ***************************************************************************/
 
 
-#include <unistd.h>
+#define _POSIX_C_SOURCE 200112L
 
-#if defined (__linux__)
-#include "mount.h"
-#else
+#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE 700
+#endif
+
+
+
+#if defined(__APPLE__) && defined(__MACH__)
 #include <sys/param.h>
 #include <sys/ucred.h>
 #include <sys/mount.h>
 #endif
 
+#include "mount.h"
 #include "common.h"
 
 const char *APPNAME = "df";
@@ -164,9 +169,9 @@ int main(int argc, char *argv[]) {
 #if defined (__linux__)
     struct statfs_ext *mounted_filesystems = malloc(sizeof(struct statfs_ext));
     if (argc == optind) /* display all mounted file systems */
-        n_mounts = getfsstat_linux(mounted_filesystems, 8096);
+        n_mounts = getfsstat_ext(&mounted_filesystems, FS_ALL, 0);
 
-    //printf("Found %i mounted file systems\n", n_mounts);
+    printf("Found %i mounted file systems\n", n_mounts);
     //printf("sizeof foo: %lu\n", sizeof(mounted_filesystems));
 
 #else
