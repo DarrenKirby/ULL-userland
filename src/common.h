@@ -27,13 +27,13 @@
 
 #include <stdio.h>
 //#include <utmp.h>
-//#include <sys/types.h>
+#include <sys/types.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <limits.h>
 #include <string.h>
 #include <ctype.h>
-//#include <unistd.h>
+#include <unistd.h>
 #include <sys/stat.h>
 //#include <time.h>
 //#include <sys/time.h>
