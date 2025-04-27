@@ -1,10 +1,10 @@
 # CC ?= gcc
 
 # hard coded path for testing
-CC ?= /usr/local/opt/gcc/bin/gcc-14
+#CC ?= /usr/local/opt/gcc/bin/gcc-14
 
 # defaults
-CC ?= clang
+#CC ?= clang
 CC ?= gcc
 
 #
@@ -18,8 +18,8 @@ version := 0.3
 tarname := $(package)
 distdir := $(tarname)-$(version)
 
-all: prep basename cat cd chgrp chown cp df dirname env false free link ln ls mount mkdir mv printenv \
-     pwd rm sleep stat sync tee touch true uname unlink uptime vdir wc who whoami yes
+all: prep basename cat cd chgrp chown cp df dirname env false free link ln ls mount mkdir mv nl \
+     printenv pwd rm sleep stat sync tee touch true uname unlink uptime vdir wc who whoami yes
 
 prep:
 	mkdir -p $(BINDIR)
@@ -73,6 +73,8 @@ mount:
 	$(CC) $(CFLAGS) -o $(BINDIR)/mount $(SRCDIR)/mount.c
 mv:
 	$(CC) $(CFLAGS) -o $(BINDIR)/mv $(SRCDIR)/mv.c
+nl:
+	$(CC) $(CFLAGS) -lm -o $(BINDIR)/nl $(SRCDIR)/nl.c
 od:
 	$(CC) $(CFLAGS) -o $(BINDIR)/od $(SRCDIR)/od.c
 printenv:
