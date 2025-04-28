@@ -23,10 +23,12 @@
 
 #include <math.h>
 #include "common.h"
+
+#define LINE_SIZE 1024
+#define BUFF_SIZE 4096
+
 const char *APPNAME =  "nl";
 
-//struct optstruct {
-//} opts;
 
 static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
@@ -35,9 +37,6 @@ Options:\n\
     -V, --version\tdisplay version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
-
-#define LINE_SIZE 1024
-#define BUFF_SIZE 4096
 
 
 int count_lines(FILE *fp) {
@@ -60,6 +59,35 @@ int count_lines(FILE *fp) {
     return (int)log10(lines) + 2;
 }
 
+
+static void nl_stdin(int unbuffered) {
+    int c;
+    int line_number = 1;
+
+    if (unbuffered == 1) {
+        setvbuf(stdout, NULL, _IONBF, 1);
+    }
+
+    printf("%4i | ", line_number);
+    line_number++;
+    while (( c = getc(stdin)) != EOF ) {
+        if  (c == 10) {
+            putc(c, stdout);
+            /* we cannot precalculate number of lines in stdin,
+             * so our width is just fixed and arbitrary. Surely,
+             * noone would cat a file with more than 9999 lines
+             * into the terminal?             */
+            printf("%4i | ", line_number);
+            line_number++;
+        } else {
+            putc(c, stdout);
+        }
+    }
+    printf("\n");
+    exit(EXIT_SUCCESS);
+}
+
+
 int main(int argc, char *argv[]) {
     int opt;
 
@@ -80,18 +108,15 @@ int main(int argc, char *argv[]) {
             case 'h':
                 show_help();
                 exit(EXIT_SUCCESS);
-                break;
             case ':':
                  /* getopt_long prints own error message */
                 exit(EXIT_FAILURE);
-                break;
             case '?':
                  /* getopt_long prints own error message */
                 exit(EXIT_FAILURE);
             default:
                 show_help();
                 exit(EXIT_FAILURE);
-                break;
         }
     }
 
@@ -99,14 +124,13 @@ int main(int argc, char *argv[]) {
     char buf[LINE_SIZE];
     int lineno = 1;
     int width;
+    int unbuffered = 0;
 
-    if (argc >= 2)
+    if (argc == 2)
         fd = fopen(argv[1], "r");
     else {
-        printf("Does not work with stdin yet. Please pass a filename\n");
-        return -1;
+        nl_stdin(unbuffered);
     }
-
 
     width = count_lines(fd);
     rewind(fd);
