@@ -21,14 +21,13 @@
  ***************************************************************************/
 
 
-#include <sys/types.h>
+#include "common.h"
+
 #include <term.h>
 #include <curses.h>
 #include <dirent.h>
 #include <time.h>
-#include <unistd.h>
 
-#include "common.h"
 
 const char *APPNAME = "ls";
 
@@ -43,7 +42,7 @@ struct optstruct {
 
 /*struct filestruct {
     char         filename[PATHMAX + 1];
-    u_int        type;
+    int        type;
     ssize_t      size;
 } file_s;*/
 
@@ -90,7 +89,7 @@ static void format(long long int bytes) {
 int main(int argc, char *argv[]) {
     int opt;
     opts.all = 0;
-    u_int screen_width = 0;
+    int screen_width = 0;
 
     struct option longopts[] = {
         {"help", 0, NULL, 'h'},
@@ -183,10 +182,10 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    u_int n_files = 0;          /* number of files to print */
-    u_int n_per_line = 0;       /* number of files per line */
-    u_int longest_so_far = 0;   /* longest filename seen so far */
-    u_int n;                      /* return value of strlen() calls */
+    int n_files = 0;          /* number of files to print */
+    int n_per_line = 0;       /* number of files per line */
+    int longest_so_far = 0;   /* longest filename seen so far */
+    int n;                      /* return value of strlen() calls */
 
     while ((list = readdir(dp)) != NULL) {
         /*
@@ -227,7 +226,7 @@ int main(int argc, char *argv[]) {
     }
     closedir(dp);
 
-    u_int f;
+    int f;
 
     if ((opts.one == 1) && (opts.ls_long != 1)) {
         /*
@@ -310,7 +309,7 @@ int main(int argc, char *argv[]) {
         /*
          * We are displaying short format, as many files as we can fit per line
          */
-        u_int i = 1;
+        int i = 1;
 
         for (f = 0; f < n_files; f++) {
             printf("%-*s", longest_so_far+2, filenames[f]);
