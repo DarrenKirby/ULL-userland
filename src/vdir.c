@@ -54,19 +54,19 @@ Report bugs to <bulliver@gmail.com>\n", APPNAME);
 static void p_colour(char * filename, mode_t st_mode) {
     switch (st_mode & S_IFMT) {
         case S_IFBLK:
-            printf(ANSI_COLOR_YELLOW "%s" ANSI_COLOR_RESET, filename); // "block device"
+            printf(ANSI_YELLOW "%s" ANSI_RESET, filename); // "block device"
             break;
         case S_IFCHR:
-            printf(ANSI_COLOR_YELLOW_B "%s" ANSI_COLOR_RESET, filename); // "character device"
+            printf(ANSI_YELLOW_B "%s" ANSI_RESET, filename); // "character device"
             break;
         case S_IFDIR:
-            printf(ANSI_COLOR_BLUE_B "%s" ANSI_COLOR_RESET, filename); // "directory"
+            printf(ANSI_BLUE_B "%s" ANSI_RESET, filename); // "directory"
             break;
         case S_IFIFO:
-            printf(ANSI_COLOR_YELLOW "%s" ANSI_COLOR_RESET, filename); // "FIFO/pipe"
+            printf(ANSI_YELLOW "%s" ANSI_RESET, filename); // "FIFO/pipe"
             break;
         case S_IFLNK:
-            printf(ANSI_COLOR_CYAN_B "%s" ANSI_COLOR_RESET, filename); // "symlink"
+            printf(ANSI_CYAN_B "%s" ANSI_RESET, filename); // "symlink"
             break;
         case S_IFSOCK:
             printf("%s", filename); // "socket"
@@ -74,13 +74,14 @@ static void p_colour(char * filename, mode_t st_mode) {
         default:   // "regular file"
             /* Is it executable ? */
             if ((st_mode & S_IXUSR) || (st_mode & S_IXGRP) || (st_mode & S_IXOTH)) {
-                printf(ANSI_COLOR_GREEN_B "%s" ANSI_COLOR_RESET, filename);
+                printf(ANSI_GREEN_B "%s" ANSI_RESET, filename);
             } else {
                 printf("%s", filename);
             }
             break;
     }
 }
+
 
 static void format(long long int bytes) {
     char size_string[22];
@@ -107,6 +108,7 @@ static void format(long long int bytes) {
     }
     printf("%6s ", size_string);
 }
+
 
 int main(int argc, char *argv[]) {
     int opt;
@@ -161,7 +163,7 @@ int main(int argc, char *argv[]) {
     DIR *dp;
     struct dirent *list;
 
-    char path_to_ls[PATHMAX + 1];
+    char path_to_ls[PATHMAX];
 
     if (argv[optind] != NULL) {
         strncpy(path_to_ls, argv[optind], PATHMAX);
@@ -174,7 +176,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    u_int n_files = 0;          /* number of files to print */
+    int n_files = 0;          /* number of files to print */
 
     while ((list = readdir(dp)) != NULL) {
         /*
@@ -182,11 +184,9 @@ int main(int argc, char *argv[]) {
          * get max file length
          */
         if (opts.all == 0) {
-
-            if (strncmp(".",  list->d_name, 2) == 0 ||
-                strncmp("..", list->d_name, 3) == 0) {
+            if (list->d_name[0] == '.') {
                 continue;
-               }
+            }
         }
 
         n_files++;
@@ -194,18 +194,16 @@ int main(int argc, char *argv[]) {
 
     rewinddir(dp);
 
-    char filenames[n_files][PATHMAX+2];
-    u_int n = 0;
+    char filenames[n_files][PATHMAX];
+    int n = 0;
 
     while ((list = readdir(dp)) != NULL) {
         if (opts.all == 0) {
-
-            if (strncmp(".",  list->d_name, 2) == 0 ||
-                strncmp("..", list->d_name, 3) == 0) {
+            if (list->d_name[0] == '.') {
                 continue;
-               }
+            }
         }
-        strncpy(filenames[n], list->d_name, PATHMAX+1);
+        strncpy(filenames[n], list->d_name, PATHMAX);
         n++;
     }
     closedir(dp);
@@ -233,7 +231,7 @@ int main(int argc, char *argv[]) {
     int current_year = now->tm_year + 1900;
     char string_time[13];
 
-    for (size_t f = 0; f < n_files; f++) {
+    for (int f = 0; f < n_files; f++) {
         if (opts.dereference == 1) {
             if (stat(filenames[f], &buf) == -1) {
                 perror("stat");
