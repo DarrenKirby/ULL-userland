@@ -1,7 +1,7 @@
 /***************************************************************************
  *   common.h - includes and functions common to all files                 *
  *                                                                         *
- *   Copyright (C) 2014-2024 by Darren Kirby                               *
+ *   Copyright (C) 2014-2025 by Darren Kirby                               *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -44,7 +44,6 @@
 #include <libgen.h>
 
 
-
 /* Version information */
 #define APPSUITE   "ull-userland"
 #define APPVERSION "0.3"
@@ -80,22 +79,22 @@ extern const char *APPNAME;
  */
 
 /* normal */
-#define ANSI_COLOR_RED     "\x1b[31m"
-#define ANSI_COLOR_GREEN   "\x1b[32m"
-#define ANSI_COLOR_YELLOW  "\x1b[33m"
-#define ANSI_COLOR_BLUE    "\x1b[34m"
-#define ANSI_COLOR_MAGENTA "\x1b[35m"
-#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_RED       "\x1b[31m"
+#define ANSI_GREEN     "\x1b[32m"
+#define ANSI_YELLOW    "\x1b[33m"
+#define ANSI_BLUE      "\x1b[34m"
+#define ANSI_MAGENTA   "\x1b[35m"
+#define ANSI_CYAN      "\x1b[36m"
 
 /* bold */
-#define ANSI_COLOR_RED_B     "\x1b[31;1m"
-#define ANSI_COLOR_GREEN_B   "\x1b[32;1m"
-#define ANSI_COLOR_YELLOW_B  "\x1b[33;1m"
-#define ANSI_COLOR_BLUE_B    "\x1b[34;1m"
-#define ANSI_COLOR_MAGENTA_B "\x1b[35;1m"
-#define ANSI_COLOR_CYAN_B    "\x1b[36;1m"
+#define ANSI_RED_B     "\x1b[31;1m"
+#define ANSI_GREEN_B   "\x1b[32;1m"
+#define ANSI_YELLOW_B  "\x1b[33;1m"
+#define ANSI_BLUE_B    "\x1b[34;1m"
+#define ANSI_MAGENTA_B "\x1b[35;1m"
+#define ANSI_CYAN_B    "\x1b[36;1m"
 
-#define ANSI_COLOR_RESET     "\x1b[0m"
+#define ANSI_RESET     "\x1b[0m"
 
 /* For longopts */
 //#define _GNU_SOURCE
