@@ -104,9 +104,14 @@ const char* file_color(mode_t mode)
 }
 
 
+/* Comparison function for strings */
+int compare_strings(const void *a, const void *b) {
+    return strcmp((const char *)a, (const char *)b);
+}
+
+
 int main(int argc, char *argv[]) {
     int opt;
-    //opts.all = 0;
     int screen_width = 0;
 
     struct option longopts[] = {
@@ -225,7 +230,7 @@ int main(int argc, char *argv[]) {
     n_per_line = screen_width / (longest_so_far+2); /* number of filenames per column */
     rewinddir(dp);
 
-    char filenames[n_files][PATHMAX + 2]; // dirent strings are 256 bytes
+    char filenames[n_files][PATHMAX]; /* dirent strings are 256 bytes */
     n = 0;
 
     while ((list = readdir(dp)) != NULL) {
@@ -235,12 +240,14 @@ int main(int argc, char *argv[]) {
                 continue;
             }
         }
-        strncpy(filenames[n], list->d_name, PATHMAX + 1);
+        strncpy(filenames[n], list->d_name, PATHMAX);
         n++;
     }
     closedir(dp);
 
     int f;
+    /* sort the filenames alphabetically */
+    qsort(filenames, n_files, sizeof(filenames[0]), compare_strings);
 
     if ((opts.one == 1) && (opts.ls_long != 1)) {
         /*
