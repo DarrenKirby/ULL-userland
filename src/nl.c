@@ -73,10 +73,12 @@ static void nl_stdin(int unbuffered) {
     while (( c = getc(stdin)) != EOF ) {
         if  (c == 10) {
             putc(c, stdout);
-            /* we cannot precalculate number of lines in stdin,
+            /*
+             * we cannot precalculate number of lines in stdin,
              * so our width is just fixed and arbitrary. Surely,
              * noone would cat a file with more than 9999 lines
-             * into the terminal?             */
+             * into the terminal?
+             */
             printf("%4i | ", line_number);
             line_number++;
         } else {
@@ -100,16 +102,17 @@ int main(int argc, char *argv[]) {
 
     while ((opt = getopt_long(argc, argv, "Vhs", longopts, NULL)) != -1) {
         switch(opt) {
+            case 's':
+                printf("Stats coming soon\n");
+                break;
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
                 printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
-                break;
             case 'h':
                 show_help();
                 exit(EXIT_SUCCESS);
             case ':':
-                 /* getopt_long prints own error message */
                 exit(EXIT_FAILURE);
             case '?':
                  /* getopt_long prints own error message */
@@ -120,17 +123,17 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    FILE *fd;
+
     char buf[LINE_SIZE];
     int lineno = 1;
     int width;
     int unbuffered = 0;
 
-    if (argc == 2)
-        fd = fopen(argv[1], "r");
-    else {
+    if (argc == 1)
         nl_stdin(unbuffered);
-    }
+
+    FILE *fd;
+    fd = fopen(argv[1], "r");
 
     width = count_lines(fd);
     rewind(fd);
