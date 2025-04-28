@@ -1,7 +1,7 @@
 /***************************************************************************
  *   cat.c - concatenate files and print on the standard output            *
  *                                                                         *
- *   Copyright (C) 2014-2024 by Darren Kirby                               *
+ *   Copyright (C) 2014-2025 by Darren Kirby                               *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -39,13 +39,16 @@ Report bugs to <bulliver@gmail.com>\n", APPNAME);
 
 int number_lines = 0;
 FILE *name;
-signed char c;
+char c;
+
 
 static void cat_stdin(int line_number, int unbuffered) {
     if (unbuffered == 1) {
         setvbuf(stdout, NULL, _IONBF, 1);
     }
 
+    printf("%6u\t", line_number);
+    line_number++;
     while (( c = getc(stdin)) != EOF ) {
         if  (c == 10 && number_lines == 1) {
             putc(c, stdout);
@@ -55,9 +58,10 @@ static void cat_stdin(int line_number, int unbuffered) {
             putc(c, stdout);
         }
     }
-    fclose(name);
+    printf("\n");
     exit(EXIT_SUCCESS);
 }
+
 
 static int cat_file(char *filename, unsigned int line_number) {
     if ( (name = fopen(filename, "r")) == NULL ) {
@@ -76,6 +80,7 @@ static int cat_file(char *filename, unsigned int line_number) {
     fclose(name);
     return line_number;
 }
+
 
 int main(int argc, char *argv[]) {
     int opt;
