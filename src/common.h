@@ -20,27 +20,30 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #ifndef _MY_COMMON_H
 #define _MY_COMMON_H
 
-/* Common includes */
+/* includes required for functions defined in _this_ file*/
 
-#include <stdio.h>
-//#include <utmp.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <utmp.h>
 #include <errno.h>
-#include <limits.h>
+#include <unistd.h>
 #include <string.h>
 #include <ctype.h>
-#include <unistd.h>
-#include <sys/stat.h>
-//#include <time.h>
-//#include <sys/time.h>
 #include <pwd.h>
 #include <grp.h>
 #include <libgen.h>
-//#include <fcntl.h>
+
+
 
 /* Version information */
 #define APPSUITE   "ull-userland"
@@ -92,11 +95,12 @@ extern const char *APPNAME;
 #define ANSI_COLOR_MAGENTA_B "\x1b[35;1m"
 #define ANSI_COLOR_CYAN_B    "\x1b[36;1m"
 
-#define ANSI_COLOR_RESET   "\x1b[0m"
+#define ANSI_COLOR_RESET     "\x1b[0m"
 
 /* For longopts */
-#define _GNU_SOURCE
+//#define _GNU_SOURCE
 #include <getopt.h>
+
 
 /* prototypes */
 void  gen_error(char *message);                    /* Displays a general error */
@@ -201,6 +205,7 @@ char *file_perm_str(mode_t perm, int flags) {
 
 /* Returns octal permissions of a file/directory */
 int file_perm_oct(mode_t perm) {
+    #include "common.h"
     int oct_perm = 00;
     (perm & S_ISUID) ? (oct_perm += 04000) : (oct_perm += 00);
     (perm & S_ISGID) ? (oct_perm += 02000) : (oct_perm += 00);
