@@ -83,24 +83,27 @@ static void format(long long int bytes) {
 }
 
 
+/*
+ * Return a color for a filetype
+ */
 const char* file_color(mode_t mode)
 {
     if (S_ISDIR(mode)) {
-        return "\033[34m"; // blue
+        return ANSI_BLUE_B;
     }
     if (S_ISLNK(mode)) {
-        return "\033[36m"; // cyan
+        return ANSI_CYAN_B;
     }
     if (S_ISSOCK(mode)) {
-        return "\033[35m"; // magenta
+        return ANSI_MAGENTA;
     }
     if (S_ISFIFO(mode)) {
-        return "\033[33m"; // yellow
+        return ANSI_YELLOW;
     }
     if (mode & S_IXUSR) {
-        return "\033[32m"; // green (executable)
+        return ANSI_GREEN_B;
     }
-    return "\033[0m"; // default color
+    return ANSI_RESET;
 }
 
 
@@ -190,7 +193,7 @@ int main(int argc, char *argv[]) {
     DIR *dp;
     struct dirent *list;
 
-    char path_to_ls[PATHMAX + 1];
+    char path_to_ls[PATHMAX];
 
     if (argv[optind] != NULL) {
         strncpy(path_to_ls, argv[optind], PATHMAX);
@@ -214,11 +217,9 @@ int main(int argc, char *argv[]) {
          * get max file length
          */
         if (opts.all == 0) {
-
             if (list->d_name[0] == '.') {
                 continue;
             }
-
         }
         n_files++;
 
@@ -245,10 +246,25 @@ int main(int argc, char *argv[]) {
     }
     closedir(dp);
 
-    int f;
     /* sort the filenames alphabetically */
     qsort(filenames, n_files, sizeof(filenames[0]), compare_strings);
 
+    /* cd to path_to_ls */
+    char cwd[PATHMAX];
+    char *cwd_p;
+    cwd_p = cwd;
+
+    if (getcwd(cwd_p, PATHMAX) == NULL) {
+        perror("getcwd");
+        exit(EXIT_FAILURE);
+    }
+
+    if (chdir(path_to_ls) == -1) {
+        perror("chdir");
+        exit(EXIT_FAILURE);
+    }
+
+    int f;
     if ((opts.one == 1) && (opts.ls_long != 1)) {
         /*
          * We are displaying short format, one file per line
@@ -260,30 +276,13 @@ int main(int argc, char *argv[]) {
                 perror("lstat");
                 exit(EXIT_FAILURE);
             }
-
-            printf("%s%s\033[0m\n", file_color(buf.st_mode), filenames[f]);
+            printf("%s%s%s\n", file_color(buf.st_mode), filenames[f], ANSI_RESET);
         }
-
 
     } else if (opts.ls_long == 1) {
         /*
          * We are displaying long format, one file per line
          */
-
-        char cwd[PATHMAX + 1];
-        char *cwd_p;
-        cwd_p = cwd;
-
-        if (getcwd(cwd_p, PATHMAX) == NULL) {
-            perror("getcwd");
-            exit(EXIT_FAILURE);
-        }
-
-        if (chdir(path_to_ls) == -1) {
-            perror("chdir");
-            exit(EXIT_FAILURE);
-        }
-
         struct stat buf;
         struct tm *now;
         struct tm *fil;
@@ -314,23 +313,20 @@ int main(int argc, char *argv[]) {
             printf("%2ld ", (long) buf.st_nlink);
             printf("%s %s ", get_username(buf.st_uid), get_groupname(buf.st_gid));
             (opts.human == 0) ?
-                (void)printf("%6lld ", (long long) buf.st_size) :       /* bytes */
-                format((long long)buf.st_size) ;                  /* ie: 16k */
+                (void)printf("%6lld ", (long long) buf.st_size) :     /* bytes */
+                format((long long)buf.st_size) ;                      /* ie: 16k */
 
             fil = localtime(&buf.st_mtime);
             if (current_year != (fil->tm_year + 1900)) {
-                strftime(string_time, sizeof("Jan 01  1970"), "%b %d  %Y", localtime(&buf.st_mtime));
+                strftime(string_time, sizeof("Jan 01  1970"), "%b %d  %Y",
+                         localtime(&buf.st_mtime));
             } else {
-                strftime(string_time, sizeof("Jan 01 12:00"), "%b %d %H:%M", localtime(&buf.st_mtime));
+                strftime(string_time, sizeof("Jan 01 12:00"), "%b %d %H:%M",
+                         localtime(&buf.st_mtime));
             }
 
             printf("%s ", string_time);
-            printf("%s%s\033[0m\n", file_color(buf.st_mode), filenames[f]);
-        }
-
-        if (chdir(cwd) == -1) {
-            perror("chdir");
-            exit(EXIT_FAILURE); /* no biggie, already printed the output... */
+            printf("%s%s%s\n", file_color(buf.st_mode), filenames[f], ANSI_RESET);
         }
 
     } else {
@@ -346,7 +342,7 @@ int main(int argc, char *argv[]) {
                 exit(EXIT_FAILURE);
             }
 
-            printf("%s%-*s\033[0m", file_color(buf.st_mode), longest_so_far+2, filenames[f]);
+            printf("%s%-*s%s", file_color(buf.st_mode), longest_so_far+2, filenames[f], ANSI_RESET);
             if (i % n_per_line == 0) {
                 printf("\n");
             }
@@ -356,6 +352,12 @@ int main(int argc, char *argv[]) {
         if ((i-1) % n_per_line != 0) {
             printf("\n");
         }
+    }
+
+    /* Not sure this is even necessary */
+    if (chdir(cwd) == -1) {
+    perror("chdir");
+    exit(EXIT_FAILURE); /* no biggie, already printed the output... */
     }
 
     return EXIT_SUCCESS;
