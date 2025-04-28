@@ -61,7 +61,8 @@ int read_file_dec(char *filename[]) {
 
     printf("%08d ", offset);
     while (( c = getc(fp)) != EOF ) {
-        //c = reverseByte(c);
+        /* next line is suspect */
+        c = reverseByte(c);
         printf("%03d", (unsigned)c );
         offset++;
 
