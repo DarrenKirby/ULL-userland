@@ -21,21 +21,20 @@
  ***************************************************************************/
 
 
-#define _POSIX_C_SOURCE 200112L
+//#define _POSIX_C_SOURCE 200112L
 
-#ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE 700
-#endif
-
-
+//#ifndef _XOPEN_SOURCE
+//#define _XOPEN_SOURCE 700
+//#endif
 
 #if defined(__APPLE__) && defined(__MACH__)
 #include <sys/param.h>
 #include <sys/ucred.h>
 #include <sys/mount.h>
+#else
+#include "mount.h"
 #endif
 
-#include "mount.h"
 #include "common.h"
 
 const char *APPNAME = "df";
