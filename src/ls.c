@@ -1,7 +1,7 @@
 /***************************************************************************
  *   ls.c - list files and directories                                     *
  *                                                                         *
- *   Copyright (C) 2014 - 2024 by Darren Kirby                             *
+ *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -28,8 +28,8 @@
 #include <dirent.h>
 #include <time.h>
 
-
 const char *APPNAME = "ls";
+
 
 struct optstruct {
     unsigned int ls_long:1;
@@ -38,13 +38,8 @@ struct optstruct {
     unsigned int one:1;
     unsigned int inode:1;
     unsigned int dereference:1;
-} opts;
+} opts = {0,0,0,0,0,0};
 
-/*struct filestruct {
-    char         filename[PATHMAX + 1];
-    int        type;
-    ssize_t      size;
-} file_s;*/
 
 static void show_help(void) {
     printf("Usage: %s [OPTION]... [FILE]...\n\n\
@@ -59,6 +54,7 @@ Options:\n\
     -V, --version\tdisplay version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
+
 
 static void format(long long int bytes) {
     char size_string[22];
@@ -86,9 +82,31 @@ static void format(long long int bytes) {
     printf("%6s ", size_string);
 }
 
+
+const char* file_color(mode_t mode)
+{
+    if (S_ISDIR(mode)) {
+        return "\033[34m"; // blue
+    }
+    if (S_ISLNK(mode)) {
+        return "\033[36m"; // cyan
+    }
+    if (S_ISSOCK(mode)) {
+        return "\033[35m"; // magenta
+    }
+    if (S_ISFIFO(mode)) {
+        return "\033[33m"; // yellow
+    }
+    if (mode & S_IXUSR) {
+        return "\033[32m"; // green (executable)
+    }
+    return "\033[0m"; // default color
+}
+
+
 int main(int argc, char *argv[]) {
     int opt;
-    opts.all = 0;
+    //opts.all = 0;
     int screen_width = 0;
 
     struct option longopts[] = {
@@ -144,7 +162,6 @@ int main(int argc, char *argv[]) {
                   *
                   */
                 exit(EXIT_FAILURE);
-                break;
             case '?':
                  /*
                   * getopt_long prints own error message
@@ -154,7 +171,6 @@ int main(int argc, char *argv[]) {
             default:
                 show_help();
                 exit(EXIT_FAILURE);
-                break;
         }
     }
 
@@ -185,7 +201,7 @@ int main(int argc, char *argv[]) {
     int n_files = 0;          /* number of files to print */
     int n_per_line = 0;       /* number of files per line */
     int longest_so_far = 0;   /* longest filename seen so far */
-    int n;                      /* return value of strlen() calls */
+    int n;                    /* return value of strlen() calls */
 
     while ((list = readdir(dp)) != NULL) {
         /*
@@ -194,12 +210,11 @@ int main(int argc, char *argv[]) {
          */
         if (opts.all == 0) {
 
-            if (strncmp(".",  list->d_name, 2) == 0 ||
-                strncmp("..", list->d_name, 3) == 0) {
+            if (list->d_name[0] == '.') {
                 continue;
-               }
-        }
+            }
 
+        }
         n_files++;
 
         if ((n = strlen(list->d_name)) > longest_so_far) {
@@ -216,10 +231,9 @@ int main(int argc, char *argv[]) {
     while ((list = readdir(dp)) != NULL) {
         if (opts.all == 0) {
 
-            if (strncmp(".",  list->d_name, 2) == 0 ||
-                strncmp("..", list->d_name, 3) == 0) {
+            if (list->d_name[0] == '.') {
                 continue;
-               }
+            }
         }
         strncpy(filenames[n], list->d_name, PATHMAX + 1);
         n++;
@@ -232,9 +246,17 @@ int main(int argc, char *argv[]) {
         /*
          * We are displaying short format, one file per line
          */
+
         for (f = 0; f < n_files; f++) {
-            printf("%s\n", filenames[f]);
+            struct stat buf;
+            if (lstat(filenames[f], &buf) == -1) {
+                perror("lstat");
+                exit(EXIT_FAILURE);
+            }
+
+            printf("%s%s\033[0m\n", file_color(buf.st_mode), filenames[f]);
         }
+
 
     } else if (opts.ls_long == 1) {
         /*
@@ -296,8 +318,7 @@ int main(int argc, char *argv[]) {
             }
 
             printf("%s ", string_time);
-            printf("%s", filenames[f]);
-            printf("\n");
+            printf("%s%s\033[0m\n", file_color(buf.st_mode), filenames[f]);
         }
 
         if (chdir(cwd) == -1) {
@@ -312,12 +333,19 @@ int main(int argc, char *argv[]) {
         int i = 1;
 
         for (f = 0; f < n_files; f++) {
-            printf("%-*s", longest_so_far+2, filenames[f]);
+            struct stat buf;
+            if (lstat(filenames[f], &buf) == -1) {
+                perror("lstat");
+                exit(EXIT_FAILURE);
+            }
+
+            printf("%s%-*s\033[0m", file_color(buf.st_mode), longest_so_far+2, filenames[f]);
             if (i % n_per_line == 0) {
                 printf("\n");
             }
             i++;
         }
+
         if ((i-1) % n_per_line != 0) {
             printf("\n");
         }
