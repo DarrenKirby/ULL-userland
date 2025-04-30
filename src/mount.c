@@ -70,8 +70,14 @@ int main(int argc, char *argv[]) {
             printf(", noexec");
         if ((mounted_fs[i].f_flags & MNT_RDONLY) != 0)
             printf(", read-only");
+#ifdef __FreeBSD__
         if ((mounted_fs[i].f_flags & MNT_GJOURNAL) != 0)
             printf(", journaled");
+#endif
+#if defined(__APPLE__) && defined(__MACH__)
+        if ((mounted_fs[i].f_flags & MNT_JOURNALED) != 0)
+            printf(", journaled");
+#endif
         if ((mounted_fs[i].f_flags & MNT_LOCAL) != 0)
             printf(", local");
         if ((mounted_fs[i].f_flags & MNT_NOSUID) != 0)
