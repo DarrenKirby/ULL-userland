@@ -5,10 +5,10 @@ Now as then, this is just an exercise to teach myself C.
 My Linux and FreeBSD machine is in storage so I only have
 MacBook Pro to write and test code on presently. To wit:
 
-2.2 GHz 6-Core Intel Core i7 running Ventura 13.0
-gcc-13 (Homebrew GCC 13.2.0) 13.2.0
-Apple clang version 14.0.3 (clang-1403.0.22.14.1)
-Target: x86_64-apple-darwin22.1.0
+2.2 GHz 6-Core Intel Core i7 running Sonoma 14.7.1
+gcc-14 (Homebrew GCC 14.2.0_1) 14.2.0
+Apple clang version 16.0.0 (clang-1600.0.26.4)
+Target: x86_64-apple-darwin23.6.0
 
 I'll putter around as I find time to do so. In the meantime,
 I've decided to keep my original note from 2014 for historic
@@ -28,7 +28,7 @@ FreeBSD 10-Release (CLANGBSD 3.3, )
 
 ...but developed on the linux machine for the most part. Am working
 on portablility but a lot of the apps are flaky or don't even compile
-on OS X and FeeBSD. See notes below...
+on OS X and FreeBSD. See notes below...
 ========================================================================
 
 at        :: not started
@@ -137,12 +137,12 @@ uname     :: completed    # Linux: compiles, works | OS X: compiles, works | Fre
 unexpand  :: not started
 uniq      :: not started
 unlink    :: in progress  # Linux ?? | OS X: compiles, works | FreeBSD: ??
-uptime    :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: untested
+uptime    :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 users     :: not started
 vdir      :: in progress  # Mostly working including colour output
 wc        :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 which     :: not started
-who       :: completed    # Linux: compiles, works | OS X: compiles, works, FreeBSD: ?
+who       :: completed    # Linux: compiles, works | OS X: compiles, works, FreeBSD: compiles, works
 whois     :: not started
 whoami    :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 write     :: not started
