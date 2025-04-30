@@ -34,7 +34,7 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <utmp.h>
+//#include <utmp.h>
 #include <errno.h>
 #include <unistd.h>
 #include <string.h>
@@ -42,6 +42,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <libgen.h>
+#include <getopt.h>
 
 
 /* Version information */
@@ -98,7 +99,7 @@ extern const char *APPNAME;
 
 /* For longopts */
 //#define _GNU_SOURCE
-#include <getopt.h>
+
 
 
 /* prototypes */
