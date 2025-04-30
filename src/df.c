@@ -27,7 +27,7 @@
 //#define _XOPEN_SOURCE 700
 //#endif
 
-#if defined(__APPLE__) && defined(__MACH__)
+#if defined(__APPLE__) && defined(__MACH__) || defined(__FreeBSD__)
 #include <sys/param.h>
 #include <sys/ucred.h>
 #include <sys/mount.h>
@@ -190,11 +190,11 @@ int main(int argc, char *argv[]) {
            "Mounted on");
     //printf("Filesystem\t1K-blocks\tUsed\t\tAvailable\tUse%%\tMounted on\n");
     for (int i = 0; i < n_mounts; i++) {
-#ifdef __linux__
+//#ifdef __linux__
         printf("%*s %*lu %*lu %*lu %*lu%%   %s\n", 16, mounted_filesystems[i].f_mntfromname,
-#else
-        printf("%*s %*llu %*llu %*llu %*lu%%   %s\n", 16, mounted_filesystems[i].f_mntfromname,
-#endif
+//#else
+//        printf("%*s %*llu %*llu %*llu %*lu%%   %s\n", 16, mounted_filesystems[i].f_mntfromname,
+//#endif
                12, mounted_filesystems[i].f_blocks,
                12, mounted_filesystems[i].f_blocks - mounted_filesystems[i].f_bfree,
                12, mounted_filesystems[i].f_bfree,
