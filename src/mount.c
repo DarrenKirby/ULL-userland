@@ -1,7 +1,7 @@
 /***************************************************************************
- *   mount.c - display file attributes                                     *
+ *   mount.c - display mounted filesystems                                 *
  *                                                                         *
- *   Copyright (C) 2014-2024 by Darren Kirby                               *
+ *   Copyright (C) 2014-2025 by Darren Kirby                               *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -66,11 +66,11 @@ int main(int argc, char *argv[]) {
         // print out FS flags - still more to add
         if ((mounted_fs[i].f_flags & MNT_AUTOMOUNTED) != 0)
             printf(", automounted");
-        if ((mounted_fs[i].f_flags & MNT_DONTBROWSE) != 0)
-            printf(", nobrowse");
+        if ((mounted_fs[i].f_flags & MNT_NOEXEC) != 0)
+            printf(", noexec");
         if ((mounted_fs[i].f_flags & MNT_RDONLY) != 0)
             printf(", read-only");
-        if ((mounted_fs[i].f_flags & MNT_JOURNALED) != 0)
+        if ((mounted_fs[i].f_flags & MNT_GJOURNAL) != 0)
             printf(", journaled");
         if ((mounted_fs[i].f_flags & MNT_LOCAL) != 0)
             printf(", local");
