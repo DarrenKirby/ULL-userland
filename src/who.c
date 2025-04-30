@@ -1,7 +1,7 @@
 /***************************************************************************
  *   who - show logged-in users                                            *
  *                                                                         *
- *   Copyright (C) 2014 - 2024 by Darren Kirby                             *
+ *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -26,7 +26,7 @@
 #include <utmpx.h>
 #include <time.h>
 
-#if defined(__APPLE__) && defined(__MACH__)
+#if defined(__APPLE__) && defined(__MACH__) || defined(__FreeBSD__)
 #include <sys/sysctl.h>
 #endif
 #ifdef __linux__
