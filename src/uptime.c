@@ -31,6 +31,12 @@
 #include <sys/sysctl.h>
 #endif
 
+#ifdef __FreeBSD__
+#include <sys/types.h>
+#include <sys/param.h>
+#include <vm/vm_param.h>
+#endif
+
 #include "common.h"
 
 const char *APPNAME = "uptime";
@@ -54,7 +60,7 @@ int get_num_users(void) {
 }
 
 
-static int get_time(void) {
+void get_time(void) {
     struct tm *tm_ptr;
     time_t the_time;
 
@@ -62,7 +68,6 @@ static int get_time(void) {
     tm_ptr = localtime(&the_time);
 
     printf(" %02d:%02d:%02d", tm_ptr->tm_hour, tm_ptr->tm_min, tm_ptr->tm_sec);
-    return EXIT_SUCCESS;
 }
 
 
@@ -75,18 +80,18 @@ static int print_uptime(void) {
 
     float av1, av2, av3;
 #ifdef __linux__
-    // get uptime linux
+    /* Get uptime Linux */
     struct sysinfo s_info;
     error = sysinfo(&s_info);
 
-    uptimes = s_info.uptime; /* returned in seconds */
+    uptimes = s_info.uptime;
 
-    // get load average linux
+    /* Get load average Linux */
     av1 = s_info.loads[0] / LOADS_SCALE;
     av2 = s_info.loads[1] / LOADS_SCALE;
     av3 = s_info.loads[2] / LOADS_SCALE;
 #else
-    // get uptime OS X/*BSD
+    /* Get uptime OS X / *BSD */
     struct timeval boottime;
     size_t len = sizeof(boottime);
     int mib[2] = { CTL_KERN, KERN_BOOTTIME };
@@ -99,7 +104,19 @@ static int print_uptime(void) {
     time_t bsec = boottime.tv_sec, csec = time(NULL);
     uptimes = difftime(csec, bsec);
 
-    // get load average OS X/*BSD
+    /* Get load average *BSD */
+#ifdef __FreeBSD__
+    double loadavg[3];
+    if (getloadavg(loadavg, nitems(loadavg)) == -1) {
+        printf("Error getting load average");
+        error = -1;
+    }
+    av1 = loadavg[0];
+    av2 = loadavg[1];
+    av3 = loadavg[2];
+
+    /* Get load average OS X */
+#else
     struct loadavg loads;
     size_t lenl = sizeof(loads);
     int mib2[2] = { CTL_VM, VM_LOADAVG };
@@ -112,9 +129,10 @@ static int print_uptime(void) {
     av1 = loads.ldavg[0] / (float)loads.fscale;
     av2 = loads.ldavg[1] / (float)loads.fscale;
     av3 = loads.ldavg[2] / (float)loads.fscale;
-
+#endif
 #endif
 
+    /* uptimes returned in seconds */
     days = uptimes / ONEDAY;
     upmind = uptimes - (days * ONEDAY);
     hours = upmind / ONEHOUR;
