@@ -1,5 +1,5 @@
 CC ?= gcc
-CFLAGS ?= -O2 -Wall -Wextra -Wundef -Wshadow -Wpedantic -Wno-unused-parameter -std=gnu99
+CFLAGS ?= -Wall -Wextra -Wundef -Wshadow -Wpedantic -Wno-unused-parameter -std=gnu11
 LDFLAGS ?=
 
 PKG_CONFIG ?= pkg-config
