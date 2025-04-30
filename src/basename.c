@@ -1,7 +1,7 @@
 /***************************************************************************
  *   basename.c - strip directory and suffix from filenames                *
  *                                                                         *
- *   Copyright (C) 2014-2024 by Darren Kirby                               *
+ *   Copyright (C) 2014-2025 by Darren Kirby                               *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -19,7 +19,6 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-
 
 
 #include "common.h"

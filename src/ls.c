@@ -342,7 +342,7 @@ int main(int argc, char *argv[]) {
                 exit(EXIT_FAILURE);
             }
 
-            printf("%s%-*s%s", file_color(buf.st_mode), longest_so_far+2, filenames[f], ANSI_RESET);
+            printf("%s%-*s%s", file_color(buf.st_mode), longest_so_far+1, filenames[f], ANSI_RESET);
             if (i % n_per_line == 0) {
                 printf("\n");
             }
