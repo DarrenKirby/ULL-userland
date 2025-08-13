@@ -209,7 +209,7 @@ int main(int argc, char *argv[]) {
     int n_files = 0;          /* number of files to print */
     int n_per_line = 0;       /* number of files per line */
     int longest_so_far = 0;   /* longest filename seen so far */
-    int n;                    /* return value of strlen() calls */
+    long n;     //  fixme      /* return value of strlen() calls */
 
     while ((list = readdir(dp)) != NULL) {
         /*
@@ -314,7 +314,7 @@ int main(int argc, char *argv[]) {
             printf("%s %s ", get_username(buf.st_uid), get_groupname(buf.st_gid));
             (opts.human == 0) ?
                 (void)printf("%6lld ", (long long) buf.st_size) :     /* bytes */
-                format((long long)buf.st_size) ;                      /* ie: 16k */
+                format(buf.st_size) ;                      /* ie: 16k */
 
             fil = localtime(&buf.st_mtime);
             if (current_year != (fil->tm_year + 1900)) {
@@ -354,7 +354,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    /* Not sure this is even necessary */
+    /* Not sure if this is even necessary */
     if (chdir(cwd) == -1) {
     perror("chdir");
     exit(EXIT_FAILURE); /* no biggie, already printed the output... */
