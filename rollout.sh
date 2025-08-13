@@ -14,4 +14,4 @@ gzip "${DIRROOT}.tar"
 tar cf "${DIRROOT}.tar" "${DIRROOT}"
 bzip2 "${DIRROOT}.tar"
 
-rm -rf ${DIRROOT}
+rm -rf "${DIRROOT}"
