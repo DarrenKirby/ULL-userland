@@ -50,7 +50,7 @@ csplit    :: not started
 cut       :: not started
 date      :: not started
 dd        :: not started
-df        :: in progress
+df        :: in progress  # Linux ?? | OS X: compiles, works | FreeBSD: ??
 dir       :: not started
 dircolors :: not started
 dirname   :: in progress  # Linux ?? | OS X: compiles, works | FreeBSD ??
@@ -84,7 +84,7 @@ mesg      :: not started
 mkdir     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 mkfifo    :: not started
 mknod     :: not started
-mount     :: in progress
+mount     :: in progress  # Linux: ?? | OS X: compiles, works | FreeBSD: ??
 mv        :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 nice      :: not started
 nl        :: in progress  # Linux: compiles, works | OS X: ? | FreeBSD: ?
@@ -150,4 +150,4 @@ yes       :: completed    # Linux: compiles, works | OS X: compiles, works | Fre
 
 ========================================================================
 
-Copyright (C) 2014-2024 Darren Kirby <bulliver@gmail.com>
+Copyright (C) 2014-2025 Darren Kirby <bulliver@gmail.com>
