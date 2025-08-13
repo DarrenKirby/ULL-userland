@@ -118,7 +118,7 @@ char  *get_groupname(gid_t gid);                   /* Returns groupname from gid
 /* Commonly used function definitions */
 
 /* Generic error */
-void gen_error(char *message) {
+inline void gen_error(char *message) {
     printf("%s: %s\n", APPNAME, message);
 }
 
@@ -131,9 +131,8 @@ void f_error(char *filename, char *message) {
 
 /* Debugging aids */
 int dump_args(int argc, char *argv[]) {
-    int i;
-    printf("argc: %i\n", argc);
-    for (i = 1; i < argc; i++) {
+  printf("argc: %i\n", argc);
+    for (int i = 1; i < argc; i++) {
         printf("argv[%i]: %s\n", i, argv[i]);
     }
     return 0;
