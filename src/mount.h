@@ -455,23 +455,23 @@ int getfsstat_ext(struct statfs_ext **struct_array_buf, long int bufsize, int fl
 //     char f_mntfromname[PATH_MAX+1];    /* mounted file sytem */
 // };
 //
-// int merge_statfs_structs(struct statfs *buf, struct statfs_ext **buf_full) {
-//     int i;
-//     (*buf_full)->f_type    = buf->f_type;
-//     (*buf_full)->f_bsize   = buf->f_bsize;
-//     (*buf_full)->f_blocks  = buf->f_blocks;
-//     (*buf_full)->f_bfree   = buf->f_bfree;
-//     (*buf_full)->f_bavail  = buf->f_bavail;
-//     (*buf_full)->f_files   = buf->f_files;
-//     (*buf_full)->f_ffree   = buf->f_ffree;
-//     (*buf_full)->f_fsid    = buf->f_fsid;
-//     (*buf_full)->f_namelen = buf->f_namelen;
-//     (*buf_full)->f_frsize  = buf->f_frsize;
-//
-//     for (i = 0; i < 5; i++)
-//         (*buf_full)->f_spare[i]   = buf->f_spare[i];
-//     return 0;
-// }
+int merge_statfs_structs(struct statfs *buf, struct statfs_ext **buf_full) {
+    int i;
+    (*buf_full)->f_type    = buf->f_type;
+    (*buf_full)->f_bsize   = buf->f_bsize;
+    (*buf_full)->f_blocks  = buf->f_blocks;
+    (*buf_full)->f_bfree   = buf->f_bfree;
+    (*buf_full)->f_bavail  = buf->f_bavail;
+    (*buf_full)->f_files   = buf->f_files;
+    (*buf_full)->f_ffree   = buf->f_ffree;
+    (*buf_full)->f_fsid    = buf->f_fsid;
+    (*buf_full)->f_namelen = buf->f_namelen;
+    (*buf_full)->f_frsize  = buf->f_frsize;
+
+    for (i = 0; i < 5; i++)
+        (*buf_full)->f_spare[i]   = buf->f_spare[i];
+    return 0;
+}
 //
 // int statfs_ext(const char *path, struct statfs_ext *struct_buf) {
 //     /* check size of path arg */
@@ -619,119 +619,119 @@ int getfsstat_ext(struct statfs_ext **struct_array_buf, long int bufsize, int fl
 //
 
 
-// int getfsstat_linux(struct statfs_ext *buf) {
-//     FILE *fp;
-//     int  n_lines = 0;
-//     char lines[512];
-//     char *line = lines;
-//
-//     if ((fp = fopen("/proc/mounts", "r")) == NULL) {
-//         perror("could not open /proc/mounts");
-//         exit(EXIT_FAILURE);
-//     }
-//
-//     char ch;
-//     while(!feof(fp)) {             /* count lines to determine */
-//         ch = fgetc(fp);            /* size of struct array     */
-//         if(ch == '\n')
-//             n_lines++;
-//     }
-//     rewind(fp);
-//
-//     if (buf == NULL)               /* We have # of mounted fs, might as well bail */
-//         return n_lines;
-//
-//     struct mounted_fs_entry fse[n_lines];
-//     int i, i2;
-//
-//     for (i = 0; i < n_lines; i++) {
-//         line = fgets(lines, 512, fp);
-//         sscanf(line, "%s %s %s %s %d %d\n", fse[i].fs_spec, fse[i].fs_file,
-//                                             fse[i].fs_vsftype, fse[i].fs_mntops,
-//                                             &fse[i].fs_freq, &fse[i].fs_passno);
-//     }
-//
-//     fclose(fp);
-//
-//     /* statfs array struct */
-//     struct statfs_ext *sas = malloc(sizeof(struct statfs_ext) * n_lines);
-//     //struct statfs_ext *buf = malloc(sizeof(struct statfs_ext) * n_lines);
-//
-//     struct statfs_ext *f_tmp;
-//     f_tmp = malloc(sizeof(struct statfs_ext));
-//     if (f_tmp == NULL) {
-//         perror("unable to malloc");
-//         exit(EXIT_FAILURE);
-//     }
-//
-//     struct statfs *s_tmp;
-//     s_tmp = malloc(sizeof(struct statfs));
-//     if (s_tmp == NULL) {
-//         perror("unable to malloc");
-//         exit(EXIT_FAILURE);
-//     }
-//
-//     for (i2 = 0; i2 < n_lines; i2++) {
-//
-//         if (statfs(fse[i2].fs_file, s_tmp) != 0) {
-//             perror("statfs() failed");
-//             continue; /* might not be fatal */
-//         }
-//         merge_statfs_structs(s_tmp, &f_tmp);
-//
-//         strncpy(f_tmp->f_fstypename, fse[i2].fs_vsftype, FS_TYPE_LEN);
-//         strncpy(f_tmp->f_mntonname, fse[i2].fs_file, PATH_MAX);
-//         strncpy(f_tmp->f_mntfromname, fse[i2].fs_spec, PATH_MAX);
-//
-//         //printf("f_type:    %#x\n", (unsigned int)f_tmp->f_type);
-//         //printf("f_bsize:   %lu\n", f_tmp->f_bsize);
-//         //printf("f_blocks:  %d\n", (int)f_tmp->f_blocks);
-//         //printf("f_bfree:   %d\n", (int)f_tmp->f_bfree);
-//         //printf("f_bavail:  %d\n", (int)f_tmp->f_bavail);
-//         //printf("f_files:   %d\n", (int)f_tmp->f_files);
-//         //printf("f_ffree:   %d\n", (int)f_tmp->f_ffree);
-//         //printf("f_fsid1:   %lu\n", f_tmp->f_fsid);
-//         //printf("f_namelen  %lu\n", f_tmp->f_namelen);
-//         //printf("f_frsize   %lu\n", f_tmp->f_frsize);
-//         //printf("f_fstypename:  %s\n", f_tmp->f_fstypename);
-//         //printf("f_mntonname:   %s\n", f_tmp->f_mntonname);
-//         //printf("f_mntfromname: %s\n", f_tmp->f_mntfromname);
-//
-//         sas[i2] = *f_tmp;
-//
-//         //printf("f_type:        %#x\n", (unsigned int)sas[i2].f_type);
-//         //printf("f_bsize:       %lu\n", sas[i2].f_bsize);
-//         //printf("f_blocks:      %d\n",  (int)sas[i2].f_blocks);
-//         //printf("f_bfree:       %d\n",  (int)sas[i2].f_bfree);
-//         //printf("f_bavail:      %d\n",  (int)sas[i2].f_bavail);
-//         //printf("f_files:       %d\n",  (int)sas[i2].f_files);
-//         //printf("f_ffree:       %d\n",  (int)sas[i2].f_ffree);
-//         //printf("f_fsid1:     %lu\n", f_tmp->f_fsid);
-//         //printf("f_namelen      %lu\n", sas[i2].f_namelen);
-//         //printf("f_frsize       %lu\n", sas[i2].f_frsize);
-//         //printf("f_fstypename:  %s\n",  sas[i2].f_fstypename);
-//         //printf("f_mntonname:   %s\n",  sas[i2].f_mntonname);
-//         //printf("f_mntfromname: %s\n",  sas[i2].f_mntfromname);
-//     }
-//
-//     free(s_tmp);
-//     free(f_tmp);
-//     //printf("f_fstypename:  %s\n", sas[0].f_fstypename);
-//     //printf("f_fstypename:  %s\n", sas[1].f_fstypename);
-//     //printf("f_fstypename:  %s\n", sas[2].f_fstypename);
-//     //printf("f_fstypename:  %s\n", sas[3].f_fstypename);
-//     //printf("f_fstypename:  %s\n", sas[4].f_fstypename);
-//     //printf("f_fstypename:  %s\n", sas[5].f_fstypename);
-//     //printf("f_fstypename:  %s\n", sas[6].f_fstypename);
-//     //printf("f_fstypename:  %s\n", sas[7].f_fstypename);
-//     //printf("f_fstypename:  %s\n", sas[8].f_fstypename);
-//     //printf("f_fstypename:  %s\n", sas[9].f_fstypename);
-//     //printf("Size of sas:   %lu\n", sizeof(sas));
-//     //printf("Size of buf:   %lu\n", sizeof(buf));
-//     //buf = **sas;
-//     free(sas);
-//     return i2;
-// }
+int getfsstat_linux(struct statfs_ext *buf) {
+    FILE *fp;
+    int  n_lines = 0;
+    char lines[512];
+    char *line = lines;
+
+    if ((fp = fopen("/proc/mounts", "r")) == NULL) {
+        perror("could not open /proc/mounts");
+        exit(EXIT_FAILURE);
+    }
+
+    char ch;
+    while(!feof(fp)) {             /* count lines to determine */
+        ch = fgetc(fp);            /* size of struct array     */
+        if(ch == '\n')
+            n_lines++;
+    }
+    rewind(fp);
+
+    if (buf == NULL)               /* We have # of mounted fs, might as well bail */
+        return n_lines;
+
+    struct mounted_fs_entry fse[n_lines];
+    int i, i2;
+
+    for (i = 0; i < n_lines; i++) {
+        line = fgets(lines, 512, fp);
+        sscanf(line, "%s %s %s %s %d %d\n", fse[i].fs_spec, fse[i].fs_file,
+                                            fse[i].fs_vsftype, fse[i].fs_mntops,
+                                            &fse[i].fs_freq, &fse[i].fs_passno);
+    }
+
+    fclose(fp);
+
+    /* statfs array struct */
+    struct statfs_ext *sas = malloc(sizeof(struct statfs_ext) * n_lines);
+    //struct statfs_ext *buf = malloc(sizeof(struct statfs_ext) * n_lines);
+
+    struct statfs_ext *f_tmp;
+    f_tmp = malloc(sizeof(struct statfs_ext));
+    if (f_tmp == NULL) {
+        perror("unable to malloc");
+        exit(EXIT_FAILURE);
+    }
+
+    struct statfs *s_tmp;
+    s_tmp = malloc(sizeof(struct statfs));
+    if (s_tmp == NULL) {
+        perror("unable to malloc");
+        exit(EXIT_FAILURE);
+    }
+
+    for (i2 = 0; i2 < n_lines; i2++) {
+
+        if (statfs(fse[i2].fs_file, s_tmp) != 0) {
+            perror("statfs() failed");
+            continue; /* might not be fatal */
+        }
+        merge_statfs_structs(s_tmp, &f_tmp);
+
+        strncpy(f_tmp->f_fstypename, fse[i2].fs_vsftype, FS_TYPE_LEN);
+        strncpy(f_tmp->f_mntonname, fse[i2].fs_file, PATH_MAX);
+        strncpy(f_tmp->f_mntfromname, fse[i2].fs_spec, PATH_MAX);
+
+        //printf("f_type:    %#x\n", (unsigned int)f_tmp->f_type);
+        //printf("f_bsize:   %lu\n", f_tmp->f_bsize);
+        //printf("f_blocks:  %d\n", (int)f_tmp->f_blocks);
+        //printf("f_bfree:   %d\n", (int)f_tmp->f_bfree);
+        //printf("f_bavail:  %d\n", (int)f_tmp->f_bavail);
+        //printf("f_files:   %d\n", (int)f_tmp->f_files);
+        //printf("f_ffree:   %d\n", (int)f_tmp->f_ffree);
+        //printf("f_fsid1:   %lu\n", f_tmp->f_fsid);
+        //printf("f_namelen  %lu\n", f_tmp->f_namelen);
+        //printf("f_frsize   %lu\n", f_tmp->f_frsize);
+        //printf("f_fstypename:  %s\n", f_tmp->f_fstypename);
+        //printf("f_mntonname:   %s\n", f_tmp->f_mntonname);
+        //printf("f_mntfromname: %s\n", f_tmp->f_mntfromname);
+
+        sas[i2] = *f_tmp;
+
+        //printf("f_type:        %#x\n", (unsigned int)sas[i2].f_type);
+        //printf("f_bsize:       %lu\n", sas[i2].f_bsize);
+        //printf("f_blocks:      %d\n",  (int)sas[i2].f_blocks);
+        //printf("f_bfree:       %d\n",  (int)sas[i2].f_bfree);
+        //printf("f_bavail:      %d\n",  (int)sas[i2].f_bavail);
+        //printf("f_files:       %d\n",  (int)sas[i2].f_files);
+        //printf("f_ffree:       %d\n",  (int)sas[i2].f_ffree);
+        //printf("f_fsid1:     %lu\n", f_tmp->f_fsid);
+        //printf("f_namelen      %lu\n", sas[i2].f_namelen);
+        //printf("f_frsize       %lu\n", sas[i2].f_frsize);
+        //printf("f_fstypename:  %s\n",  sas[i2].f_fstypename);
+        //printf("f_mntonname:   %s\n",  sas[i2].f_mntonname);
+        //printf("f_mntfromname: %s\n",  sas[i2].f_mntfromname);
+    }
+
+    free(s_tmp);
+    free(f_tmp);
+    //printf("f_fstypename:  %s\n", sas[0].f_fstypename);
+    //printf("f_fstypename:  %s\n", sas[1].f_fstypename);
+    //printf("f_fstypename:  %s\n", sas[2].f_fstypename);
+    //printf("f_fstypename:  %s\n", sas[3].f_fstypename);
+    //printf("f_fstypename:  %s\n", sas[4].f_fstypename);
+    //printf("f_fstypename:  %s\n", sas[5].f_fstypename);
+    //printf("f_fstypename:  %s\n", sas[6].f_fstypename);
+    //printf("f_fstypename:  %s\n", sas[7].f_fstypename);
+    //printf("f_fstypename:  %s\n", sas[8].f_fstypename);
+    //printf("f_fstypename:  %s\n", sas[9].f_fstypename);
+    //printf("Size of sas:   %lu\n", sizeof(sas));
+    //printf("Size of buf:   %lu\n", sizeof(buf));
+    //buf = **sas;
+    free(sas);
+    return i2;
+}
 
 #endif /* _MOUNT_H */
 
