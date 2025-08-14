@@ -40,7 +40,8 @@ static int print_all_env(void) {
 
 static void show_help(void) {
     printf("Usage: %s [OPTION]... [NAME=VALUE]... [COMMAND [ARG]...]\n\n\
-    Set each NAME to VALUE in the environment and run COMMAND.\n\n\
+    Set each NAME to VALUE in the environment and run COMMAND.\n\
+    With no args just print all environmental variables.\n\n\
 Options:\n\
     -i, --ignore-environment   start with an empty environment\n\
     -u, --unset=NAME           remove variable from the environment\n\
