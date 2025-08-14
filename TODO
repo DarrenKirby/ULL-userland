@@ -37,34 +37,34 @@ basename  :: completed    # Linux: compiles, works | OS X: compiles, works | Fre
 cal       :: not started
 cat       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 cd        :: completed    # Linux: compiles | OS X: compiles | FreeBSD: compiles (But useless on all: read cd.c source)
-chgrp     :: completed    # Linux ?? | OS X: compiles, works | FreeBSD ??
+chgrp     :: completed    # Linux ?? | OS X: compiles, works | FreeBSD compiles, works
 chmod     :: not started
-chown     :: completed    # Linux compiles, works | OS X: compiles, works | FreeBSD ??
+chown     :: completed    # Linux compiles, works | OS X: compiles, works | FreeBSD compiles, works
 chpass    :: not started
 chroot    :: not started
 cksum     :: not started
 comm      :: not started
 cmp       :: not started
-cp        :: in progress  # Linux: compiles, works | OS X: ? | FreeBSD ?
+cp        :: in progress  # Linux: compiles, works | OS X: ? | FreeBSD compiles, works - barebones, many opts not implemented
 csplit    :: not started
 cut       :: not started
 date      :: not started
 dd        :: not started
-df        :: in progress  # Linux: compiles, flaky | OS X: compiles, works | FreeBSD: ?? - lots of options still not implemented
+df        :: in progress  # Linux: compiles, flaky | OS X: compiles, works | FreeBSD: compiles, works - lots of options still not implemented
 dir       :: not started
 dircolors :: not started
-dirname   :: in progress  # compiles, works | OS X: compiles, works | FreeBSD ??
+dirname   :: in progress  # compiles, works | OS X: compiles, works | FreeBSD compiles, works
 dmesg     :: not started
 domainname:: not started
 du        :: not started
-env       :: in progress  # Linux: Compiles, flaky | OS X: compiles, flaky | FreeBSD: ?? - prints envs, but set/unset not working
+env       :: in progress  # Linux: Compiles, flaky | OS X: compiles, flaky | FreeBSD: compiles, works - prints envs, but set/unset not working
 expand    :: not started
 expr      :: not started
 factor    :: not started
 false     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 fmt       :: not started
 fold      :: not started
-free      :: in progress  # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, ??
+free      :: in progress  # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, flaky
 fuser     :: not started
 head      :: not started
 hostid    :: not started
@@ -74,20 +74,20 @@ ifconfig  :: not started
 install   :: not started
 join      :: not started
 kill      :: not started
-link      :: in progress  # Linux compiles, works | OS X: compiles, works | FreeBSD ??
-ln        :: in progress  # Linux compiles, works | OS X: compiles, works | FreeBSD ?? - many options not yet implemented
+link      :: in progress  # Linux compiles, works | OS X: compiles, works | FreeBSD compiles, works
+ln        :: in progress  # Linux compiles, works | OS X: compiles, works | FreeBSD compiles, works - many options not yet implemented
 logger    :: not started
 logname   :: not started
-ls        :: in progress  # Linux compiles, works | OS X: compiles, works | FreeBSD ??
+ls        :: in progress  # Linux compiles, works | OS X: compiles, works | FreeBSD compiles, works
 md5sum    :: not started
 mesg      :: not started
 mkdir     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 mkfifo    :: not started
 mknod     :: not started
-mount     :: in progress  # Linux: compiles, segfaults | OS X: compiles, works | FreeBSD: ??
+mount     :: in progress  # Linux: compiles, segfaults | OS X: compiles, works | FreeBSD: compiles, works
 mv        :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 nice      :: not started
-nl        :: in progress  # Linux: compiles, works | OS X: ? | FreeBSD: ?
+nl        :: in progress  # Linux: compiles, works | OS X: ? | FreeBSD: compiles, works
 nohup     :: not started
 od        :: in progress  # flaky!!! Fix endianess
 paste     :: not started
@@ -123,23 +123,23 @@ sync      :: completed    # Linux: compiles, works | OS X: compiles, works | Fre
 tac       :: not started
 tail      :: not started
 talk      :: not started
-tee       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: ?
+tee       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 telnet    :: not started
 time      :: not started
-touch     :: in progress  # Linux: compiles, works | OS X: compiles, works | FreeBSD: ??
+touch     :: in progress  # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 tput      :: not started
 tr        :: not started
 true      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 tsort     :: not started
 tty       :: not started
 umount    :: not started
-uname     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, segfaults
+uname     :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 unexpand  :: not started
 uniq      :: not started
-unlink    :: in progress  # Linux: compiles, works | OS X: compiles, works | FreeBSD: ??
+unlink    :: in progress  # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 uptime    :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 users     :: not started
-vdir      :: in progress  # Linux: compiles, works | OS X: compiles, works | FreeBSD: ??
+vdir      :: in progress  # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 wc        :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 which     :: not started
 who       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
