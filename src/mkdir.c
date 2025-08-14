@@ -1,7 +1,7 @@
 /***************************************************************************
  *   mkdir.c - create a new empty directory                                *
  *                                                                         *
- *   Copyright (C) 2014 - 2024 by Darren Kirby                             *
+ *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -58,7 +58,9 @@ int main(int argc, char *argv[]) {
                 break;
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
-                printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
+                printf("%s compiled on %s at %s\n",
+                       strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
+                       __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
                 break;
             case 'h':

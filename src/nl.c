@@ -107,7 +107,9 @@ int main(int argc, char *argv[]) {
                 break;
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
-                printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
+                printf("%s compiled on %s at %s\n",
+                       strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
+                       __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
             case 'h':
                 show_help();
