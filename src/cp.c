@@ -29,7 +29,7 @@ const char *APPNAME = "cp";
 
 
 static void show_help(void) {
-    printf("Usage: %s [OPTION] file1 file2\n\n \
+    printf("Usage: %s [OPTION] file1 file2 [file1 dir1]\n\n \
     -h, --help\t\tdisplay this help\n \
     -V, --version\tdisplay version information\n\n \
     Report bugs to <bulliver@gmail.com>\n", APPNAME);
