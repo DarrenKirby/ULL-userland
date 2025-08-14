@@ -2,13 +2,11 @@
 
 It looks like I'm picking this up again after nine years.
 Now as then, this is just an exercise to teach myself C.
-My Linux and FreeBSD machine is in storage so I only have
-MacBook Pro to write and test code on presently. To wit:
 
-2.2 GHz 6-Core Intel Core i7 running Sonoma 14.7.1
-gcc-14 (Homebrew GCC 14.2.0_1) 14.2.0
-Apple clang version 16.0.0 (clang-1600.0.26.4)
-Target: x86_64-apple-darwin23.6.0
+These programs are tested on three systems:
+Gentoo Linux
+OS X
+FreeBSD 14.3-RELEASE (CLANG 14.1.7)
 
 I'll putter around as I find time to do so. In the meantime,
 I've decided to keep my original note from 2014 for historic
