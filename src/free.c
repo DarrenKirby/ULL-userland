@@ -1,7 +1,7 @@
 /***************************************************************************
  *   free.c - report memory usage                                          *
  *                                                                         *
- *   Copyright (C) 2014-2024 by Darren Kirby                               *
+ *   Copyright (C) 2014-2025 by Darren Kirby                               *
  *   bulliver@gmail.com                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -27,25 +27,34 @@
 const char *APPNAME = "free";
 
 struct optstruct {
-    int C;         /* -b, -k, or -m */
-    char base;     /* for OS X */
+    char base;     /* -b, -k, or -m */
     int P;         /* polling? */
     int T;         /* print total? */
     int BC;        /* display -/+ buffer/cache? */
 } opts;
 
-#if defined (__linux__)
 
 static unsigned long int fmt(unsigned long n) {
-    if (opts.C == 2) {
+#ifdef __linux__
+    if (opts.base == 'b') {
         return n / 1024;
-    } else if (opts.C == 1) {
+    } else if (opts.base == 'm') {
         return n * 1024;
     } else {
         return n;
     }
+#else
+    if (opts.base == 'm')
+        return n / 1024 / 1024;
+    else if (opts.base == 'k')
+        return n / 1024;
+    else
+        return n;
+#endif
 }
 
+
+#if defined (__linux__)
 static int get_free(void) {
     struct meminfo {
         unsigned long int memtotal;
@@ -71,7 +80,6 @@ static int get_free(void) {
         unsigned long int shmem;
         unsigned long int slab;
         unsigned long int sreclaimable;
-
     };
 
     int i;
@@ -129,21 +137,113 @@ static int get_free(void) {
 }
 
 
-#elif defined (__APPLE__) && defined (__MACH__)
+#elif defined (__APPLE__) && defined (__MACH__) || defined(__FreeBSD__)
 #include <sys/sysctl.h>
+
+#ifdef __FreeBSD__
+#include <vm/vm_param.h>
+#include <fcntl.h>
+#endif
 
 struct Meminfo {
     /* core */
-    long int mem_total;
-    long int mem_used;
-    long int mem_free;
+    unsigned long mem_total;
+    unsigned long mem_used;
+    unsigned long mem_free;
+    unsigned long mem_used_bc; /* +/- buffers/cache */
+    unsigned long mem_free_bc; /*     ibid          */
     /* swap */
-    long int swap_total;
-    long int swap_used;
-    long int swap_free;
+    unsigned long swap_total;
+    unsigned long swap_used;
+    unsigned long swap_free;
 } m_info;
 
-static int get_swap(void) {
+static int get_mem(void) {
+#ifdef __FreeBSD__
+    /* kvm requires priveliged access -
+     * code below parses output of swapinfo
+    struct kvm_swap swapinfo;
+    kvm_t *kd;
+
+    kd = kvm_openfiles(NULL, NULL, NULL, O_RDONLY, NULL);
+    if (kd == NULL) {
+        perror("kvm_openfiles");
+        return 1;
+    }
+
+    int n = kvm_getswapinfo(kd, &swapinfo, 1, 0);
+    if (n < 0) {
+        perror("kvm_getswapinfo");
+        kvm_close(kd);
+        return 1;
+    }
+
+    kvm_close(kd);
+
+    long page_size = getpagesize();
+
+    m_info.swap_total = (unsigned long)swapinfo.ksw_total * page_size;
+    m_info.swap_used  = (unsigned long)swapinfo.ksw_used  * page_size;
+    m_info.swap_used  = m_info.swap_total - m_info.swap_used;
+    */
+
+    /* Get core memory stats */
+    size_t len;
+    long pagesize = getpagesize();
+    unsigned long physmem, freepages, inactivepages, cachepages, buffers;
+
+    /* Total physical memory (in bytes) */
+    len = sizeof(physmem);
+    if (sysctlbyname("hw.physmem", &physmem, &len, NULL, 0) != 0) {
+        perror("sysctl hw.physmem");
+        return 1;
+    }
+
+    /* Free and cache memory (in pages) */
+    if (sysctlbyname("vm.stats.vm.v_free_count", &freepages, &len, NULL, 0) != 0 ||
+        sysctlbyname("vm.stats.vm.v_inactive_count", &inactivepages, &len, NULL, 0) != 0 ||
+        sysctlbyname("vm.stats.vm.v_cache_count", &cachepages, &len, NULL, 0) != 0 ||
+        sysctlbyname("vfs.bufspace", &buffers, &len, NULL, 0)) {
+        perror("sysctl free/inactive/cache");
+    return 1;
+    }
+
+    unsigned long free = (freepages + inactivepages + cachepages) / pagesize;
+    unsigned long used = physmem - free;
+    m_info.mem_used_bc = used - ((cachepages + inactivepages + buffers) / pagesize);
+    m_info.mem_free_bc = free + ((cachepages + inactivepages + buffers) / pagesize);
+    m_info.mem_total = physmem;
+    m_info.mem_used = used;
+    m_info.mem_free = free;
+
+    /* Parse swapinfo */
+    FILE *fp;
+    char buffer[256];
+    fp = popen("swapinfo -k", "r");
+    if (fp == NULL) {
+        perror("popen swapinfo");
+    }
+
+    /* Skip header */
+    fgets(buffer, sizeof(buffer), fp);
+
+    unsigned long total_kb = 0, used_kb = 0, free_kb = 0;
+    while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+        char device[64];
+        unsigned long t, u, f;
+        if (sscanf(buffer, "%s %lu %lu %lu", device, &t, &u, &f) == 4) {
+            total_kb += t;
+            used_kb += u;
+            free_kb += f;
+        }
+    }
+    pclose(fp);
+    /* swapinfo figures in 1000k blocks */
+    m_info.swap_total = total_kb * 1024;
+    m_info.swap_used = used_kb * 1024;
+    m_info.swap_free = free_kb * 1024;
+
+#else
     struct xsw_usage vmusage;
     size_t size = sizeof(vmusage);
 
@@ -153,30 +253,22 @@ static int get_swap(void) {
         exit(EXIT_FAILURE);
     }
 
-
     m_info.swap_total = vmusage.xsu_total;
     m_info.swap_used  = vmusage.xsu_used;
     m_info.swap_free  = vmusage.xsu_avail;
 
-    return 0;
-}
-
-static int get_total_mem(void) {
     size_t size;
     long int buf;
     size = sizeof(long int);
 
     if (sysctlbyname("hw.memsize", &buf, &size, NULL, 0) != 0) {
-        fprintf(stderr, "Could not collect VM info, errno %d - %s",
+        fprintf(stderr, "Could not collect VM info, errno %d - %s\n",
                 errno, strerror(errno));
         exit(EXIT_FAILURE);
     }
 
     m_info.mem_total = buf;
-    return 0;
-}
 
-static int get_used_mem(void) {
     FILE *fd;
 
     if ((fd = popen("vm_stat", "r")) == NULL) {
@@ -203,27 +295,22 @@ static int get_used_mem(void) {
     m_info.mem_free = (m_info.mem_total - m_info.mem_used);
 
     pclose(fd);
+#endif
     return 0;
 }
 
-static long int fmt(long int n) {
-    if (opts.base == 'm')
-	return n / 1024 / 1024;
-    else if (opts.base == 'k')
-	return n / 1024;
-    else
-	return n;
-}
 
 static int get_free(void) {
-    if (get_total_mem() != 0)
-        printf("Could not get total memory\n");
-    if (get_used_mem() != 0)
-        printf("Could not obtain used memory\n");
-    if (get_swap() != 0)
-        printf("Could not obtain swap memory\n");
+    if (get_mem() != 0)
+        printf("Could not get memory statistics\n");
+
     printf("\t%10s\t%10s\t%10s\n", "Total", "Used", "Free");
     printf("Mem:\t%10ld\t%10ld\t%10ld\n", fmt(m_info.mem_total),fmt(m_info.mem_used),fmt(m_info.mem_free));
+#ifdef __FreeBSD__
+    if (opts.BC == 1) {
+        printf("+/- buffers/cache:\t%10ld\t   %ld\n", fmt(m_info.mem_used_bc), fmt(m_info.mem_free_bc));
+    }
+#endif
     printf("Swap:\t%10ld\t%10ld\t%10ld\n", fmt(m_info.swap_total),fmt(m_info.swap_used),fmt(m_info.swap_free));
     return 0;
 }
@@ -243,7 +330,11 @@ static int showHelp(void) {
 }
 
 int main(int argc, char *argv[]) {
-
+#ifdef __linux__
+    opts.base = 'k'; /* Linux shows values in k by default */
+#else
+    opts.base = 'b';
+#endif
     int opt;
     int poll_interval = 0;
 
@@ -253,60 +344,50 @@ int main(int argc, char *argv[]) {
         {0,0,0,0}
     };
 
+    /* show +/- buffers/cache by default */
+    opts.BC = 1;
     while ((opt = getopt_long(argc, argv, "bkmths:oV", longopts, NULL)) != -1) {
         switch(opt) {
             case 'k':
-		opts.C = 0;
-		opts.base = 'k';
-		break;
+                opts.base = 'k';
+                break;
             case 'b':
-		opts.C = 1;
-		opts.base = 'b';
-		break;
+                opts.base = 'b';
+                break;
             case 'm':
-		opts.C = 2;
-		opts.base = 'm';
-		break;
+                opts.base = 'm';
+                break;
             case 's':
-		opts.P = 1;
-		poll_interval = atoi(optarg);
-		break;
+                opts.P = 1;
+                poll_interval = atoi(optarg);
+                break;
             case 'V':
-		printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
-		printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
-		return EXIT_SUCCESS;
+                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s compiled on %s at %s\n", basename(__FILE__), __DATE__, __TIME__);
+                return EXIT_SUCCESS;
             case 't':
-		opts.T = 1;
-		break;
+                opts.T = 1;
+                break;
             case 'o':
-		opts.BC = 0;
-		break;
+                opts.BC = 0;
+                break;
             case 'h':
-		showHelp();
-		return EXIT_SUCCESS;
+                showHelp();
+                return EXIT_SUCCESS;
             default:
-		showHelp();
-		return EXIT_FAILURE;
+                showHelp();
+                return EXIT_FAILURE;
         }
     }
 
     if (opts.P == 1) {
         while (1 == 1) {
-#if defined (__linux__)
             get_free();
-#elif defined (__APPLE__) && defined (__MACH__)
-	    get_free();
-#endif
             printf("\n");
             sleep(poll_interval);
         }
     } else {
-#if defined (__linux__)
         get_free();
-#elif defined (__APPLE__) && defined (__MACH__)
-	get_free();
-#endif
         return EXIT_SUCCESS;
     }
-
 }
