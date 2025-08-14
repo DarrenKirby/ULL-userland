@@ -50,6 +50,7 @@ Options:\n\
     -1, --one\t\tlist files one per line\n\
     -i, --inode\t\tdisplay inode numbers (implies --long)\n\
     -d, --dereference\tshow information for the file links reference rather than for the link itself\n\
+    -w, --width=N\tset display screen width to 'N' characters\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
@@ -152,6 +153,7 @@ int main(int argc, char *argv[]) {
                 break;
             case 'i':
                 opts.inode = 1;
+                opts.ls_long = 1;   /* '-i' implies '-l' */
                 break;
             case 'd':
                 opts.dereference = 1;
@@ -209,7 +211,7 @@ int main(int argc, char *argv[]) {
     int n_files = 0;          /* number of files to print */
     int n_per_line = 0;       /* number of files per line */
     int longest_so_far = 0;   /* longest filename seen so far */
-    long n;     //  fixme      /* return value of strlen() calls */
+    long n;                   /* return value of strlen() calls */
 
     while ((list = readdir(dp)) != NULL) {
         /*
