@@ -4,8 +4,8 @@ It looks like I'm picking this up again after nine years.
 Now as then, this is just an exercise to teach myself C.
 
 These programs are tested on three systems:
-Gentoo Linux
-OS X
+Gentoo Linux (GCC 14.3.0)
+OS X Sonoma 14.7.1 (CLANG 16.0.0, GCC 15.1.0)
 FreeBSD 14.3-RELEASE (CLANG 14.1.7)
 
 I'll putter around as I find time to do so. In the meantime,
