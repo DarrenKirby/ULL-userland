@@ -64,7 +64,7 @@ fmt       :: not started
 fold      :: not started
 free      :: in progress  # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, flaky
 fuser     :: not started
-head      :: not started
+head      :: completed    # Linux: ?? | OS X: compiles, works | FreeBSD: ??
 hostid    :: not started
 hostname  :: not started
 id        :: not started
