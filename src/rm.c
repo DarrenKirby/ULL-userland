@@ -46,8 +46,7 @@ struct optstruct {
 } opts;
 
 int rm(char *file) {
-    int es;
-    es = unlink(file);
+  int es = unlink(file);
     if (es != 0) {
         if (opts.force == 1 && errno == 2) { /* --force ignores non-existing files */
             return EXIT_SUCCESS;
