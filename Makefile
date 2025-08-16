@@ -1,5 +1,5 @@
 CC ?= gcc
-CFLAGS ?= -Wall -Wextra -Wundef -Wshadow -Wpedantic -Wno-unused-parameter -std=gnu23
+CFLAGS ?= -Wall -Wextra -Wundef -Wshadow -Wpedantic -Wno-unused-parameter -std=gnu2x
 LDFLAGS ?=
 
 PKG_CONFIG ?= pkg-config
@@ -15,7 +15,7 @@ endif
 SRCDIR := src
 BINDIR := bin
 
-PROGRAMS := basename cat cd chgrp chown cp df dirname env false free link ln ls mount mkdir mv nl od printenv pwd rm rmdir sleep stat sync tee touch true uname unlink uptime vdir wc who whoami yes
+PROGRAMS := basename cat cd chgrp chown cp df dirname env false free head link ln ls mount mkdir mv nl od printenv pwd rm rmdir sleep stat sync tee touch true uname unlink uptime vdir wc who whoami yes
 
 package := ull-userland
 version := 0.3
