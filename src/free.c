@@ -245,9 +245,9 @@ static int get_mem(void) {
 
 #else
     struct xsw_usage vmusage;
-    size_t size = sizeof(vmusage);
+    size_t v_size = sizeof(vmusage);
 
-    if (sysctlbyname("vm.swapusage", &vmusage, &size, NULL, 0) != 0) {
+    if (sysctlbyname("vm.swapusage", &vmusage, &v_size, NULL, 0) != 0) {
         fprintf(stderr, "Could not collect VM info, errno %d - %s",
                 errno, strerror(errno));
         exit(EXIT_FAILURE);
@@ -257,11 +257,11 @@ static int get_mem(void) {
     m_info.swap_used  = vmusage.xsu_used;
     m_info.swap_free  = vmusage.xsu_avail;
 
-    size_t size;
+    size_t i_size;
     long int buf;
-    size = sizeof(long int);
+    i_size = sizeof(long int);
 
-    if (sysctlbyname("hw.memsize", &buf, &size, NULL, 0) != 0) {
+    if (sysctlbyname("hw.memsize", &buf, &i_size, NULL, 0) != 0) {
         fprintf(stderr, "Could not collect VM info, errno %d - %s\n",
                 errno, strerror(errno));
         exit(EXIT_FAILURE);
