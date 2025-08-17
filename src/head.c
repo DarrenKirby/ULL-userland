@@ -1,5 +1,5 @@
 /***************************************************************************
- *   head.c - print first nlines or bytes of file                          *
+ *   head.c - print first n lines or bytes of file                         *
  *                                                                         *
  *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
  *   bulliver@gmail.com                                                    *
@@ -48,7 +48,7 @@ Report bugs to <bulliver@gmail.com>\n", APPNAME);
 
 int head_bytes(char *filename, long int n_bytes) {
     if (opts.verbose) {
-        printf("==> %s <==\n", filename);
+        printf("==> %s%s%s <==\n", ANSI_BLUE_B, filename, ANSI_RESET);
     }
 
     FILE *fd = fopen(filename, "r");
@@ -71,7 +71,7 @@ int head_bytes(char *filename, long int n_bytes) {
 
 int head_lines(char *filename, long int n_lines) {
     if (opts.verbose) {
-        printf("==> %s <==\n", filename);
+        printf("==> %s%s%s <==\n", ANSI_BLUE_B, filename, ANSI_RESET);
     }
 
     FILE *fd = fopen(filename, "r");
@@ -157,6 +157,7 @@ int main(int argc, char *argv[]) {
         show_help();
         return EXIT_FAILURE;
     }
+
     /* toggle the header for multiple files if not --quiet */
     if (n_file_args >= 2) {
         if (!opts.quiet) {
