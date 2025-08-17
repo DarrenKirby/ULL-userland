@@ -119,7 +119,7 @@ stty      :: not started
 sum       :: not started
 sync      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 tac       :: not started
-tail      :: not started
+tail      :: completed    # Linux: ?? | OS X: compiles, works | FreeBSD: ??
 talk      :: not started
 tee       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 telnet    :: not started
