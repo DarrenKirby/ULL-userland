@@ -48,8 +48,6 @@
 /* Version information */
 #define APPSUITE   "ull-userland"
 #define APPVERSION "0.3"
-/* External declaration of APPNAME
- * This solves all issues of trying to use a macro */
 extern const char *APPNAME;
 
 /* For OS X */
@@ -96,10 +94,6 @@ extern const char *APPNAME;
 #define ANSI_CYAN_B    "\x1b[36;1m"
 
 #define ANSI_RESET     "\x1b[0m"
-
-/* For longopts */
-//#define _GNU_SOURCE
-
 
 
 /* prototypes */
@@ -181,47 +175,46 @@ bit information in returned string */
 
 #define STR_SIZE sizeof("rwxrwxrwx")
 
-/* Return ls(1)-style string for file permissions mask, This is from
+/* Return 'ls -l' style string for file permissions mask, This is from
  * 'The Linux Programming Interface'
  */
-char *file_perm_str(mode_t perm, int flags) {
+inline char *file_perm_str(const mode_t perm, const int flags) {
     static char str[STR_SIZE];
     snprintf(str, STR_SIZE, "%c%c%c%c%c%c%c%c%c",
-(perm & S_IRUSR) ? 'r' : '-', (perm & S_IWUSR) ? 'w' : '-',
-(perm & S_IXUSR) ?
-(((perm & S_ISUID) && (flags & FP_SPECIAL)) ? 's' : 'x') :
-(((perm & S_ISUID) && (flags & FP_SPECIAL)) ? 'S' : '-'),
-(perm & S_IRGRP) ? 'r' : '-', (perm & S_IWGRP) ? 'w' : '-',
-(perm & S_IXGRP) ?
-(((perm & S_ISGID) && (flags & FP_SPECIAL)) ? 's' : 'x') :
-(((perm & S_ISGID) && (flags & FP_SPECIAL)) ? 'S' : '-'),
-(perm & S_IROTH) ? 'r' : '-', (perm & S_IWOTH) ? 'w' : '-',
-(perm & S_IXOTH) ?
-(((perm & S_ISVTX) && (flags & FP_SPECIAL)) ? 't' : 'x') :
-(((perm & S_ISVTX) && (flags & FP_SPECIAL)) ? 'T' : '-'));
+    (perm & S_IRUSR) ? 'r' : '-', (perm & S_IWUSR) ? 'w' : '-',
+    (perm & S_IXUSR) ?
+    (((perm & S_ISUID) && (flags & FP_SPECIAL)) ? 's' : 'x') :
+    (((perm & S_ISUID) && (flags & FP_SPECIAL)) ? 'S' : '-'),
+    (perm & S_IRGRP) ? 'r' : '-', (perm & S_IWGRP) ? 'w' : '-',
+    (perm & S_IXGRP) ?
+    (((perm & S_ISGID) && (flags & FP_SPECIAL)) ? 's' : 'x') :
+    (((perm & S_ISGID) && (flags & FP_SPECIAL)) ? 'S' : '-'),
+    (perm & S_IROTH) ? 'r' : '-', (perm & S_IWOTH) ? 'w' : '-',
+    (perm & S_IXOTH) ?
+    (((perm & S_ISVTX) && (flags & FP_SPECIAL)) ? 't' : 'x') :
+    (((perm & S_ISVTX) && (flags & FP_SPECIAL)) ? 'T' : '-'));
     return str;
 }
 
 /* Returns octal permissions of a file/directory */
-int file_perm_oct(mode_t perm) {
-    #include "common.h"
+inline int file_perm_oct(const mode_t perm) {
     int oct_perm = 00;
     (perm & S_ISUID) ? (oct_perm += 04000) : (oct_perm += 00);
     (perm & S_ISGID) ? (oct_perm += 02000) : (oct_perm += 00);
     (perm & S_ISVTX) ? (oct_perm += 01000) : (oct_perm += 00);
-    (perm & S_IRUSR) ? (oct_perm +=  0400) : (oct_perm += 00);
-    (perm & S_IWUSR) ? (oct_perm +=  0200) : (oct_perm += 00);
-    (perm & S_IXUSR) ? (oct_perm +=  0100) : (oct_perm += 00);
-    (perm & S_IRGRP) ? (oct_perm +=   040) : (oct_perm += 00);
-    (perm & S_IWGRP) ? (oct_perm +=   020) : (oct_perm += 00);
-    (perm & S_IXGRP) ? (oct_perm +=   010) : (oct_perm += 00);
-    (perm & S_IROTH) ? (oct_perm +=    04) : (oct_perm += 00);
-    (perm & S_IWOTH) ? (oct_perm +=    02) : (oct_perm += 00);
-    (perm & S_IXOTH) ? (oct_perm +=    01) : (oct_perm += 00);
+    (perm & S_IRUSR) ? (oct_perm += 0400) : (oct_perm += 00);
+    (perm & S_IWUSR) ? (oct_perm += 0200) : (oct_perm += 00);
+    (perm & S_IXUSR) ? (oct_perm += 0100) : (oct_perm += 00);
+    (perm & S_IRGRP) ? (oct_perm += 040) : (oct_perm += 00);
+    (perm & S_IWGRP) ? (oct_perm += 020) : (oct_perm += 00);
+    (perm & S_IXGRP) ? (oct_perm += 010) : (oct_perm += 00);
+    (perm & S_IROTH) ? (oct_perm += 04) : (oct_perm += 00);
+    (perm & S_IWOTH) ? (oct_perm += 02) : (oct_perm += 00);
+    (perm & S_IXOTH) ? (oct_perm += 01) : (oct_perm += 00);
     return oct_perm;
 }
 
-char *filetype(mode_t st_mode, int flag) {
+inline char *filetype(const mode_t st_mode, const int flag) {
     switch (st_mode & S_IFMT) {
         case S_IFBLK:
             return (flag == 1) ? (char *)"block device"     : (char *)"b" ;
