@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
 #if defined (__linux__)
                 es = clearenv();
                 if (es != 0) {
-                    gen_error("Could not clear environment");
+                    fprintf(stderr, "clearenv failed: %s\n", strerror(errno));
                 }
 #else
                 while (*environ) {
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if (argc == optind) {      /* Just dump all env variables */
+    if (argc == optind) {      /* Just dump algen_error("Could not clear environment");l env variables */
         if (print_all_env() != 0) {
             perror("print_all_env");
             exit(EXIT_FAILURE);
