@@ -15,7 +15,7 @@ endif
 SRCDIR := src
 BINDIR := bin
 
-PROGRAMS := basename cat cd chgrp chown cp df dirname env false free head link ln ls mount mkdir mv nl od printenv pwd rm rmdir sleep stat sync tail tee touch true uname unlink uptime vdir wc who whoami yes
+PROGRAMS := basename cal cat cd chgrp chown cp df dirname env false free head link ln ls mount mkdir mv nl od printenv pwd rm rmdir sleep stat sync tail tee touch true uname unlink uptime vdir wc who whoami yes
 
 package := ull-userland
 version := 0.3
