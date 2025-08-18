@@ -32,10 +32,10 @@ on OS X and FreeBSD. See notes below...
 at        :: not started
 base64    :: not started
 basename  :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
-cal       :: in progress  # Linux: ?? | OS X: compiles, works | FreeBSD:?? - not all options implemented
+cal       :: in progress  # Linux: compiles, works | OS X: compiles, works | FreeBSD:?? - not all options implemented
 cat       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 cd        :: completed    # Linux: compiles | OS X: compiles | FreeBSD: compiles (But useless on all: read cd.c source)
-chgrp     :: completed    # Linux ?? | OS X: compiles, works | FreeBSD compiles, works
+chgrp     :: completed    # Linux compiles, works | OS X: compiles, works | FreeBSD compiles, works
 chmod     :: not started
 chown     :: completed    # Linux compiles, works | OS X: compiles, works | FreeBSD compiles, works
 chpass    :: not started
@@ -51,11 +51,11 @@ dd        :: not started
 df        :: in progress  # Linux: compiles, flaky | OS X: compiles, works | FreeBSD: compiles, works - lots of options still not implemented
 dir       :: not started
 dircolors :: not started
-dirname   :: in progress  # compiles, works | OS X: compiles, works | FreeBSD compiles, works
+dirname   :: in progress  # Linux: compiles, works | OS X: compiles, works | FreeBSD compiles, works
 dmesg     :: not started
 domainname:: not started
 du        :: not started
-env       :: in progress  # Linux: Compiles, flaky | OS X: compiles, flaky | FreeBSD: compiles, works - prints envs, but set/unset not working
+env       :: in progress  # Linux: compiles, flaky | OS X: compiles, flaky | FreeBSD: compiles, works - prints envs, but set/unset not working
 expand    :: not started
 expr      :: not started
 factor    :: not started
@@ -65,7 +65,7 @@ fold      :: not started
 free      :: in progress  # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, flaky
 fuser     :: not started
 groups    :: not started
-head      :: completed    # Linux: ?? | OS X: compiles, works | FreeBSD: ??
+head      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: ??
 hostid    :: not started
 hostname  :: not started
 id        :: not started
@@ -120,7 +120,7 @@ stty      :: not started
 sum       :: not started
 sync      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 tac       :: not started
-tail      :: completed    # Linux: ?? | OS X: compiles, works | FreeBSD: ??
+tail      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: ??
 talk      :: not started
 tee       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 telnet    :: not started
