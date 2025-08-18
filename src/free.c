@@ -26,15 +26,14 @@
 
 const char *APPNAME = "free";
 
-struct optstruct {
+struct opt_struct {
     char base;     /* -b, -k, or -m */
     int P;         /* polling? */
     int T;         /* print total? */
     int BC;        /* display -/+ buffer/cache? */
 } opts;
 
-
-static unsigned long int fmt(unsigned long n) {
+static unsigned long int fmt(const unsigned long n) {
 #ifdef __linux__
     if (opts.base == 'b') {
         return n / 1024;
@@ -44,15 +43,15 @@ static unsigned long int fmt(unsigned long n) {
         return n;
     }
 #else
-    if (opts.base == 'm')
+    if (opts.base == 'm') {
         return n / 1024 / 1024;
-    else if (opts.base == 'k')
+    }
+    if (opts.base == 'k') {
         return n / 1024;
-    else
-        return n;
+    }
+    return n;
 #endif
 }
-
 
 #if defined (__linux__)
 static int get_free(void) {
@@ -136,7 +135,6 @@ static int get_free(void) {
     return 0;
 }
 
-
 #elif defined (__APPLE__) && defined (__MACH__) || defined(__FreeBSD__)
 #include <sys/sysctl.h>
 
@@ -160,7 +158,7 @@ struct Meminfo {
 
 static int get_mem(void) {
 #ifdef __FreeBSD__
-    /* kvm requires priveliged access -
+    /* kvm requires privileged access -
      * code below parses output of swapinfo
     struct kvm_swap swapinfo;
     kvm_t *kd;
@@ -244,18 +242,18 @@ static int get_mem(void) {
     m_info.swap_free = free_kb * 1024;
 
 #else
-    struct xsw_usage vmusage;
-    size_t v_size = sizeof(vmusage);
+    struct xsw_usage vm_usage;
+    size_t v_size = sizeof(vm_usage);
 
-    if (sysctlbyname("vm.swapusage", &vmusage, &v_size, NULL, 0) != 0) {
+    if (sysctlbyname("vm.swapusage", &vm_usage, &v_size, NULL, 0) != 0) {
         fprintf(stderr, "Could not collect VM info, errno %d - %s",
                 errno, strerror(errno));
         exit(EXIT_FAILURE);
     }
 
-    m_info.swap_total = vmusage.xsu_total;
-    m_info.swap_used  = vmusage.xsu_used;
-    m_info.swap_free  = vmusage.xsu_avail;
+    m_info.swap_total = vm_usage.xsu_total;
+    m_info.swap_used  = vm_usage.xsu_used;
+    m_info.swap_free  = vm_usage.xsu_avail;
 
     size_t i_size;
     long int buf;
@@ -292,7 +290,7 @@ static int get_mem(void) {
     }
 
     m_info.mem_used = (value[0] + value[1] + value[2]) * 4096;
-    m_info.mem_free = (m_info.mem_total - m_info.mem_used);
+    m_info.mem_free = m_info.mem_total - m_info.mem_used;
 
     pclose(fd);
 #endif
@@ -318,18 +316,20 @@ static int get_free(void) {
 #endif
 
 static int showHelp(void) {
-    printf("usage: %s [-b|-k|-m] [-o] [-t] [-s delay] [-V, --version] [-h, --help]\n \
-    -b,-k,-m\t   show output in bytes, KB, or MB\n \
-    -o\t\t   use old format (no -/+buffers/cache line\n \
-    -t\t\t   display total for RAM + swap\n \
-    -s\t\t   update every [delay] seconds\n \
-    -h, --help\t   display this help\n \
-    -V, --version display version information and exit\n\n \
-    Report bugs to <bulliver@gmail.com>\n", APPNAME);
+    printf("usage: %s [-b|-k|-m] [-o] [-t] [-s delay] [-V, --version] [-h, --help]\n\
+Report memory usage\n\n\
+Options:\n\
+    -b,-k,-m\t   show output in bytes, KB, or MB\n\
+    -o\t\t   use old format (no -/+buffers/cache line\n\
+    -t\t\t   display total for RAM + swap\n\
+    -s\t\t   update every [delay] seconds\n\
+    -h, --help\t   display this help\n\
+    -V, --version  display version information and exit\n\n\
+Report bugs to <bulliver@gmail.com>\n", APPNAME);
 	return EXIT_SUCCESS;
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
 #ifdef __linux__
     opts.base = 'k'; /* Linux shows values in k by default */
 #else
@@ -338,15 +338,15 @@ int main(int argc, char *argv[]) {
     int opt;
     int poll_interval = 0;
 
-    struct option longopts[] = {
+    const struct option long_opts[] = {
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
-        {0,0,0,0}
+        {NULL,0,NULL,0}
     };
 
     /* show +/- buffers/cache by default */
     opts.BC = 1;
-    while ((opt = getopt_long(argc, argv, "bkmths:oV", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "bkmths:oV", long_opts, NULL)) != -1) {
         switch(opt) {
             case 'k':
                 opts.base = 'k';
@@ -382,14 +382,15 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    /* Polling */
     if (opts.P == 1) {
-        while (1 == 1) {
+        while (1) {
             get_free();
             printf("\n");
             sleep(poll_interval);
         }
-    } else {
-        get_free();
-        return EXIT_SUCCESS;
     }
+    /* Print and quit */
+    get_free();
+    return EXIT_SUCCESS;
 }
