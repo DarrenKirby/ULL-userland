@@ -27,38 +27,40 @@
 const char *APPNAME = "ln";
 
 static void show_help(void) {
-    printf("Usage: %s [OPTION]... TARGET LINK_NAME\t(1st form)\n \
-  or: %s [OPTION]... TARGET\t\t(2nd form)\n\n \
-    -s, --symbolic\tmake symbolic links instead of hard links\n \
-    -f, --force\tdo not prompt before overwriting files\n \
-    -i, --interactive\tprompt before overwriting files\n \
-    -v, --verbose\tprint out links created\n \
-    -h, --help\t\tdisplay this help\n \
-    -V, --version\tdisplay version information\n\n \
-    Report bugs to <bulliver@gmail.com>\n", APPNAME, APPNAME);
+    printf("Usage: %s [OPTION]... TARGET LINK_NAME\t(1st form)\n\
+   or: %s [OPTION]... TARGET\t\t(2nd form)\n\n\
+Make links between files\n\n\
+Options:\n\
+    -s, --symbolic\tmake symbolic links instead of hard links\n\
+    -f, --force\t\tdo not prompt before overwriting files\n\
+    -i, --interactive\tprompt before overwriting files\n\
+    -v, --verbose\tprint out links created\n\
+    -h, --help\t\tdisplay this help\n\
+    -V, --version\tdisplay version information\n\n\
+Report bugs to <bulliver@gmail.com>\n", APPNAME, APPNAME);
 }
 
-struct optstruct {
+struct opt_struct {
     unsigned int symbolic:1;
     unsigned int force:1;
     unsigned int verbose:1;
     unsigned int interactive:1;
 } opts;
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     int opt;
 
-    struct option longopts[] = {
+    const struct option long_opts[] = {
         {"symbolic",    0, NULL, 's'},
         {"force",       0, NULL, 'f'},
         {"interactive", 0, NULL, 'i'},
         {"verbose",     0, NULL, 'v'},
         {"help",        0, NULL, 'h'},
         {"version",     0, NULL, 'V'},
-        {0,0,0,0}
+        {NULL,0,NULL,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "sfivVh", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "sfivVh", long_opts, NULL)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
@@ -81,92 +83,91 @@ int main(int argc, char *argv[]) {
             case 'i':
                 opts.interactive = 1;
                 break;
-            case ':':
-                 /* getopt_long prints own error message */
-                exit(EXIT_FAILURE);
-            case '?':
-                 /* getopt_long prints own error message */
-                exit(EXIT_FAILURE);
             default :
                 show_help();
                 exit(EXIT_FAILURE);
         }
     }
-    /* FIXME: existing file will get clobbered even without -f */
 
-    if ((argc - optind) == 2) { /* 1st form */
+    const int args = argc - optind;
+
+    /* 1st form */
+    if (args == 2) {
         if (access(argv[optind], F_OK) == 0) {
-            if (opts.force)
+            if (opts.force) {
                 unlink(argv[optind + 1]);
+            }
             if (opts.interactive) {
-                char response;
+                int response;
                 printf("`%s' exists, overwrite? ('y' or 'n') ", argv[optind + 1]);
                 do {
-                response = getchar();
+                    response = getchar();
                 } while (response == '\n');
 
-                if (response == 'y' || response == 'Y')
+                if (response == 'y' || response == 'Y') {
                     unlink(argv[optind + 1]);
-                else
+                } else {
                     exit(EXIT_FAILURE);
+                }
             }
         }
-
         if (opts.symbolic) {
             if (symlink(argv[optind], argv[optind + 1]) == -1) {
-                perror("symlink");
+                fprintf(stderr, "%s: %s\n", argv[optind+1], strerror(errno));
                 exit(EXIT_FAILURE);
             }
         } else {
             if (link(argv[optind], argv[optind + 1]) == -1) {
-                perror("link");
+                fprintf(stderr, "%s: %s\n", argv[optind+1], strerror(errno));
                 exit(EXIT_FAILURE);
             }
         }
-
         if (opts.verbose)
-            printf("linked `%s' to `%s'\n", argv[optind], argv[optind + 1]);
+            printf("linked `%s' to `%s'\n", argv[optind+1], argv[optind]);
 
-
-    } else if ((argc - optind)== 1) { /* 2nd form */
+        /* 2nd form */
+    } else if (args == 1) {
         char target[PATHMAX];
         char *target_p = target;
         target_p = basename(argv[optind]);
 
         if (access(argv[optind], F_OK) == 0) {
-            if (opts.force)
+            if (opts.force) {
                 unlink(target_p);
+            }
             if (opts.interactive) {
-                char response;
+                int response;
                 printf("`%s' exists, overwrite? ('y' or 'n') ", target_p);
                 do {
                 response = getchar();
                 } while (response == '\n');
 
-                if (response == 'y' || response == 'Y')
+                if (response == 'y' || response == 'Y') {
                     unlink(target_p);
-                else
+                } else {
                     exit(EXIT_FAILURE);
+                }
             }
         }
-
         if (opts.symbolic) {
             if (symlink(argv[optind], target_p) == -1) {
-                perror("symlink");
+                fprintf(stderr, "%s: %s\n", argv[optind+1], strerror(errno));
                 exit(EXIT_FAILURE);
             }
         } else {
             if (link(argv[optind], target_p) == -1) {
-                perror("link");
+                fprintf(stderr, "%s: %s\n", argv[optind+1], strerror(errno));
                 exit(EXIT_FAILURE);
             }
         }
 
-        if (opts.verbose)
+        if (opts.verbose) {
             printf("linked `%s' to `%s'\n", argv[optind], target_p);
+        }
 
     } else {
-        perror("not enough arguments");
+        fprintf(stderr, "not enough arguments");
+        show_help();
         exit(EXIT_FAILURE);
     }
 
