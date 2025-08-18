@@ -20,6 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+/* TODO: implement '-3' option to provide context for current month */
+
 #include "common.h"
 #include <time.h>
 
@@ -27,6 +29,7 @@ const char *APPNAME =  "cal";
 
 static void show_help(void) {
     printf("Usage: %s [year] [month]\n\n\
+Print a calendar for the specified month or year\n\n\
 Options:\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
@@ -186,12 +189,36 @@ int print_month(const int year, const int month) {
     return EXIT_SUCCESS;
 }
 
-
 int main(const int argc, char *argv[]) {
+    int opt;
+
+    const struct option long_opts[] = {
+        {"help", 0, NULL, 'h'},
+        {"version", 0, NULL, 'V'},
+        {NULL,0,NULL,0}
+    };
+
+    while ((opt = getopt_long(argc, argv, "Vhnu", long_opts, NULL)) != -1) {
+        switch(opt) {
+            case 'V':
+                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s compiled on %s at %s\n",
+                       strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
+                       __DATE__, __TIME__);
+                exit(EXIT_SUCCESS);
+            case 'h':
+                show_help();
+                exit(EXIT_SUCCESS);
+            default:
+                show_help();
+                exit(EXIT_FAILURE);
+        }
+    }
+    int args = argc - optind;
     int year, month;
     int print_mon;
 
-    if (argc == 1) {
+    if (args == 0) {
         /* no args, use current year and month */
         const time_t now = time(NULL);
         const struct tm *t = localtime(&now);
@@ -199,7 +226,7 @@ int main(const int argc, char *argv[]) {
         year = t->tm_year + 1900;
         month = t->tm_mon + 1;
         print_mon = 1;
-    } else if (argc == 2) {
+    } else if (args == 1) {
         /* one arg: take a year */
         year = (int)strtol(argv[1], NULL, 10);
         /* month is arbitrary - value not needed */
@@ -210,7 +237,7 @@ int main(const int argc, char *argv[]) {
             return EXIT_FAILURE;
         }
         print_mon = 0;
-    } else if (argc == 3) {
+    } else if (args == 2) {
         /* two args: take a month and a year */
         month = (int)strtol(argv[1], NULL, 10);
         year = (int)strtol(argv[2], NULL, 10);
