@@ -47,7 +47,7 @@ static char *format_time(struct timespec *ts) {
     static char str[TIME_SIZE + 10];
 
     if (localtime_r(&(ts->tv_sec), &bdt) == NULL) {
-        gen_error("error converting time");
+        fprintf(stderr, "localtime_r failed\n");
         exit(EXIT_FAILURE);
     }
 
@@ -65,12 +65,12 @@ static void stat_file(char *filename, int follow_links) {
 
     if (!follow_links) {
         if (lstat(filename, &buf) == -1) {
-            f_error(filename, "couldn't stat");
+            fprintf(stderr, "lstat failed\n");
             exit(EXIT_FAILURE);
         }
     } else {
         if (stat(filename, &buf) == -1) {
-            f_error(filename, "couldn't stat");
+            fprintf(stderr, "stat failed\n");
             exit(EXIT_FAILURE);
         }
     }

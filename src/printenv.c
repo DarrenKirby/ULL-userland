@@ -20,8 +20,6 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-
-
 #include "common.h"
 
 const char *APPNAME = "printenv";
@@ -92,7 +90,7 @@ int main(int argc, char *argv[]) {
     }else if (argc == 1) {
         print_all_env();
     } else {
-        gen_error("takes either zero or one argument");
+        fprintf(stderr, "%s takes either zero or one argument\n", APPNAME);
         show_help(); exit(EXIT_FAILURE);
     }
     return EXIT_SUCCESS;

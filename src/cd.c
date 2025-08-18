@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
     printf("%s\n", path);
 
     if (chdir(path) != 0) {
-        f_error(path, "Cannot cd to ");
+        fprintf(stderr, "%s: %s\n", path, strerror(errno));
     }
     return EXIT_SUCCESS;
 }

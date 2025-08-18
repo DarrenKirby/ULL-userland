@@ -66,7 +66,7 @@ static void to_time(char * r_file) {
         struct stat buf;
 
         if (stat(r_file, &buf) == -1) {
-            f_error(r_file, "couldn't stat");
+            fprintf(stderr, "stat failed on '%s'\n", r_file);
             exit(EXIT_FAILURE);
         }
 

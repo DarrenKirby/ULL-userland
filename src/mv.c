@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
     struct stat s;
 
     if (n_args < 2) {
-        gen_error("at least two arguments required\n");
+        fprintf(stderr, "at least two arguments required\n");
         show_help();
         exit(EXIT_FAILURE);
     }
@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
                 }
             }
             if (rename(from, tmp) != 0) {
-                f_error(to, NULL);
+                fprintf(stderr, "%s: cannot rename\n", APPNAME);
             }
         } else {
             if (opts.interactive && access(to, F_OK) == 0) {
@@ -143,7 +143,7 @@ int main(int argc, char *argv[]) {
                 }
             }
             if (rename(from, to) != 0) {
-                f_error(to, NULL);
+                fprintf(stderr, "%s: cannot rename\n", APPNAME);
             }
         }
         if (opts.verbose) {

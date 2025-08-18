@@ -36,11 +36,9 @@ Options:\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
-
 int number_lines = 0;
 FILE *name;
 char c;
-
 
 static void cat_stdin(int line_number, int unbuffered) {
     if (unbuffered == 1) {
@@ -65,7 +63,7 @@ static void cat_stdin(int line_number, int unbuffered) {
 
 static int cat_file(char *filename, unsigned int line_number) {
     if ( (name = fopen(filename, "r")) == NULL ) {
-        f_error(filename, NULL);
+        fprintf(stderr, "cat: cannot open file %s\n", filename);
     }
 
     while (( c = getc(name)) != EOF ) {

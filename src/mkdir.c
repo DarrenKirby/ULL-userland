@@ -20,8 +20,6 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-
-
 #include "common.h"
 const char *APPNAME = "mkdir";
 
@@ -82,7 +80,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (argc == optind)
-        gen_error("must supply at least one directory argument");
+        fprintf(stderr, "must supply at least one directory argument\n");
 
     while (optind < argc) {
         mkdir(argv[optind], mode);

@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
                 if (es != 0) {
                     char message[50];
                     sprintf(message, "Cound not unset %s", optarg);
-                    gen_error(message);
+                    fprintf(stderr, "%s\n", message);
                 }
                 break;
             case 'V':

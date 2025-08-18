@@ -55,7 +55,7 @@ struct count count_all(char *filename) {
     FILE *fp;
 
     if ((fp = fopen(filename, "r")) == NULL ) {
-        f_error(filename, "Cannot open ");
+        fprintf(stderr, "Error opening file %s\n", filename);
     }
 
     /* struct to return with all counts */
@@ -135,7 +135,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    /* If there are no options we count all but longest line */
+    /* If there are no options we count all but the longest line */
     if (count_opts.chars == 0 && count_opts.lines == 0 && count_opts.words == 0 && count_opts.longest == 0)
         count_opts.chars = count_opts.lines = count_opts.words = 1;
 

@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
     cwd_p = cwd;
 
     if (getcwd(cwd_p, PATHMAX) == NULL)
-        gen_error("getcwd failed");
+        fprintf(stderr, "getcwd failed: %s\n", strerror(errno));
 
     printf("%s\n", cwd);
     return EXIT_SUCCESS;

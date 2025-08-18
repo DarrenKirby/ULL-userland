@@ -51,7 +51,7 @@ int rm(char *file) {
         if (opts.force == 1 && errno == 2) { /* --force ignores non-existing files */
             return EXIT_SUCCESS;
         }
-        f_error(file, "Cannot remove ");
+        fprintf(stderr, "rm: %s: %s\n", file, strerror(errno));
     }
     return EXIT_SUCCESS;
 }

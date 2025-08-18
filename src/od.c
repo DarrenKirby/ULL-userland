@@ -54,7 +54,7 @@ int read_file_dec(char *filename[]) {
     char c;
 
     if ((fp = fopen(*filename, "r")) == NULL ) {
-        f_error(*filename, "Cannot open ");
+        fprintf(stderr, "Could not open file %s\n", *filename);
     }
 
     int offset = 0;
@@ -86,7 +86,7 @@ int read_file_hex(char *filename[]) {
     char c;
 
     if ((fp = fopen(*filename, "r")) == NULL ) {
-        f_error(*filename, "Cannot open ");
+        fprintf(stderr, "Cannot open file %s\n", *filename);
     }
 
     int offset = 0;
@@ -158,7 +158,7 @@ int read_file_oct(char *filename[]) {
     char c;
 
     if ((fp = fopen(*filename, "r")) == NULL ) {
-        f_error(*filename, "Cannot open ");
+        fprintf(stderr, "Cannot open file %s\n", *filename);
     }
 
     int offset = 0;

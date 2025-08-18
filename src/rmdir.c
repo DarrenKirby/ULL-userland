@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
 
     for (; optind < argc; optind++) {
         if (rmdir(argv[optind]) != 0){
-            f_error(argv[optind], "Cannot remove ");
+            fprintf(stderr, "rmdir failed: %s\n", strerror(errno));
         }
         if (verbose) {
             printf("%s: Removed directory '%s'\n", APPNAME, argv[optind]);
