@@ -1,5 +1,5 @@
 /***************************************************************************
- *   chown.c - change ownerhip of files                                    *
+ *   chown.c - change ownership of files                                   *
  *                                                                         *
  *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
  *   bulliver@gmail.com                                                    *
@@ -35,22 +35,22 @@ const char *APPNAME = "chown";
 
 struct group *grp_buf;
 struct passwd *own_buf;
-char to_grp[FILEMAX + 1];
-char to_own[FILEMAX + 1];
+char to_grp[FILEMAX ];
+char to_own[FILEMAX];
 
 char *pg;
 char *po;
 
-struct optstruct {
-    unsigned int nodereference;
+struct opt_struct {
+    unsigned int no_dereference;
     unsigned int recursive;
     unsigned int verbose;
     unsigned int group_too;
 } opts;
 
-
 static void show_help(void) {
     printf("Usage: %s [OPTION] user[:group]...\n\n\
+Change ownership of files\n\n\
 Options:\n\
     -R, --recursive\t\tchange group of files recursively\n\
     -v, --verbose\t\toutput a diagnostic for every file processed\n\
@@ -64,27 +64,27 @@ static int chown_recurse(const char *path, const struct stat *stat_buf, int type
     if (type == FTW_NS) {
         printf("stat failed on `%s' (permissions?)\n", path);
         /* non-fatal */
-        return 0;
+        return 1;
     }
 
-    if (type == FTW_SL && opts.nodereference == 1) {
+    if (type == FTW_SL && opts.no_dereference == 1) {
         if (opts.group_too == 1) {
             if (lchown(path, own_buf->pw_uid, grp_buf->gr_gid) != 0) {
-                perror("chown failed");
+                fprintf(stderr, "lchown failed: %s\n", strerror(errno));
             }
         } else {
             if (lchown(path, own_buf->pw_uid, -1) != 0) {
-                perror("chown failed");
+                fprintf(stderr, "lchown failed: %s\n", strerror(errno));
             }
         }
     } else {
         if (opts.group_too == 1) {
             if (chown(path, own_buf->pw_uid, grp_buf->gr_gid) != 0) {
-                perror("chown failed");
+                fprintf(stderr, "chown failed: %s\n", strerror(errno));
             }
         } else {
             if (chown(path, own_buf->pw_uid, -1) != 0) {
-                perror("chown failed");
+                fprintf(stderr, "chown failed: %s\n", strerror(errno));
             }
         }
     }
@@ -99,19 +99,19 @@ static int chown_recurse(const char *path, const struct stat *stat_buf, int type
     return 0;
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     int opt;
 
-    struct option longopts[] = {
+    const struct option long_opts[] = {
         {"help",           0, NULL, 'h'},
         {"version",        0, NULL, 'V'},
         {"recursive",      0, NULL, 'R'},
         {"verbose",        0, NULL, 'v'},
         {"no-dereference", 0, NULL, 'd'},
-        {0,0,0,0}
+        {NULL,0,NULL,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "VhRvd", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "VhRvd", long_opts, NULL)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
@@ -129,18 +129,11 @@ int main(int argc, char *argv[]) {
                 opts.verbose = 1;
                 break;
             case 'd':
-                opts.nodereference = 1;
+                opts.no_dereference = 1;
                 break;
-            case ':':
-                 /* getopt_long prints own error message */
-                exit(EXIT_FAILURE);
-            case '?':
-                 /* getopt_long prints own error message */
-                exit(EXIT_FAILURE);
             default:
                 show_help();
                 exit(EXIT_FAILURE);
-                break;
         }
     }
 
@@ -160,52 +153,49 @@ int main(int argc, char *argv[]) {
 
     own_buf = getpwnam(to_own);
     if (own_buf == NULL) {
-        printf("Could not resolve user name: %s\n", to_own);
+        fprintf(stderr, "Could not resolve user name: %s\n", to_own);
         exit(EXIT_FAILURE);
     }
 
     grp_buf = getgrnam(to_grp);
     if (opts.group_too == 1 && grp_buf == NULL) {
-        printf("Could not resolve group name: %s\n", to_grp);
+        fprintf(stderr, "Could not resolve group name: %s\n", to_grp);
         exit(EXIT_FAILURE);
     }
 
     if (opts.recursive == 1) {
-        //struct stat stat_buf;
-        //struct FTW ftw_buf;
-
-        if (opts.nodereference == 1) {
+        if (opts.no_dereference == 1) {
             if (nftw(argv[optind], chown_recurse, 10, FTW_PHYS) != 0) {
-                perror("chgrp");
+                fprintf(stderr, "nftw failed: %s\n", strerror(errno));
             }
         } else {
             if (nftw(argv[optind], chown_recurse, 10, 0) != 0) {
-                perror("chgrp");
+                fprintf(stderr, "nftw failed: %s\n", strerror(errno));
             }
         }
         return EXIT_SUCCESS;
     }
 
     while (optind < argc) {
-        if (opts.nodereference == 1) {
+        if (opts.no_dereference == 1) {
             if (opts.group_too == 1) {
                 if (lchown(argv[optind], own_buf->pw_uid, grp_buf->gr_gid) != 0) {
-                perror("chown failed");
+                fprintf(stderr, "lchown failed: %s\n", strerror(errno));
                 }
             } else {
                 if (lchown(argv[optind], own_buf->pw_uid, -1) != 0) {
-                perror("chown failed");
+                fprintf(stderr, "lchown failed: %s\n", strerror(errno));
                 }
             }
 
         } else {
             if (opts.group_too == 1) {
                 if (chown(argv[optind], own_buf->pw_uid, grp_buf->gr_gid) != 0) {
-                perror("chown failed");
+                fprintf(stderr, "chown failed: %s\n", strerror(errno));
                 }
             } else {
                 if (chown(argv[optind], own_buf->pw_uid, -1) != 0) {
-                perror("chown failed");
+                fprintf(stderr, "chown failed: %s\n", strerror(errno));
                 }
             }
         }
@@ -216,9 +206,7 @@ int main(int argc, char *argv[]) {
                 printf("changed group ownership of `%s' to `%s'\n", argv[optind], to_grp);
             }
         }
-
         optind++;
     }
-
     return EXIT_SUCCESS;
 }
