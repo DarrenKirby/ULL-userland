@@ -20,7 +20,6 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-
 #include <time.h>
 #include <sys/types.h>
 
@@ -29,24 +28,26 @@
 #endif // __linux__
 
 #include "common.h"
+
 const char *APPNAME = "stat";
 
 static void show_help(void) {
-    printf("Usage: %s [OPTION]...\n\n\
+    printf("Usage: %s [OPTION]... FILE [FILE]...\n\n\
+Display file attributes\n\n\
 Options:\n\
-    -d, --dereference\tstat file link points to rather than link itself\n\
-    -h, --help\t\tdisplay this help\n\
-    -V, --version\tdisplay version information\n\n\
+    -d, --dereference\t stat the file the link points to rather than the link itself\n\
+    -h, --help\t\t display this help\n\
+    -V, --version\t display version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
 #define TIME_SIZE sizeof("1970-01-01 00:00:00.000000000 UTC")
 
-static char *format_time(struct timespec *ts) {
+static char *format_time(const struct timespec *ts) {
     struct tm bdt;
     static char str[TIME_SIZE + 10];
 
-    if (localtime_r(&(ts->tv_sec), &bdt) == NULL) {
+    if (localtime_r(&ts->tv_sec, &bdt) == NULL) {
         fprintf(stderr, "localtime_r failed\n");
         exit(EXIT_FAILURE);
     }
@@ -56,11 +57,10 @@ static char *format_time(struct timespec *ts) {
         bdt.tm_hour, bdt.tm_min, bdt.tm_sec,
         ts->tv_nsec, bdt.tm_zone
     );
-
     return str;
 }
 
-static void stat_file(char *filename, int follow_links) {
+static void stat_file(char *filename, const int follow_links) {
     struct stat buf;
 
     if (!follow_links) {
@@ -92,23 +92,23 @@ static void stat_file(char *filename, int follow_links) {
     printf("Access: %s\n", format_time(&buf.st_atim));
     printf("Modify: %s\n", format_time(&buf.st_mtim));
     printf("Change: %s\n", format_time(&buf.st_ctim));
-#ifndef linux                                          /* Linux stat struct doesn't include this */
+#ifndef linux  /* Linux stat struct doesn't include this */
     printf(" Birth: %s\n", format_time(&buf.st_birthtim));
 #endif
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     int opt;
-    u_int follow_links = 0;
+    int follow_links = 0;
 
-    struct option longopts[] = {
+    const struct option long_opts[] = {
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
         {"dereference", 0, NULL, 'd'},
-        {0,0,0,0}
+        {NULL,0,NULL,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "Vhd", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "Vhd", long_opts, NULL)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
@@ -116,27 +116,24 @@ int main(int argc, char *argv[]) {
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
-                break;
             case 'h':
                 show_help();
                 exit(EXIT_SUCCESS);
-                break;
             case 'd':
                 follow_links = 1;
                 break;
-            case ':':
-                 /* getopt_long prints own error message */
-                exit(EXIT_FAILURE);
-                break;
-            case '?':
-                 /* getopt_long prints own error message */
-                exit(EXIT_FAILURE);
             default:
                 show_help();
                 exit(EXIT_FAILURE);
-                break;
         }
     }
+
+    const int args = argc - optind;
+    if (!args) {
+        fprintf(stderr, "Missing arguments\n");
+        show_help();
+    }
+
     while (optind < argc) {
         stat_file(argv[optind], follow_links);
         optind++;
