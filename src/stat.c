@@ -20,14 +20,14 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "common.h"
+
 #include <time.h>
 #include <sys/types.h>
 
 #ifdef __linux__
 #include <sys/sysmacros.h>
 #endif // __linux__
-
-#include "common.h"
 
 const char *APPNAME = "stat";
 
