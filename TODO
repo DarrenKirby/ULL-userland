@@ -22,10 +22,10 @@ refactoring, as well as adding portability fixes.
 On portability: these programs are tested on three systems:
 Gentoo Linux       (GCC 4.7.3, GLIBC 2.19)
 OS X Mavericks     (LLVM 5.1, CLANG 503.0.40,)
-FreeBSD 10-Release (CLANGBSD 3.3, )
+FreeBSD 10-Release (CLANGBSD 3.3)
 
 ...but developed on the linux machine for the most part. Am working
-on portablility but a lot of the apps are flaky or don't even compile
+on portability but a lot of the apps are flaky or don't even compile
 on OS X and FreeBSD. See notes below...
 ========================================================================
 
@@ -39,7 +39,7 @@ chgrp     :: completed    # Linux ?? | OS X: compiles, works | FreeBSD compiles,
 chmod     :: not started
 chown     :: completed    # Linux compiles, works | OS X: compiles, works | FreeBSD compiles, works
 chpass    :: not started
-chroot    :: not started
+chroot    :: in progress  # started but not functional
 cksum     :: not started
 comm      :: not started
 cmp       :: not started
@@ -64,6 +64,7 @@ fmt       :: not started
 fold      :: not started
 free      :: in progress  # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, flaky
 fuser     :: not started
+groups    :: not started
 head      :: completed    # Linux: ?? | OS X: compiles, works | FreeBSD: ??
 hostid    :: not started
 hostname  :: not started
@@ -85,7 +86,7 @@ mknod     :: not started
 mount     :: in progress  # Linux: compiles, segfaults | OS X: compiles, works | FreeBSD: compiles, works
 mv        :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 nice      :: not started
-nl        :: in progress  # Linux: compiles, works | OS X: ? | FreeBSD: compiles, works
+nl        :: in progress  # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 nohup     :: not started
 od        :: in progress  # flaky!!! Fix endianess
 paste     :: not started
