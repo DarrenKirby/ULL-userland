@@ -1,8 +1,9 @@
-These are the ULL core utilities.
+These are the ULL-userland core utilities.
 
 These programs are one man's silly attempt to rewrite the a UNIX userland
 for use as the userland for ULL (Userland Linux), a bastard hybrid of the
-Linux kernel, GLIBC, and a *BDSish userland.
+Linux kernel, GLIBC, and a *BDSish userland. It remains to be seen if this
+will ever happen, so for now, they are an exercise in C programming.
 
 I intend to make these programs run on Linux, OS X, and *BSD.
 
@@ -15,7 +16,7 @@ As it stands, these programs are different from the GNU versions in several
 fundamental ways.  First of all, it is not the first, nor even an important
 goal for these programs to be 'drop-in' replacements.  Therefore, not all
 functionality or command-line options/arguments are interfaced identically.
-For example, I have tried to make the ULL utils have a consistant interface,
+For example, I have tried to make the ULL utils have a consistent interface,
 so I have adhered to standards such as '-h' and '--help' _always_ display
 a usage/option summary, and '-V' and '--version' _always_ display version
 information.  At times this convention clashes with the GNU version options.

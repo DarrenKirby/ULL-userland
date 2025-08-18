@@ -1,4 +1,4 @@
-INSTALLING dgnu-utils
+INSTALLING the ULL-userland utils
 
 You actually really don't want to install these in a common system-wide 
 binary directory. You will almost certainly clobber the good gnu stuff 
@@ -6,10 +6,10 @@ with this junk. Therefore, there is no install target in the Makefile.
 
 To build the tools, simply do a:
 
-	make all
+	make
 
 and all programs will be compiled and placed in a directory 'bin' in 
-the dgnu-util source directory. You can also build each program 
+the ULL-userland source directory. You can also build each program
 individually. Just do a:
 
 	make uname
@@ -22,4 +22,12 @@ Please feel free to edit the Makefile to change the values you want
 passed to gcc (CFLAGS), and edit BINDIR to change the directory where 
 the programs are installed.
 
+You can also pass variables to the make file, to specify certain tools
+and paths. For example, to specify a non-standard compiler:
 
+$ CC=/path/to/my/special/cc make
+
+***NOTE TO *BSD USERS***
+
+The makefile uses constructs that will cause *BSD make to crash. Use
+`gmake` instead.
