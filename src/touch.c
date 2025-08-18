@@ -23,10 +23,12 @@
 /* TODO: --date, --no-dereference. Check if FreeBSD has utimensat and use that... */
 /* FIXME: -a does not appear to work*/
 
-#include <fcntl.h>
-#include <sys/time.h>
-
 #include "common.h"
+
+#include <fcntl.h>
+#include <time.h>
+#include <sys/types.h>
+
 
 const char *APPNAME = "touch";
 
@@ -149,7 +151,7 @@ int main(const int argc, char *argv[]) {
         const int f_access = access(argv[optind], F_OK);
         if (f_access == 0) {   /* file exists */
             if (opts.current == 1) {
-                if (utimes(argv[optind], NULL) != 0) {
+                if (utimensat(AT_FDCWD, argv[optind], NULL, 0) != 0) {
                     fprintf(stderr, "utimes failed on '%s': %s\n", argv[optind], strerror(errno));
                 }
 
@@ -177,12 +179,12 @@ int main(const int argc, char *argv[]) {
             }
             close(fd);
             if (opts.current == 1) {
-                if (utimes(argv[optind], NULL) != 0) {
+                if (utimensat(AT_FDCWD, argv[optind], NULL, 0) != 0) {
                     fprintf(stderr, "utimes failed: %s\n", strerror(errno));
                 }
             } else {
 #if defined (__linux__)
-                    if (utimens(argv[optind], times) != 0) {
+                    if (utimensat(AT_FDCWD, argv[optind], times, 0) != 0) {
                         fprintf(stderr, "utimens failed: %s\n", strerror(errno));
                     }
 #else
