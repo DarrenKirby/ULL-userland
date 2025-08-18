@@ -65,17 +65,17 @@ static void format(long long int bytes) {
             perror("sprintf"); exit(EXIT_FAILURE);
         }
     } else if ((bytes > 1025) && (bytes <= 1025000)) {
-        result = bytes / 1024.0;
+        result = (double)bytes / 1024.0;
         if (sprintf(size_string, "%5.1fK", result) < 0) {
             perror("sprintf"); exit(EXIT_FAILURE);
         }
     } else if ((bytes > 1025000) && (bytes <= 1025000000)) {
-        result = bytes / 1024.0 / 1024.0;
+        result = (double)bytes / 1024.0 / 1024.0;
         if (sprintf(size_string, "%5.1fM", result) < 0) {
             perror("sprintf"); exit(EXIT_FAILURE);
         }
     } else {
-        result = bytes / 1024.0 / 1024.0 / 1024.0;
+        result = (double)bytes / 1024.0 / 1024.0 / 1024.0;
         if (sprintf(size_string, "%5.1fG", result) < 0) {
             perror("sprintf"); exit(EXIT_FAILURE);
         }
@@ -87,7 +87,7 @@ static void format(long long int bytes) {
 /*
  * Return a color for a filetype
  */
-const char* file_color(mode_t mode)
+const char* file_color(const mode_t mode)
 {
     if (S_ISDIR(mode)) {
         return ANSI_BLUE_B;
@@ -110,7 +110,7 @@ const char* file_color(mode_t mode)
 
 /* Comparison function for strings */
 int compare_strings(const void *a, const void *b) {
-    return strcmp((const char *)a, (const char *)b);
+    return strcmp(a, b);
 }
 
 
@@ -139,7 +139,6 @@ int main(int argc, char *argv[]) {
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
-                break;
             case 'h':
                 show_help();
                 exit(EXIT_SUCCESS);
@@ -165,21 +164,9 @@ int main(int argc, char *argv[]) {
                 break;
             case 'H':
                 opts.human = 1;
-                opts.ls_long = 1; /* '-H' implies '-l' ls_long */
-                opts.one = 1;     /* '-H' implies '-1' one     */
+                opts.ls_long = 1;   /* '-H' implies '-l' ls_long */
+                opts.one = 1;       /* '-H' implies '-1' one     */
                 break;
-            case ':':
-                 /*
-                  * getopt_long prints own error message
-                  *
-                  */
-                exit(EXIT_FAILURE);
-            case '?':
-                 /*
-                  * getopt_long prints own error message
-                  *
-                  */
-                exit(EXIT_FAILURE);
             default:
                 show_help();
                 exit(EXIT_FAILURE);
@@ -190,7 +177,7 @@ int main(int argc, char *argv[]) {
      * get width of terminal
      */
     if (screen_width == 0) {
-        setupterm(NULL, fileno(stdout), (int *)0);
+        setupterm(NULL, fileno(stdout), 0);
         screen_width = tigetnum("cols");
     }
 
@@ -210,10 +197,10 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    int n_files = 0;          /* number of files to print */
-    int n_per_line = 0;       /* number of files per line */
-    int longest_so_far = 0;   /* longest filename seen so far */
-    long n;                   /* return value of strlen() calls */
+    int n_files = 0;                    /* number of files to print */
+    unsigned long n_per_line = 0;       /* number of files per line */
+    unsigned long longest_so_far = 0;   /* longest filename seen so far */
+    unsigned long n;                    /* return value of strlen() calls */
 
     while ((list = readdir(dp)) != NULL) {
         /*
@@ -317,8 +304,8 @@ int main(int argc, char *argv[]) {
             printf("%2ld ", (long) buf.st_nlink);
             printf("%s %s ", get_username(buf.st_uid), get_groupname(buf.st_gid));
             (opts.human == 0) ?
-                (void)printf("%6lld ", (long long) buf.st_size) :     /* bytes */
-                format(buf.st_size) ;                      /* ie: 16k */
+                (void)printf("%6lld ", buf.st_size) :     /* bytes */
+                format(buf.st_size) ;                     /* ie: 16k */
 
             fil = localtime(&buf.st_mtime);
             if (current_year != (fil->tm_year + 1900)) {
@@ -346,7 +333,7 @@ int main(int argc, char *argv[]) {
                 exit(EXIT_FAILURE);
             }
 
-            printf("%s%-*s%s", file_color(buf.st_mode), longest_so_far+1, filenames[f], ANSI_RESET);
+            printf("%s%-*s%s", file_color(buf.st_mode), (int)longest_so_far+1, filenames[f], ANSI_RESET);
             if (i % n_per_line == 0) {
                 printf("\n");
             }
