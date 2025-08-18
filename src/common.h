@@ -34,7 +34,6 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
-//#include <utmp.h>
 #include <errno.h>
 #include <unistd.h>
 #include <string.h>
@@ -96,33 +95,6 @@ extern const char *APPNAME;
 #define ANSI_RESET     "\x1b[0m"
 
 
-/* prototypes */
-void  gen_error(char *message);                    /* Displays a general error */
-void  f_error(char *filename, char *message);      /* Displays a general error involving a file */
-int   dump_args(int argc, char *argv[]);           /* Aid for debugging */
-char  *trim_whitespace(char *str);                 /* Removes leading and trailing whitespace from a string */
-char  *path_alloc(int *sizep);                     /* Allocates memory for a pathname */
-char  *file_perm_str(mode_t perm, int flags);      /* Displays a symbolic string of permission ie: rwxrw-rw- */
-char  *filetype(mode_t st_mode, int flag);         /* Retuns the plain-english filetype from the stat struct */
-int   file_perm_oct(mode_t perm);                  /* Returns octal representation of permissions */
-char  *get_username(uid_t uid);                    /* Returns username from uid */
-char  *get_groupname(gid_t gid);                   /* Returns groupname from gid */
-
-
-/* Commonly used function definitions */
-
-/* Generic error */
-inline void gen_error(char *message) {
-    printf("%s: %s\n", APPNAME, message);
-}
-
-/* File error */
-void f_error(char *filename, char *message) {
-    char error[50];
-    snprintf(error, 50, "%s: %s %s", APPNAME, (message == NULL) ? "" : message, filename);
-    perror(error);
-}
-
 /* Debugging aids */
 int dump_args(int argc, char *argv[]) {
   printf("argc: %i\n", argc);
@@ -173,14 +145,14 @@ char *trim_whitespace(char *str) {
 /* Include set-user-ID, set-group-ID, and sticky
 bit information in returned string */
 
-#define STR_SIZE sizeof("rwxrwxrwx")
+#define PERM_STR_SIZE sizeof("rwxrwxrwx")
 
 /* Return 'ls -l' style string for file permissions mask, This is from
  * 'The Linux Programming Interface'
  */
-inline char *file_perm_str(const mode_t perm, const int flags) {
-    static char str[STR_SIZE];
-    snprintf(str, STR_SIZE, "%c%c%c%c%c%c%c%c%c",
+char *file_perm_str(const mode_t perm, const int flags) {
+    static char str[PERM_STR_SIZE];
+    snprintf(str, PERM_STR_SIZE, "%c%c%c%c%c%c%c%c%c",
     (perm & S_IRUSR) ? 'r' : '-', (perm & S_IWUSR) ? 'w' : '-',
     (perm & S_IXUSR) ?
     (((perm & S_ISUID) && (flags & FP_SPECIAL)) ? 's' : 'x') :
@@ -197,72 +169,67 @@ inline char *file_perm_str(const mode_t perm, const int flags) {
 }
 
 /* Returns octal permissions of a file/directory */
-inline int file_perm_oct(const mode_t perm) {
+int file_perm_oct(const mode_t perm) {
     int oct_perm = 00;
     (perm & S_ISUID) ? (oct_perm += 04000) : (oct_perm += 00);
     (perm & S_ISGID) ? (oct_perm += 02000) : (oct_perm += 00);
     (perm & S_ISVTX) ? (oct_perm += 01000) : (oct_perm += 00);
-    (perm & S_IRUSR) ? (oct_perm += 0400) : (oct_perm += 00);
-    (perm & S_IWUSR) ? (oct_perm += 0200) : (oct_perm += 00);
-    (perm & S_IXUSR) ? (oct_perm += 0100) : (oct_perm += 00);
-    (perm & S_IRGRP) ? (oct_perm += 040) : (oct_perm += 00);
-    (perm & S_IWGRP) ? (oct_perm += 020) : (oct_perm += 00);
-    (perm & S_IXGRP) ? (oct_perm += 010) : (oct_perm += 00);
-    (perm & S_IROTH) ? (oct_perm += 04) : (oct_perm += 00);
-    (perm & S_IWOTH) ? (oct_perm += 02) : (oct_perm += 00);
-    (perm & S_IXOTH) ? (oct_perm += 01) : (oct_perm += 00);
+    (perm & S_IRUSR) ? (oct_perm += 0400)  : (oct_perm += 00);
+    (perm & S_IWUSR) ? (oct_perm += 0200)  : (oct_perm += 00);
+    (perm & S_IXUSR) ? (oct_perm += 0100)  : (oct_perm += 00);
+    (perm & S_IRGRP) ? (oct_perm += 040)   : (oct_perm += 00);
+    (perm & S_IWGRP) ? (oct_perm += 020)   : (oct_perm += 00);
+    (perm & S_IXGRP) ? (oct_perm += 010)   : (oct_perm += 00);
+    (perm & S_IROTH) ? (oct_perm += 04)    : (oct_perm += 00);
+    (perm & S_IWOTH) ? (oct_perm += 02)    : (oct_perm += 00);
+    (perm & S_IXOTH) ? (oct_perm += 01)    : (oct_perm += 00);
     return oct_perm;
 }
 
-inline char *filetype(const mode_t st_mode, const int flag) {
+char *filetype(const mode_t st_mode, const int flag) {
     switch (st_mode & S_IFMT) {
-        case S_IFBLK:
-            return (flag == 1) ? (char *)"block device"     : (char *)"b" ;
-        case S_IFCHR:
-            return (flag == 1) ? (char *)"character device" : (char *)"c" ;
-        case S_IFDIR:
-            return (flag == 1) ? (char *)"directory"        : (char *)"d" ;
-        case S_IFIFO:
-            return (flag == 1) ? (char *)"FIFO/pipe"        : (char *)"p" ;
-        case S_IFLNK:
-            return (flag == 1) ? (char *)"symlink"          : (char *)"l" ;
-        case S_IFREG:
-            return (flag == 1) ? (char *)"regular file"     : (char *)"-" ;
-        case S_IFSOCK:
-            return (flag == 1) ? (char *)"socket"           : (char *)"s" ;
-        default:
-            return (flag == 1) ? (char *)"unknown"          : (char *)"?" ;
+    case S_IFBLK:
+        return (flag == 1) ? (char *)"block device" : (char *)"b";
+    case S_IFCHR:
+        return (flag == 1) ? (char *)"character device" : (char *)"c";
+    case S_IFDIR:
+        return (flag == 1) ? (char *)"directory" : (char *)"d";
+    case S_IFIFO:
+        return (flag == 1) ? (char *)"FIFO/pipe" : (char *)"p";
+    case S_IFLNK:
+        return (flag == 1) ? (char *)"symlink" : (char *)"l";
+    case S_IFREG:
+        return (flag == 1) ? (char *)"regular file" : (char *)"-";
+    case S_IFSOCK:
+        return (flag == 1) ? (char *)"socket" : (char *)"s";
+    default:
+        return (flag == 1) ? (char *)"unknown" : (char *)"?";
     }
 }
 
-char *get_username(uid_t uid) {
-        struct passwd *pwd;
-        errno = 0;
-        pwd = getpwuid(uid);
+char *get_username(const uid_t uid) {
+    errno = 0;
+    const struct passwd *pwd = getpwuid(uid);
 
-        if (pwd == NULL) {
-                if (errno == 0) {
-                        return (char *)"unknown username";
-                } else {
-                        gen_error((char *)"username lookup failed");
-                        exit(EXIT_FAILURE);
-                }
+    if (pwd == NULL) {
+        if (errno == 0) {
+            return (char *)"unknown username";
         }
-
-        return pwd->pw_name;
+        fprintf(stderr, "username lookup failed");
+        exit(EXIT_FAILURE);
+    }
+    return pwd->pw_name;
 }
 
-char *get_groupname(gid_t gid) {
-    struct group *grp;
+char *get_groupname(const gid_t gid) {
     errno = 0;
-    grp = getgrgid(gid);
+    const struct group *grp = getgrgid(gid);
     if (grp == NULL) {
         if (errno == 0) {
             return (char *)"unknown groupname";
-        } else {
-            gen_error((char *)"groupname lookup failed");
-            exit(EXIT_FAILURE);
         }
+        fprintf(stderr, "groupname lookup failed");
+        exit(EXIT_FAILURE);
     }
     return grp->gr_name;
 }
