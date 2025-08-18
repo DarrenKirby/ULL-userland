@@ -27,7 +27,7 @@
 
 const char *APPNAME =  "head";
 
-struct optstruct {
+struct opt_struct {
     unsigned int quiet:1;
     unsigned int verbose:1;
     unsigned int bytes:1;
@@ -37,9 +37,9 @@ struct optstruct {
 static void show_help(void) {
     printf("Usage: %s [OPTION]... FILE [FILE...]\n\n\
 Options:\n\
-    -n, --lines=N\t\tprint first N lines\n\
-    -b, --bytes=N\t\tprint first N bytes instead of lines\n\
-    -v, --verbose\t\talways print file header(s)\n\
+    -n, --lines=N\tprint first N lines\n\
+    -b, --bytes=N\tprint first N bytes instead of lines\n\
+    -v, --verbose\talways print file header(s)\n\
     -q, --quiet\t\tnever print file header(s)\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
@@ -92,10 +92,10 @@ int head_lines(char *filename, long int n_lines) {
     return EXIT_SUCCESS;
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     int opt;
 
-    struct option longopts[] = {
+    const struct option long_opts[] = {
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
         {"lines", required_argument, NULL, 'n'},
@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
     opts.quiet = 0;
     opts.verbose = 0;
 
-    while ((opt = getopt_long(argc, argv, "Vhn:b:qv", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "Vhn:b:qv", long_opts, NULL)) != -1) {
       switch (opt) {
       case 'V':
         printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
