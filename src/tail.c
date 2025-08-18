@@ -27,7 +27,7 @@
 
 const char *APPNAME =  "head";
 
-struct optstruct {
+struct opt_struct {
     unsigned int quiet:1;
     unsigned int verbose:1;
     unsigned int bytes:1;
@@ -36,13 +36,14 @@ struct optstruct {
 
 static void show_help(void) {
     printf("Usage: %s [OPTION]... FILE [FILE...]\n\n\
+Print last N lines or bytes of file\n\n\
 Options:\n\
-    -n, --lines=N\t\tprint first N lines\n\
-    -b, --bytes=N\t\tprint first N bytes instead of lines\n\
-    -v, --verbose\t\talways print file header(s)\n\
-    -q, --quiet\t\tnever print file header(s)\n\
-    -h, --help\t\tdisplay this help\n\
-    -V, --version\tdisplay version information\n\n\
+    -n, --lines=N\t\t print first N lines\n\
+    -b, --bytes=N\t\t print first N bytes instead of lines\n\
+    -v, --verbose\t\t always print file header(s)\n\
+    -q, --quiet\t\t never print file header(s)\n\
+    -h, --help\t\t display this help\n\
+    -V, --version\t display version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
@@ -106,7 +107,7 @@ int tail_lines(char *filename, long int n_lines) {
     rewind(fd);
     char buffer[MAX_LINE_LENGTH];
 
-    /* If total lines less than requested lines - print entire file */
+    /* If total lines is less than requested lines - print entire file */
     if (lines <= n_lines) {
         while (fgets(buffer, sizeof(buffer), fd) != NULL) {
             printf("%s", buffer);
@@ -126,10 +127,10 @@ int tail_lines(char *filename, long int n_lines) {
     return EXIT_SUCCESS;
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     int opt;
 
-    struct option longopts[] = {
+    const struct option long_opts[] = {
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
         {"lines", required_argument, NULL, 'n'},
@@ -146,7 +147,7 @@ int main(int argc, char *argv[]) {
     opts.quiet = 0;
     opts.verbose = 0;
 
-    while ((opt = getopt_long(argc, argv, "Vhn:b:qv", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "Vhn:b:qv", long_opts, NULL)) != -1) {
       switch (opt) {
       case 'V':
         printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
@@ -175,10 +176,6 @@ int main(int argc, char *argv[]) {
         opts.bytes = 1;
         n_units = strtol(optarg, NULL, 10);
         break;
-      case ':':
-      case '?':
-        /* getopt_long prints own error message */
-        exit(EXIT_FAILURE);
       default:
         show_help();
         exit(EXIT_FAILURE);
