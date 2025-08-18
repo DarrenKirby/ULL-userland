@@ -20,6 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#define _POSIX_C_SOURCE 200809L
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
