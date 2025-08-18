@@ -23,11 +23,12 @@
 #include <unistd.h>
 
 #include "common.h"
+
 const char *APPNAME = "rm";
 
 static void showHelp(void) {
     printf("Usage: %s [OPTION]... [FILE]...\n\n\
-    Remove (unlink) the FILE(s).\n\n\
+    Remove (unlink) FILE(s).\n\n\
 Options:\n\
     -f, --force\t\t not implemented yet\n\
     -r, -R, --recursive  not implemented yet\n\
@@ -38,7 +39,7 @@ Options:\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
-struct optstruct {
+struct opt_struct {
     int verbose;
     int recursive;
     int force;
@@ -46,31 +47,31 @@ struct optstruct {
 } opts;
 
 int rm(char *file) {
-  int es = unlink(file);
+    const int es = unlink(file);
     if (es != 0) {
         if (opts.force == 1 && errno == 2) { /* --force ignores non-existing files */
             return EXIT_SUCCESS;
         }
         fprintf(stderr, "rm: %s: %s\n", file, strerror(errno));
+        return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     int opt;
-    char response;
 
-    struct option longopts[] = {
+    const struct option long_opts[] = {
         {"help", 0, NULL, 'h'},
         {"force", 0, NULL, 'f'},
         {"interactive", 0, NULL, 'i'},
         {"recursive", 0, NULL, 'R'},
         {"verbose", 0, NULL, 'v'},
         {"version", 0, NULL, 'V'},
-        {0,0,0,0}
+        {NULL,0,NULL,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "hrvVRif", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "hrvVRif", long_opts, NULL)) != -1) {
         switch(opt) {
             case 'r':
             case 'R':
@@ -101,7 +102,9 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    /* TODO: implement recursive */
     if (opts.interactive == 1) {
+        int response;
         for (; optind < argc; optind++) {
 
             printf("rm: remove %s ('y' or 'n')? ", argv[optind]);
@@ -110,12 +113,24 @@ int main(int argc, char *argv[]) {
             }
             while (response == '\n');
 
-            if (response == 'y' || response == 'Y')
-                rm(argv[optind]);
+            if (response == 'y' || response == 'Y') {
+                const int es = rm(argv[optind]);
+                if (es != EXIT_SUCCESS) {
+                    printf("failed to remove %s\n", argv[optind]);
+                    continue;
+                }
+                if (opts.verbose == 1) {
+                    printf("removed '%s'\n", argv[optind]);
+                }
+            }
         }
     } else {
         for (; optind < argc; optind++) {
-            rm(argv[optind]);
+            const int es = rm(argv[optind]);
+            if (es != EXIT_SUCCESS) {
+                printf("failed to remove %s\n", argv[optind]);
+                continue;
+            }
             if (opts.verbose == 1) {
                 printf("removed '%s'\n", argv[optind]);
             }
