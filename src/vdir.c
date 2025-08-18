@@ -27,9 +27,10 @@
 #include <dirent.h>
 
 #include "common.h"
+
 const char *APPNAME = "vdir";
 
-struct optstruct {
+struct opt_struct {
     unsigned int human:1;
     unsigned int all:1;
     unsigned int inode:1;
@@ -40,14 +41,15 @@ struct optstruct {
 
 static void show_help(void) {
     printf("Usage: %s [OPTION]... [FILE]...\n\n\
+Print long-form directory contents\n\n\
 Options:\n\
-    -H, --human\t\tdisplay filesize in kilobytes and megabytes if appropriate (implies --long)\n\
-    -a, --all\t\tinclude dotfiles and implied `.' and `..' entries\n\
-    -i, --inode\t\tdisplay inode numbers\n\
-    -d, --dereference\tshow information for the file links reference rather than for the link itself\n\
-    -h, --help\t\tdisplay this help\n\
-    -c, --colour\tuse colour output\n\
-    -V, --version\tdisplay version information\n\n\
+    -H, --human\t\t display filesize in kilobytes and megabytes if appropriate (implies --long)\n\
+    -a, --all\t\t include dotfiles and implied `.' and `..' entries\n\
+    -i, --inode\t\t display inode numbers\n\
+    -d, --dereference\t show information for the file links reference rather than for the link itself\n\
+    -h, --help\t\t display this help\n\
+    -c, --colour\t use colour output\n\
+    -V, --version\t display version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
@@ -82,26 +84,25 @@ static void p_colour(char * filename, mode_t st_mode) {
     }
 }
 
-
-static void format(long long int bytes) {
+static void format(const long long int bytes) {
     char size_string[22];
     double result;
     if (bytes < 1024) {
         if (sprintf(size_string, "%lld", bytes) < 0) {
             perror("sprintf"); exit(EXIT_FAILURE);
         }
-    } else if ((bytes > 1025) && (bytes <= 1025000)) {
-        result = bytes / 1024.0;
+    } else if (bytes > 1025 && bytes <= 1025000) {
+        result = (double)bytes / 1024.0;
         if (sprintf(size_string, "%5.1fK", result) < 0) {
             perror("sprintf"); exit(EXIT_FAILURE);
         }
-    } else if ((bytes > 1025000) && (bytes <= 1025000000)) {
-        result = bytes / 1024.0 / 1024.0;
+    } else if (bytes > 1025000 && bytes <= 1025000000) {
+        result = (double)bytes / 1024.0 / 1024.0;
         if (sprintf(size_string, "%5.1fM", result) < 0) {
             perror("sprintf"); exit(EXIT_FAILURE);
         }
     } else {
-        result = bytes / 1024.0 / 1024.0 / 1024.0;
+        result = (double)bytes / 1024.0 / 1024.0 / 1024.0;
         if (sprintf(size_string, "%5.1fG", result) < 0) {
             perror("sprintf"); exit(EXIT_FAILURE);
         }
@@ -110,10 +111,10 @@ static void format(long long int bytes) {
 }
 
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     int opt;
 
-    struct option longopts[] = {
+    const struct option long_opts[] = {
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
         {"all", 0, NULL, 'a'},
@@ -121,10 +122,10 @@ int main(int argc, char *argv[]) {
         {"inode", 0, NULL, 'i'},
         {"dereference", 0, NULL, 'd'},
         {"colour", 0, NULL, 'c'},
-        {0,0,0,0}
+        {NULL,0,NULL,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "VhaHidc", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "VhaHidc", long_opts, NULL)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
@@ -150,12 +151,6 @@ int main(int argc, char *argv[]) {
             case 'c':
                 opts.colour = 1;
                 break;
-            case ':':
-                 /* getopt_long prints own error message */
-                exit(EXIT_FAILURE);
-            case '?':
-                 /* getopt_long prints own error message */
-                exit(EXIT_FAILURE);
             default:
                 show_help();
                 exit(EXIT_FAILURE);
@@ -211,26 +206,23 @@ int main(int argc, char *argv[]) {
     closedir(dp);
 
     char cwd[PATHMAX];
-    char *cwd_p;
-    cwd_p = cwd;
+    char *cwd_p = cwd;
 
     if (getcwd(cwd_p, PATHMAX) == NULL) {
-        perror("getcwd");
+        fprintf(stderr, "getcwd failed: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
 
     if (chdir(path_to_ls) == -1) {
-        perror("chdir");
+        fprintf(stderr, "chdir failed: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
 
     struct stat buf;
-    struct tm *now;
-    struct tm *fil;
     time_t now_t;
     (void) time(&now_t);
-    now = localtime(&now_t);
-    int current_year = now->tm_year + 1900;
+    const struct tm *now = localtime(&now_t);
+    const int current_year = now->tm_year + 1900;
     char string_time[13];
 
     for (int f = 0; f < n_files; f++) {
@@ -255,9 +247,9 @@ int main(int argc, char *argv[]) {
         printf("%s %s ", get_username(buf.st_uid), get_groupname(buf.st_gid));
         (opts.human == 0) ?
             (void)printf("%6lld ", (long long) buf.st_size) :       /* bytes */
-            format((long long)buf.st_size) ;                  /* ie: 16k */
+            format(buf.st_size) ;                  /* ie: 16k */
 
-        fil = localtime(&buf.st_mtime);
+        const struct tm *fil = localtime(&buf.st_mtime);
         if (current_year != (fil->tm_year + 1900)) {
             strftime(string_time, sizeof("Jan 01  1970"), "%b %d  %Y", localtime(&buf.st_mtime));
         } else {
@@ -278,6 +270,5 @@ int main(int argc, char *argv[]) {
         perror("chdir");
         exit(EXIT_FAILURE); /* no biggie, already printed the output... */
     }
-
     return EXIT_SUCCESS;
 }
