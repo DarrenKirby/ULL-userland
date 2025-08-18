@@ -1,5 +1,5 @@
 /***************************************************************************
- *    -                                      *
+ *   chroot - run command or interactive shell with special root directory *
  *                                                                         *
  *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
  *   bulliver@gmail.com                                                    *
@@ -23,29 +23,31 @@
 #include <unistd.h>
 
 #include "common.h"
+
 const char *APPNAME = "chroot";
 
 struct optstruct {
 } opts;
 
 static void show_help(void) {
-    printf("Usage: %s [OPTION]...\n\n\
+    printf("Usage: %s [OPTION]... [NEWROOT] [COMMAND]\n\n\
+run command or interactive shell with special root directory\n\n\
 Options:\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     int opt;
 
-    struct option longopts[] = {
+    const struct option long_opts[] = {
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
         {0,0,0,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "Vh", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "Vh", long_opts, NULL)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
@@ -58,13 +60,6 @@ int main(int argc, char *argv[]) {
                 show_help();
                 exit(EXIT_SUCCESS);
                 break;
-            case ':':
-                 /* getopt_long prints own error message */
-                exit(EXIT_FAILURE);
-                break;
-            case '?':
-                 /* getopt_long prints own error message */
-                exit(EXIT_FAILURE);
             default:
                 show_help();
                 exit(EXIT_FAILURE);
