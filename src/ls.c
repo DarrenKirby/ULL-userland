@@ -30,8 +30,7 @@
 
 const char *APPNAME = "ls";
 
-
-struct optstruct {
+struct opt_struct {
     unsigned int ls_long:1;
     unsigned int human:1;
     unsigned int all:1;
@@ -43,6 +42,7 @@ struct optstruct {
 
 static void show_help(void) {
     printf("Usage: %s [OPTION]... [FILE]...\n\n\
+List and show info for files and directories\n\n\
 Options:\n\
     -l, --long\t\toutput long format listing\n\
     -H, --human\t\tdisplay filesize in kilobytes and megabytes if appropriate (implies --long)\n\
@@ -56,8 +56,7 @@ Options:\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
-
-static void format(long long int bytes) {
+static void format(const long long int bytes) {
     char size_string[22];
     double result;
     if (bytes < 1024) {
@@ -83,7 +82,6 @@ static void format(long long int bytes) {
     printf("%6s ", size_string);
 }
 
-
 /*
  * Return a color for a filetype
  */
@@ -107,18 +105,16 @@ const char* file_color(const mode_t mode)
     return ANSI_RESET;
 }
 
-
 /* Comparison function for strings */
 int compare_strings(const void *a, const void *b) {
     return strcmp(a, b);
 }
 
-
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     int opt;
     int screen_width = 0;
 
-    struct option longopts[] = {
+    const struct option long_opts[] = {
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
         {"all", 0, NULL, 'a'},
@@ -128,10 +124,10 @@ int main(int argc, char *argv[]) {
         {"inode", 0, NULL, 'i'},
         {"dereference", 0, NULL, 'd'},
         {"width", required_argument, NULL, 'w'},
-        {0,0,0,0}
+        {NULL,0,NULL,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "VhalH1idw:", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "VhalH1idw:", long_opts, NULL)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
@@ -256,7 +252,7 @@ int main(int argc, char *argv[]) {
     }
 
     int f;
-    if ((opts.one == 1) && (opts.ls_long != 1)) {
+    if (opts.one == 1 && opts.ls_long != 1) {
         /*
          * We are displaying short format, one file per line
          */
@@ -286,12 +282,12 @@ int main(int argc, char *argv[]) {
         for (f = 0; f < n_files; f++) {
             if (opts.dereference == 1) {
                 if (stat(filenames[f], &buf) == -1) {
-                    perror("stat");
+                    fprintf(stderr, "%s: %s", filenames[f], strerror(errno));
                     exit(EXIT_FAILURE);
                 }
             } else {
                 if (lstat(filenames[f], &buf) == -1) {
-                    perror("stat");
+                    fprintf(stderr, "%s: %s", filenames[f], strerror(errno));
                     exit(EXIT_FAILURE);
                 }
             }
@@ -329,7 +325,7 @@ int main(int argc, char *argv[]) {
         for (f = 0; f < n_files; f++) {
             struct stat buf;
             if (lstat(filenames[f], &buf) == -1) {
-                perror("lstat");
+                fprintf(stderr, "%s: %s", filenames[f], strerror(errno));
                 exit(EXIT_FAILURE);
             }
 
@@ -347,8 +343,8 @@ int main(int argc, char *argv[]) {
 
     /* Not sure if this is even necessary */
     if (chdir(cwd) == -1) {
-    perror("chdir");
-    exit(EXIT_FAILURE); /* no biggie, already printed the output... */
+        fprintf(stderr, "%s: %s", cwd, cwd_p);
+        exit(EXIT_FAILURE); /* no biggie, already printed the output... */
     }
 
     return EXIT_SUCCESS;
