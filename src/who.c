@@ -34,16 +34,16 @@
 #endif // __linux__
 
 #include "common.h"
+
 const char *APPNAME = "who";
 
-struct optstruct {
+struct opt_struct {
     unsigned int quick;
 } opts;
 
-
 static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
-Show all logged in users\n \
+Show all logged in users\n\
 Options:\n\
     -b, --boot\t\tprint system boot time\n\
     -a, --all\t\tprint boot time and users\n\
@@ -51,7 +51,6 @@ Options:\n\
     -V, --version\tdisplay version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
-
 
 void print_boot_time(void) {
     struct tm *tm_ptr;
@@ -72,60 +71,58 @@ void print_boot_time(void) {
 
     printf("         system boot  %s\n", buffer);
 #else
-    struct timeval boottime;
+    struct timeval boot_time;
 
-    size_t len = sizeof(boottime);
+    size_t len = sizeof(boot_time);
     int mib[2] = { CTL_KERN, KERN_BOOTTIME };
-    if( sysctl(mib, 2, &boottime, &len, NULL, 0) < 0 ) {
+    if( sysctl(mib, 2, &boot_time, &len, NULL, 0) < 0 ) {
         printf("Error getting uptime");
     }
 
-    time_t bsec = boottime.tv_sec;
+    const time_t boot_sec = boot_time.tv_sec;
 
-    tm_ptr = localtime(&bsec);
+    tm_ptr = localtime(&boot_sec);
 
-    printf("         system boot    %i-%02d-%02d %02d:%02d:%02d\n", (1900 + tm_ptr->tm_year),
-           (1 + tm_ptr->tm_mon), tm_ptr->tm_mday, tm_ptr->tm_hour,
+    printf("         system boot    %i-%02d-%02d %02d:%02d:%02d\n", 1900 + tm_ptr->tm_year,
+           1 + tm_ptr->tm_mon, tm_ptr->tm_mday, tm_ptr->tm_hour,
            tm_ptr->tm_min, tm_ptr->tm_sec);
 #endif // __linux__
 }
 
 
 void print_users(void) {
-    struct utmpx *utmpstruct;
+    struct utmpx *utmp_struct;
     time_t the_time;
-    struct tm *tm_ptr;
 
     setutxent();
-    while ((utmpstruct = getutxent())) {
-        if ((utmpstruct->ut_type == USER_PROCESS) &&
-            (utmpstruct->ut_user[0] != '\0')) {
-                the_time = utmpstruct->ut_tv.tv_sec;
-                tm_ptr = localtime(&the_time);
-                printf("%s  %s\t%i-%02d-%02d %02d:%02d:%02d\n", utmpstruct->ut_user,
-                       utmpstruct->ut_line, (1900 + tm_ptr->tm_year),
-                       (1 + tm_ptr->tm_mon), tm_ptr->tm_mday, tm_ptr->tm_hour,
-                        tm_ptr->tm_min, tm_ptr->tm_sec);
+    while ((utmp_struct = getutxent())) {
+        if (utmp_struct->ut_type == USER_PROCESS &&
+            utmp_struct->ut_user[0] != '\0') {
+                the_time = utmp_struct->ut_tv.tv_sec;
+                const struct tm *tm_ptr = localtime(&the_time);
+                printf("%s  %s\t%i-%02d-%02d %02d:%02d:%02d\n", utmp_struct->ut_user,
+                       utmp_struct->ut_line, 1900 + tm_ptr->tm_year,
+                       1 + tm_ptr->tm_mon, tm_ptr->tm_mday, tm_ptr->tm_hour,
+                       tm_ptr->tm_min, tm_ptr->tm_sec);
             }
-
     }
     endutxent();
 }
 
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     int opt;
 
-    struct option longopts[] = {
+    const struct option long_opts[] = {
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
         {"all", 0, NULL, 'a'},
         {"boot", 0, NULL, 'b'},
         {"quick", 0, NULL, 'q'},
-        {0,0,0,0}
+        {NULL,0,NULL,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "Vhbaq", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "Vhbaq", long_opts, NULL)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
@@ -133,36 +130,24 @@ int main(int argc, char *argv[]) {
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
-                break;
             case 'h':
                 show_help();
                 exit(EXIT_SUCCESS);
-                break;
             case 'b':
                 print_boot_time();
                 exit(EXIT_SUCCESS);
-                break;
             case 'a':
                 print_boot_time();
                 break;
             case 'q':
                 opts.quick = 1;
                 break;
-            case ':':
-                 /* getopt_long prints own error message */
-                exit(EXIT_FAILURE);
-                break;
-            case '?':
-                 /* getopt_long prints own error message */
-                exit(EXIT_FAILURE);
             default:
                 show_help();
                 exit(EXIT_FAILURE);
-                break;
         }
     }
 
     print_users();
-
     return EXIT_SUCCESS;
 }
