@@ -26,7 +26,7 @@
 
 const char *APPNAME = "mv";
 
-struct optstruct {
+struct opt_struct {
     int force;
     int interactive;
     int verbose;
@@ -34,8 +34,8 @@ struct optstruct {
 
 static void show_help(void) {
     printf("Usage: %s [OPTION]... SOURCE DEST\n\
-    or: %s [OPTION]... SOURCE... DIRECTORY\n\n\
-    Rename SOURCE to DEST, or move SOURCE(s) to DIRECTORY.\n\n\
+   or: %s [OPTION]... SOURCE... DIRECTORY\n\n\
+Rename SOURCE to DEST, or move SOURCE(s) to DIRECTORY.\n\n\
 Options:\n\
     -f, --force\t\tdo not prompt before overwriting\n\
     -i, --interactive\tprompt before overwrite\n\
@@ -46,7 +46,7 @@ Report bugs to <bulliver@gmail.com>\n", APPNAME, APPNAME);
 
 static int prompt(char *to) {
     printf("%s: %s exists. Overwrite ('y' or 'n')? ", APPNAME, to);
-    char response;
+    int response;
     do {
         response = getchar();
     }
@@ -54,24 +54,23 @@ static int prompt(char *to) {
 
     if (response == 'y' || response == 'Y') {
         return 1;
-    } else {
-        return 0;
     }
+    return 0;
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     int opt;
 
-    struct option longopts[] = {
+    const struct option long_opts[] = {
         {"force", 0, NULL, 'f'},
         {"interactive", 0, NULL, 'i'},
         {"verbose", 0, NULL, 'v'},
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
-        {0,0,0,0}
+        {NULL,0,NULL,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "fivVh", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "fivVh", long_opts, NULL)) != -1) {
         switch(opt) {
             case 'v':
                 opts.verbose = 1;
@@ -99,9 +98,7 @@ int main(int argc, char *argv[]) {
 
     int n_args = argc - optind;    /* Number of arguments */
     int isdir = 0;                 /* Final arg a directory? */
-    char *from;                    /* From name */
-    char *to;                      /* To name */
-    char tmp[FILEMAX + 1];         /* Tmp name for 'to' when it is a directory */
+    char tmp[FILEMAX];             /* Tmp name for 'to' when it is a directory */
 
     struct stat s;
 
@@ -111,8 +108,8 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    from = argv[optind];
-    to = argv[argc-1];
+    char *from = argv[optind];  /* From name */
+    char *to = argv[argc - 1];  /* To name */
 
     stat(to, &s);
     if (S_ISDIR(s.st_mode))
@@ -127,7 +124,7 @@ int main(int argc, char *argv[]) {
     do {
         if (isdir == 1) {
 
-            snprintf(tmp, 256, "%s/%s", to, from); /* Rename 'to' */
+            snprintf(tmp, FILEMAX, "%s/%s", to, from); /* Rename 'to' */
             if (opts.interactive && access(to, F_OK) == 0) {
                 if (!prompt(to)) {
                     exit(EXIT_FAILURE);
@@ -137,6 +134,7 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "%s: cannot rename\n", APPNAME);
             }
         } else {
+            /* FIXME: This clobbers existing files even without -f */
             if (opts.interactive && access(to, F_OK) == 0) {
                 if (!prompt(to)) {
                     exit(EXIT_FAILURE);
@@ -156,4 +154,3 @@ int main(int argc, char *argv[]) {
 
     return EXIT_SUCCESS;
 }
-
