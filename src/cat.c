@@ -21,26 +21,27 @@
  ***************************************************************************/
 
 
-
 #include "common.h"
 const char *APPNAME = "cat";
 
 static void show_help(void) {
-    printf("Usage: %s [OPTION]... [FILE]...\n \
-Concatenate FILE(s), or standard input to standard output.\n\n \
+    printf("Usage: %s [OPTION]... [FILE]...\n\
+Concatenate FILE(s), or standard input to standard output.\n\n\
 Options:\n\
-    -n, --number\tnumber lines\n \
-   -u, --unbuffered\tsets stdout to be unbuffered\n \
-   -h, --help\t\tdisplay this help\n \
-   -V, --version\tdisplay version information\n\n \
+    -n, --number\tnumber lines\n\
+    -u, --unbuffered\tsets stdout to be unbuffered\n\
+    -h, --help\t\tdisplay this help\n\
+    -V, --version\tdisplay version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
+/* flag which tells whether we are numbering lines */
 int number_lines = 0;
-FILE *name;
-char c;
 
-static void cat_stdin(int line_number, int unbuffered) {
+static void cat_stdin(const int unbuffered) {
+    int c;
+    int line_number = 1;
+
     if (unbuffered == 1) {
         setvbuf(stdout, NULL, _IONBF, 1);
     }
@@ -60,13 +61,15 @@ static void cat_stdin(int line_number, int unbuffered) {
     exit(EXIT_SUCCESS);
 }
 
+static void cat_file(char *filename, int line_number) {
+    int c;
+    FILE *name;
 
-static int cat_file(char *filename, unsigned int line_number) {
-    if ( (name = fopen(filename, "r")) == NULL ) {
+    if ((name = fopen(filename, "r")) == NULL ) {
         fprintf(stderr, "cat: cannot open file %s\n", filename);
     }
 
-    while (( c = getc(name)) != EOF ) {
+    while ((c = getc(name)) != EOF ) {
         if  (c == 10 && number_lines == 1) {
             putc(c, stdout);
             printf("%6u\t", line_number);
@@ -76,24 +79,22 @@ static int cat_file(char *filename, unsigned int line_number) {
         }
     }
     fclose(name);
-    return line_number;
 }
 
-
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     int opt;
-    unsigned int line_number = 1;
+    int line_number = 1;
     int unbuffered = 0;
 
-    struct option longopts[] = {
+    const struct option long_opts[] = {
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
         {"number", 0, NULL, 'n'},
         {"unbuffered", 0, NULL, 'u'},
-        {0,0,0,0}
+        {NULL,0,NULL,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "Vhnu", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "Vhnu", long_opts, NULL)) != -1) {
         switch(opt) {
             case 'n':
                 number_lines = 1;
@@ -110,20 +111,14 @@ int main(int argc, char *argv[]) {
             case 'h':
                 show_help();
                 exit(EXIT_SUCCESS);
-            case ':':
-                printf("option '%c' needs an argument\n", optopt);
-                exit(EXIT_FAILURE);
-            case '?':
-                 /* getopt_long prints own error message */
-                exit(EXIT_FAILURE);
             default:
                 show_help();
                 exit(EXIT_FAILURE);
         }
     }
 
-    if (argc == optind) {        /* no file arguments */
-        cat_stdin(line_number, unbuffered);
+    if (argc == optind || strcmp(argv[optind], "-") == 0) {  /* no file arguments */
+        cat_stdin(unbuffered);
     }
 
     if (number_lines == 1) {
@@ -132,7 +127,7 @@ int main(int argc, char *argv[]) {
     }
 
     while (optind < argc) {
-        line_number = cat_file(argv[optind], line_number);
+        cat_file(argv[optind], line_number);
         optind++;
     }
     printf("\n");
