@@ -20,16 +20,10 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-
-/* Needed for nftw() */
-#ifdef __linux__
-#define _XOPEN_SOURCE 500
-#endif
+#include "common.h"
 
 #include <ftw.h>
 #include <unistd.h>
-
-#include "common.h"
 
 const char *APPNAME = "chown";
 

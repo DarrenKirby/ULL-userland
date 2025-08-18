@@ -20,16 +20,15 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "common.h"
 
 /* Needed for nftw() */
-#ifdef __linux__
-#define _XOPEN_SOURCE 500
-#endif
+//#ifdef __linux__
+//#define _XOPEN_SOURCE 500
+//#endif
 
 #include <ftw.h>
 #include <unistd.h>
-
-#include "common.h"
 
 const char *APPNAME = "chgrp";
 
