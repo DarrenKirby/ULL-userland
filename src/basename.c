@@ -1,5 +1,5 @@
 /***************************************************************************
- *   basename.c - strip directory and suffix from filenames                *
+ *   basename.c - strip directory and suffix from paths/filenames          *
  *                                                                         *
  *   Copyright (C) 2014-2025 by Darren Kirby                               *
  *   bulliver@gmail.com                                                    *
@@ -26,57 +26,59 @@
 const char *APPNAME = "basename";
 
 static void show_help(void) {
-    printf("Usage: %s PATH\n \
-    or: %s [OPTION] [PATH]\n\n \
-    -s, --suffix=SUFFIX\tremove trailing suffix\n \
-    -h, --help\t\t\tdisplay this help\n \
-    -V, --version\t\tdisplay version information\n\n \
-    Examples:\n \
-    \tbasename /usr/bin/sort         Output: 'sort'.\n \
-    \tbasename -s .h include/stdio.h Output: 'stdio'. \n\n \
-    Report bugs to <bulliver@gmail.com>\n", APPNAME, APPNAME);
+    printf("Usage: %s PATH\n\
+   or: %s [OPTION] [PATH]\n\n\
+Strip leading directories and optional suffix from PATH.\n\n\
+Options:\n\
+    -s, --suffix=SUFFIX\tremove trailing suffix\n\
+    -h, --help\t\t\tdisplay this help\n\
+    -V, --version\t\tdisplay version information\n\n\
+    Examples:\n\
+    \tbasename /usr/bin/sort         Output: 'sort'.\n\
+    \tbasename -s .h include/stdio.h Output: 'stdio'. \n\n\
+Report bugs to <bulliver@gmail.com>\n", APPNAME, APPNAME);
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     int  opt;
     char name[PATHMAX];
     int  sfx = 0;
     int  sdn = 0;
     char suffix[PATHMAX];
 
-    struct option longopts[] = {
+    const struct option long_opts[] = {
         {"suffix", required_argument, NULL, 's'},
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
-        {0,0,0,0}
+        {NULL,0,NULL,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "Vs:h", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "Vs:h", long_opts, NULL)) != -1) {
         switch(opt) {
             case 's':
                 sfx = 1;
-                strncpy(suffix, optarg, PATHMAX - 1); // leave room in buffer for null byte
+                strncpy(suffix, optarg, PATHMAX - 1); /* leave room in buffer for null byte */
                 break;
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
                 printf("%s compiled on %s at %s\n", strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__, __DATE__, __TIME__);
                 exit(EXIT_SUCCESS);
-                break;
             case 'h':
                 show_help();
                 exit(EXIT_SUCCESS);
-                break;
             default:
                 show_help();
                 exit(EXIT_FAILURE);
-                break;
         }
     }
-    int n_args = argc - optind; /* Number of arguments */
 
-    if (n_args == 0 || strcmp(argv[optind], "-") == 0) {          /* Read path from STDIN */
+    /* Number of arguments */
+    const int n_args = argc - optind;
+
+    /* Read path from STDIN */
+    if (n_args == 0 || strcmp(argv[optind], "-") == 0) {
         if (fgets(name, PATHMAX, stdin) == NULL) {
-            perror("fgets");
+            fprintf(stderr, "Error reading stdin\n");
             exit(EXIT_FAILURE);
         }
         sdn = 1;
@@ -84,20 +86,20 @@ int main(int argc, char *argv[]) {
 	    strcpy(name, argv[optind]);
     }
 
-    /* Next 10 lines stolen from GNU basename */
+    /* Strip the trailing suffix */
     if (sfx) {
-        char *np;
-        const char *sp;
-        np = name + strlen(name);
-        sp = suffix + strlen(suffix);
+        char *np = name + strlen(name);
+        const char *sp = suffix + strlen(suffix);
 
-        while (np > name && sp > suffix)
-            if (*--np != *--sp)
+        while (np > name && sp > suffix) {
+            if (*--np != *--sp) {
                 return 0;
-        if (np > name)
+            }
+        }
+        if (np > name) {
             *np = '\0';
+        }
     }
-
     printf("%s%s", basename(name), sdn == 0 ? "\n" : "");
     return EXIT_SUCCESS;
 }
