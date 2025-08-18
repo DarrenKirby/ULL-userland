@@ -32,7 +32,7 @@ on OS X and FreeBSD. See notes below...
 at        :: not started
 base64    :: not started
 basename  :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
-cal       :: not started
+cal       :: in progress  # Linux: ?? | OS X: compiles, works | FreeBSD:?? - not all options implemented
 cat       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 cd        :: completed    # Linux: compiles | OS X: compiles | FreeBSD: compiles (But useless on all: read cd.c source)
 chgrp     :: completed    # Linux ?? | OS X: compiles, works | FreeBSD compiles, works
