@@ -20,8 +20,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <unistd.h>
+#include "common.h"
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <utmpx.h>
 #include <time.h>
@@ -33,8 +34,6 @@
 #include <sys/sysinfo.h>
 #endif // __linux__
 
-#include "common.h"
-
 const char *APPNAME = "who";
 
 struct opt_struct {
@@ -45,10 +44,10 @@ static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
 Show all logged in users\n\
 Options:\n\
-    -b, --boot\t\tprint system boot time\n\
-    -a, --all\t\tprint boot time and users\n\
-    -h, --help\t\tdisplay this help\n\
-    -V, --version\tdisplay version information\n\n\
+    -b, --boot\t\t print system boot time\n\
+    -a, --all\t\t print boot time and users\n\
+    -h, --help\t\t display this help\n\
+    -V, --version\t display version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
@@ -58,7 +57,7 @@ void print_boot_time(void) {
     struct sysinfo s_info;
     int error = sysinfo(&s_info);
     if(error != 0) {
-        gen_error("Failed to get uptime\n");
+        fprintf(stderr, "sysinfo failed: %s\n", strerror(errno));
     }
     time_t boot_secs = s_info.uptime;
     time_t current_time = time(NULL);
