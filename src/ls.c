@@ -300,7 +300,7 @@ int main(const int argc, char *argv[]) {
             printf("%2ld ", (long) buf.st_nlink);
             printf("%s %s ", get_username(buf.st_uid), get_groupname(buf.st_gid));
             (opts.human == 0) ?
-                (void)printf("%6lld ", buf.st_size) :     /* bytes */
+                (void)printf("%6ld ", buf.st_size) :     /* bytes */
                 format(buf.st_size) ;                     /* ie: 16k */
 
             fil = localtime(&buf.st_mtime);
