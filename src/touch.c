@@ -20,7 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-/* TODO: --date, --no-dereference */
+/* TODO: --date, --no-dereference. Check if FreeBSD has utimensat and use that... */
 /* FIXME: -a does not appear to work*/
 
 #include <fcntl.h>
