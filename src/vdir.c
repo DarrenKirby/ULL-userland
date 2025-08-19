@@ -20,13 +20,10 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <unistd.h>
+#include "common.h"
 #include <stddef.h>
-#include <sys/types.h>
 #include <time.h>
 #include <dirent.h>
-
-#include "common.h"
 
 const char *APPNAME = "vdir";
 

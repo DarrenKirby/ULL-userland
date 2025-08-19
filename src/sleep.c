@@ -20,13 +20,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-
-
-
-#include <unistd.h>
 #include "common.h"
-const char *APPNAME = "sleep";
 
+const char *APPNAME = "sleep";
 
 #define MINUTES 60
 #define HOURS 3600

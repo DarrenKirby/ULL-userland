@@ -24,7 +24,6 @@
  *       so use this program with a non-ambiguous
  *       path like: './bin/false' or similar */
 
-
 #include "common.h"
 
 const char *APPNAME = "false";

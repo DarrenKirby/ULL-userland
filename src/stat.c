@@ -21,13 +21,11 @@
  ***************************************************************************/
 
 #include "common.h"
-
 #include <time.h>
-#include <sys/types.h>
 
 #ifdef __linux__
 #include <sys/sysmacros.h>
-#endif // __linux__
+#endif
 
 const char *APPNAME = "stat";
 

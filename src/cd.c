@@ -20,10 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-
 #include "common.h"
-
-#include <unistd.h>
 
 const char *APPNAME = "cd";
 

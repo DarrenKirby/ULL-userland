@@ -21,14 +21,7 @@
  ***************************************************************************/
 
 #include "common.h"
-
-/* Needed for nftw() */
-//#ifdef __linux__
-//#define _XOPEN_SOURCE 500
-//#endif
-
 #include <ftw.h>
-#include <unistd.h>
 
 const char *APPNAME = "chgrp";
 

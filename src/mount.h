@@ -20,18 +20,20 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-
 #ifndef _MOUNT_H
 #define _MOUNT_H
 
 #include <stdio.h>
+#ifdef __linux__
 #include <sys/statfs.h>      /* for statfs struct */
 #include <linux/limits.h>    /* for PATH_MAX */
+#endif
 #include <errno.h>           /* for perror() */
 #include <stdlib.h>          /* for EXIT_FAILURE */
 #include <string.h>          /* for strncpy */
 #include <unistd.h>          /* for access() */
 #include <sys/stat.h>        /* for stat   */
+#include <sys/syslimits.h>
 #include <sys/types.h>       /*  "    "    */
 
 #define ERROR  -1

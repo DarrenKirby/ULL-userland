@@ -22,8 +22,8 @@
 
 /* TODO: implement (at minimum) -i, -R, -v, -f */
 
-#include <fcntl.h>
 #include "common.h"
+#include <fcntl.h>
 
 const char *APPNAME = "cp";
 

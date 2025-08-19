@@ -21,9 +21,7 @@
  ***************************************************************************/
 
 #include "common.h"
-
 #include <ftw.h>
-#include <unistd.h>
 
 const char *APPNAME = "chown";
 

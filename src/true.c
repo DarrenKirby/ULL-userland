@@ -22,7 +22,6 @@
 
 #include "common.h"
 
-
 const char *APPNAME = "true";
 
 void show_help(void) {

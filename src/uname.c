@@ -20,19 +20,11 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-/* OS-sniffing macros gleaned from http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system */
-
-
-
-
-
+#include "common.h"
 #include <sys/utsname.h>
-
 #ifndef __linux__
 #include <sys/sysctl.h>
 #endif
-
-#include "common.h"
 
 const char *APPNAME = "uname";
 
@@ -135,8 +127,6 @@ int main(int argc, char *argv[]) {
                 exit(EXIT_FAILURE);
         }
     }
-
-
 
     struct cpuinfo {
         char vendor[50];

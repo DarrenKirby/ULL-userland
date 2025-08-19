@@ -20,8 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-
 #include "common.h"
+
 const char *APPNAME = "wc";
 
 /* Our count struct is used both for storing boolean

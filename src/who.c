@@ -21,9 +21,6 @@
  ***************************************************************************/
 
 #include "common.h"
-
-#include <unistd.h>
-#include <stdlib.h>
 #include <utmpx.h>
 #include <time.h>
 

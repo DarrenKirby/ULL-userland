@@ -20,12 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-
-//#define _POSIX_C_SOURCE 200112L
-
-//#ifndef _XOPEN_SOURCE
-//#define _XOPEN_SOURCE 700
-//#endif
+#include "common.h"
 
 #if defined(__APPLE__) && defined(__MACH__) || defined(__FreeBSD__)
 #include <sys/param.h>
@@ -34,8 +29,6 @@
 #else
 #include "mount.h"
 #endif
-
-#include "common.h"
 
 const char *APPNAME = "df";
 

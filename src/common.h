@@ -23,7 +23,7 @@
 #ifndef _MY_COMMON_H
 #define _MY_COMMON_H
 
-#ifndef __FreeBSD__
+#ifdef __linux__
 #define _POSIX_C_SOURCE 200809L
 #endif
 
@@ -46,7 +46,6 @@
 #include <libgen.h>
 #include <getopt.h>
 
-
 /* Version information */
 #define APPSUITE   "ull-userland"
 #define APPVERSION "0.3"
@@ -59,7 +58,6 @@ extern const char *APPNAME;
 #define st_ctim      st_ctimespec
 #define st_birthtim  st_birthtimespec
 #endif
-
 
 /* determine portable max path length */
 #ifdef _XOPEN_PATH_MAX

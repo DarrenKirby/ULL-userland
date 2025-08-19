@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 #include "common.h"
+
 const char *APPNAME = "mkdir";
 
 static void show_help(void) {
