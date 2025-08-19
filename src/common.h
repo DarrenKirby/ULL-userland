@@ -20,14 +20,16 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef _MY_COMMON_H
+#define _MY_COMMON_H
+
+#ifndef __FreeBSD__
 #define _POSIX_C_SOURCE 200809L
+#endif
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
-
-#ifndef _MY_COMMON_H
-#define _MY_COMMON_H
 
 /* includes required for functions defined in _this_ file*/
 
