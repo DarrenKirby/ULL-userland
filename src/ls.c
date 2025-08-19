@@ -20,7 +20,6 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-
 #include "common.h"
 
 #include <term.h>
@@ -300,7 +299,11 @@ int main(const int argc, char *argv[]) {
             printf("%2ld ", (long) buf.st_nlink);
             printf("%s %s ", get_username(buf.st_uid), get_groupname(buf.st_gid));
             (opts.human == 0) ?
+#ifdef __linux__
                 (void)printf("%6ld ", buf.st_size) :     /* bytes */
+#else
+                (void)printf("%6lld ", buf.st_size) :     /* bytes */
+#endif
                 format(buf.st_size) ;                     /* ie: 16k */
 
             fil = localtime(&buf.st_mtime);
