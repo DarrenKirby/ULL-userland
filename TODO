@@ -32,7 +32,7 @@ on OS X and FreeBSD. See notes below...
 at        :: not started
 base64    :: not started
 basename  :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
-cal       :: in progress  # Linux: compiles, works | OS X: compiles, works | FreeBSD:?? - not all options implemented
+cal       :: in progress  # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works - not all options implemented
 cat       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 cd        :: completed    # Linux: compiles | OS X: compiles | FreeBSD: compiles (But useless on all: read cd.c source)
 chgrp     :: completed    # Linux compiles, works | OS X: compiles, works | FreeBSD compiles, works
@@ -65,7 +65,7 @@ fold      :: not started
 free      :: in progress  # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, flaky
 fuser     :: not started
 groups    :: not started
-head      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: ??
+head      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 hostid    :: not started
 hostname  :: not started
 id        :: not started
@@ -120,7 +120,7 @@ stty      :: not started
 sum       :: not started
 sync      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 tac       :: not started
-tail      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: ??
+tail      :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 talk      :: not started
 tee       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 telnet    :: not started
