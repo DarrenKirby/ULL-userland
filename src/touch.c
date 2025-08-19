@@ -24,11 +24,8 @@
 /* FIXME: -a does not appear to work*/
 
 #include "common.h"
-
 #include <fcntl.h>
-#include <time.h>
 #include <sys/types.h>
-
 
 const char *APPNAME = "touch";
 
@@ -42,11 +39,7 @@ struct opt_struct {
     unsigned int current:1;
 } opts;
 
-#if defined (__linux__)
 struct timespec times[2];
-#else
-struct timeval times[2];
-#endif
 
 static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
@@ -72,17 +65,10 @@ static void to_time(char * r_file) {
             exit(EXIT_FAILURE);
         }
 
-#if defined (__linux__)
         times[0].tv_sec  = buf.st_atim.tv_sec;
         times[0].tv_nsec = buf.st_atim.tv_nsec;
         times[1].tv_sec  = buf.st_mtim.tv_sec;
         times[1].tv_nsec = buf.st_mtim.tv_nsec;
-#else
-        times[0].tv_sec  = buf.st_atim.tv_sec;
-        times[0].tv_usec = (int)buf.st_atim.tv_nsec;
-        times[1].tv_sec  = buf.st_mtim.tv_sec;
-        times[1].tv_usec = (int)buf.st_mtim.tv_nsec;
-#endif
     } else {
         /* for now - just use the current time */
         /* Eventually, we'll parse any arg to --date here and
@@ -152,19 +138,13 @@ int main(const int argc, char *argv[]) {
         if (f_access == 0) {   /* file exists */
             if (opts.current == 1) {
                 if (utimensat(AT_FDCWD, argv[optind], NULL, 0) != 0) {
-                    fprintf(stderr, "utimes failed on '%s': %s\n", argv[optind], strerror(errno));
+                    fprintf(stderr, "utimensat failed on '%s': %s\n", argv[optind], strerror(errno));
                 }
 
             } else {
-#if defined (__linux__)
                 if (utimensat(AT_FDCWD, argv[optind], times, 0) != 0) {
                     fprintf(stderr, "utimes failed on '%s': %s\n", argv[optind], strerror(errno));
                 }
-#else
-                if (utimes(argv[optind], times) != 0) {
-                    fprintf(stderr, "utimes failed on '%s': %s\n", argv[optind], strerror(errno));
-                }
-#endif // defined
             }
         } else { /* file does not exist */
             if (opts.nocreate == 1) {
@@ -180,18 +160,12 @@ int main(const int argc, char *argv[]) {
             close(fd);
             if (opts.current == 1) {
                 if (utimensat(AT_FDCWD, argv[optind], NULL, 0) != 0) {
-                    fprintf(stderr, "utimes failed: %s\n", strerror(errno));
+                    fprintf(stderr, "utimensat failed: %s\n", strerror(errno));
                 }
             } else {
-#if defined (__linux__)
-                    if (utimensat(AT_FDCWD, argv[optind], times, 0) != 0) {
-                        fprintf(stderr, "utimens failed: %s\n", strerror(errno));
-                    }
-#else
-                if (utimes(argv[optind], times) != 0) {
-                    fprintf(stderr, "futimes failed: %s\n", strerror(errno));
+                if (utimensat(AT_FDCWD, argv[optind], times, 0) != 0) {
+                    fprintf(stderr, "utimensat failed: %s\n", strerror(errno));
                 }
-#endif // defined
             }
         }
         optind++;
