@@ -23,10 +23,10 @@
 /* TODO: implement --date */
 
 /* NOTE: The apparent efficacy of this program will differ in regard to
- *       a_time modification between macOS/*BSD and Linux due to their
+ *       a_time modification between *BSD/macOS and Linux due to their
  *       respective kernel's willingness to tolerate logical inconsistencies.
- *       To wit: Linux will let you set a file's atime more recent than
- *       the file's mtime, whereas the *BSD/maxOS kernels enforce logic
+ *       To wit: Linux will let you set a file's mtime more recent than
+ *       the file's atime, whereas the *BSD/macOS kernels enforce logic
  *       that says if the file was modified, it must have been accessed.
  *       The upshot is that some systems may also update the atime even if
  *       you specify (using -m) to only update mtime.
