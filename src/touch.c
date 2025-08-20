@@ -21,7 +21,16 @@
  ***************************************************************************/
 
 /* TODO: implement --date */
-/* FIXME: -m/-r does not appear to work (on MacOS)*/
+
+/* NOTE: The apparent efficacy of this program will differ in regard to
+ *       a_time modification between macOS/*BSD and Linux due to their
+ *       respective kernel's willingness to tolerate logical inconsistencies.
+ *       To wit: Linux will let you set a file's atime more recent than
+ *       the file's mtime, whereas the *BSD/maxOS kernels enforce logic
+ *       that says if the file was modified, it must have been accessed.
+ *       The upshot is that some systems may also update the atime even if
+ *       you specify (using -m) to only update mtime.
+ */
 
 #include "common.h"
 #include <fcntl.h>
@@ -57,18 +66,25 @@ Report bugs to <bulliver@gmail.com>\n", APPNAME);
 
 static void to_time(char * r_file) {
     if (opts.reference == 1) {
-        /* get timestamp from reference file */
         struct stat buf;
 
         if (stat(r_file, &buf) == -1) {
             fprintf(stderr, "stat failed on '%s'\n", r_file);
             exit(EXIT_FAILURE);
         }
-
+        /* get timestamp from reference file */
         times[0].tv_sec  = buf.st_atim.tv_sec;
         times[0].tv_nsec = buf.st_atim.tv_nsec;
         times[1].tv_sec  = buf.st_mtim.tv_sec;
         times[1].tv_nsec = buf.st_mtim.tv_nsec;
+
+        if (opts.access) {
+            times[1].tv_nsec = UTIME_OMIT;
+        }
+        if (opts.modification) {
+            times[0].tv_nsec = UTIME_OMIT;
+        }
+
     } else {
         /* Eventually, we'll parse any arg to --date here and
          * pack it in the times struct */
@@ -79,10 +95,10 @@ static void to_time(char * r_file) {
         times[0].tv_sec = 0;
         times[1].tv_sec = 0;
 
-        if (opts.access == 1) {
+        if (opts.access) {
             times[0].tv_nsec = UTIME_NOW;
             times[1].tv_nsec = UTIME_OMIT;
-        } else if (opts.modification == 1) {
+        } else if (opts.modification) {
             times[0].tv_nsec = UTIME_OMIT;
             times[1].tv_nsec = UTIME_NOW;
         } else {
@@ -95,20 +111,20 @@ static void to_time(char * r_file) {
 int main(const int argc, char *argv[]) {
 
     const struct option long_opts[] = {
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {"access", 0, NULL, 'a'},
-        {"modification", 0, NULL, 'm'},
-        {"nocreate", 0, NULL, 'c'},
-        {"no-dereference", 0, NULL, 'n'},
-        {"date", required_argument, NULL, 'd'},
-        {"reference", required_argument, NULL, 'r'},
-        {NULL,0,NULL,0}
+        {"help", 0, nullptr, 'h'},
+        {"version", 0, nullptr, 'V'},
+        {"access", 0, nullptr, 'a'},
+        {"modification", 0, nullptr, 'm'},
+        {"nocreate", 0, nullptr, 'c'},
+        {"no-dereference", 0, nullptr, 'n'},
+        {"date", required_argument, nullptr, 'd'},
+        {"reference", required_argument, nullptr, 'r'},
+        {nullptr,0,nullptr,0}
     };
 
     int opt;
     char ref_file[PATHMAX];
-    while ((opt = getopt_long(argc, argv, "Vhacmr:d:", long_opts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "Vhancmr:d:", long_opts, nullptr)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
@@ -121,9 +137,17 @@ int main(const int argc, char *argv[]) {
                 exit(EXIT_SUCCESS);
             case 'a':
                 opts.access = 1;
+                /* mutually exclusive */
+                if (opts.modification) {
+                    opts.modification = 0;
+                }
                 break;
             case 'm':
                 opts.modification = 1;
+                /* mutually exclusive */
+                if (opts.access) {
+                    opts.access = 0;
+                }
                 break;
             case 'c':
                 opts.nocreate = 1;
