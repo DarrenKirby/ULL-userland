@@ -24,7 +24,7 @@
 
 const char *APPNAME =  "";
 
-struct optstruct {
+struct opt_struct {
 } opts;
 
 static void show_help(void) {
