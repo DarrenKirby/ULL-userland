@@ -20,12 +20,11 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-/* TODO: --date, --no-dereference. Check if FreeBSD has utimensat and use that... */
-/* FIXME: -a does not appear to work*/
+/* TODO: implement --date */
+/* FIXME: -m/-r does not appear to work (on MacOS)*/
 
 #include "common.h"
 #include <fcntl.h>
-#include <sys/types.h>
 
 const char *APPNAME = "touch";
 
@@ -36,12 +35,13 @@ struct opt_struct {
     unsigned int no_dereference:1;
     unsigned int date:1;
     unsigned int reference:1;
-    unsigned int current:1;
-} opts;
+} opts = {.access = 0, .modification = 0,
+          .nocreate = 0, .reference = 0,
+          .date = 0, .no_dereference = 0};
 
 struct timespec times[2];
 
-static void show_help(void) {
+void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
 Update timestamp or create empty file\n\n\
 Options:\n\
@@ -70,18 +70,29 @@ static void to_time(char * r_file) {
         times[1].tv_sec  = buf.st_mtim.tv_sec;
         times[1].tv_nsec = buf.st_mtim.tv_nsec;
     } else {
-        /* for now - just use the current time */
         /* Eventually, we'll parse any arg to --date here and
          * pack it in the times struct */
-        ;
+
+        /* These fields should be ignored, but the utimensat
+         * manpage references a bug in old Linux kernel versions
+         * that will error if the values are not set to 0 */
+        times[0].tv_sec = 0;
+        times[1].tv_sec = 0;
+
+        if (opts.access == 1) {
+            times[0].tv_nsec = UTIME_NOW;
+            times[1].tv_nsec = UTIME_OMIT;
+        } else if (opts.modification == 1) {
+            times[0].tv_nsec = UTIME_OMIT;
+            times[1].tv_nsec = UTIME_NOW;
+        } else {
+            times[0].tv_nsec = UTIME_NOW;
+            times[1].tv_nsec = UTIME_NOW;
+        }
     }
 }
 
 int main(const int argc, char *argv[]) {
-    int opt;
-    /* use the current time by default */
-    opts.current = 1;
-    char ref_file[PATHMAX];
 
     const struct option long_opts[] = {
         {"help", 0, NULL, 'h'},
@@ -91,12 +102,13 @@ int main(const int argc, char *argv[]) {
         {"nocreate", 0, NULL, 'c'},
         {"no-dereference", 0, NULL, 'n'},
         {"date", required_argument, NULL, 'd'},
-        {"time", required_argument, NULL, 't'},
         {"reference", required_argument, NULL, 'r'},
         {NULL,0,NULL,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "Vhacmr:t:d:", long_opts, NULL)) != -1) {
+    int opt;
+    char ref_file[PATHMAX];
+    while ((opt = getopt_long(argc, argv, "Vhacmr:d:", long_opts, NULL)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
@@ -108,10 +120,10 @@ int main(const int argc, char *argv[]) {
                 show_help();
                 exit(EXIT_SUCCESS);
             case 'a':
-                opts.modification = 0;
+                opts.access = 1;
                 break;
             case 'm':
-                opts.access = 0;
+                opts.modification = 1;
                 break;
             case 'c':
                 opts.nocreate = 1;
@@ -121,8 +133,7 @@ int main(const int argc, char *argv[]) {
                 break;
             case 'r':
                 opts.reference = 1;
-                opts.current = 0;
-                strncpy(ref_file, optarg, PATHMAX-1);
+                snprintf(ref_file, sizeof(ref_file), "%s", optarg);
                 break;
             default:
                 show_help();
@@ -130,21 +141,16 @@ int main(const int argc, char *argv[]) {
         }
     }
 
-    /* populate the time struct */
+    /* Populate the reference time struct */
     to_time(ref_file);
+    /* Are we dereferencing symlinks? */
+    const int dr_flag = opts.no_dereference == 1 ? AT_SYMLINK_NOFOLLOW : 0;
 
     while (optind < argc) {
         const int f_access = access(argv[optind], F_OK);
         if (f_access == 0) {   /* file exists */
-            if (opts.current == 1) {
-                if (utimensat(AT_FDCWD, argv[optind], NULL, 0) != 0) {
-                    fprintf(stderr, "utimensat failed on '%s': %s\n", argv[optind], strerror(errno));
-                }
-
-            } else {
-                if (utimensat(AT_FDCWD, argv[optind], times, 0) != 0) {
-                    fprintf(stderr, "utimes failed on '%s': %s\n", argv[optind], strerror(errno));
-                }
+            if (utimensat(AT_FDCWD, argv[optind], times, dr_flag) != 0) {
+                fprintf(stderr, "utimes failed on '%s': %s\n", argv[optind], strerror(errno));
             }
         } else { /* file does not exist */
             if (opts.nocreate == 1) {
@@ -158,14 +164,8 @@ int main(const int argc, char *argv[]) {
                 fprintf(stderr, "open failed on '%s': %s\n", argv[optind], strerror(errno));
             }
             close(fd);
-            if (opts.current == 1) {
-                if (utimensat(AT_FDCWD, argv[optind], NULL, 0) != 0) {
-                    fprintf(stderr, "utimensat failed: %s\n", strerror(errno));
-                }
-            } else {
-                if (utimensat(AT_FDCWD, argv[optind], times, 0) != 0) {
-                    fprintf(stderr, "utimensat failed: %s\n", strerror(errno));
-                }
+            if (utimensat(AT_FDCWD, argv[optind], times, dr_flag) != 0) {
+                fprintf(stderr, "utimensat failed: %s\n", strerror(errno));
             }
         }
         optind++;
