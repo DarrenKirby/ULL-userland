@@ -73,7 +73,17 @@ static void stat_file(char *filename, const int follow_links) {
         }
     }
 
-    printf("  File: '%s'\n", filename);
+    if ((buf.st_mode & S_IFMT) == S_IFLNK) {
+        char link_target[PATHMAX];
+        if (readlink(filename, link_target, PATHMAX) == -1) {
+            fprintf(stderr, "readlink failed: %s\n", strerror(errno));
+            printf("Link target unknown\n");
+            printf("  File: '%s'\n", filename);
+        }
+        printf("  File: '%s' -> %s\n", filename, link_target);
+    } else {
+        printf("  File: '%s'\n", filename);
+    }
     printf("  Size: %lld\t\t", (long long) buf.st_size);
     printf("Blocks: %lld\t\t", (long long)buf.st_blocks);
     printf("IO Block: %ld\t\t", (long) buf.st_blksize);
@@ -100,13 +110,13 @@ int main(const int argc, char *argv[]) {
     int follow_links = 0;
 
     const struct option long_opts[] = {
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {"dereference", 0, NULL, 'd'},
-        {NULL,0,NULL,0}
+        {"help", 0, nullptr, 'h'},
+        {"version", 0, nullptr, 'V'},
+        {"dereference", 0, nullptr, 'd'},
+        {nullptr,0,nullptr,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "Vhd", long_opts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "Vhd", long_opts, nullptr)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
