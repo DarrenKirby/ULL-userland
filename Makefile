@@ -1,5 +1,7 @@
 CC ?= gcc
-CFLAGS ?= -Wall -Wextra -Wundef -Wshadow -Wpedantic -Wno-unused-parameter -std=gnu2x
+
+CFLAGS       = -Wall -Wextra -Werror -Wdeprecated-declarations -O2 -std=gnu2x
+CFLAGS_DEBUG = -Wall -Wextra -Werror -g -O0 -std=gnu2x -fsanitize=address -fno-omit-frame-pointer
 LDFLAGS ?=
 
 PKG_CONFIG ?= pkg-config
@@ -40,7 +42,7 @@ LDFLAGS_nl = -lm
 dist: $(distdir).tar.gz
 
 $(distdir).tar.gz: $(distdir)
-	tar chof - $(distdir) | gzip -9 -c > $@
+	tar chof - $(distdir)| gzip -9 -c > $@
 	rm -rf $(distdir)
 
 $(distdir): FORCE
