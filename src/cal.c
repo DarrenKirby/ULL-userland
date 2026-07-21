@@ -2,7 +2,7 @@
  *   cal - display calendar for a given year/month                         *
  *                                                                         *
  *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
- *   bulliver@gmail.com                                                    *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -22,34 +22,38 @@
 
 /* TODO: implement '-3' option to provide context for current month */
 
-#include "common.h"
 #include <time.h>
+#include <getopt.h>
 
-const char *APPNAME =  "cal";
+#include "common.h"
 
-static void show_help(void) {
+
+static const char *APP_NAME =  "cal";
+
+static void show_help() {
     printf("Usage: %s [year] [month]\n\n\
 Print a calendar for the specified month or year\n\n\
 Options:\n\
-    -h, --help\t\tdisplay this help\n\
-    -V, --version\tdisplay version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+    -3, --context\t\t show previous and next month's calendars for context\n\
+    -h, --help\t\t display this help\n\
+    -V, --version\t display version information\n\n\
+Report bugs to <bulliver@gmail.com>\n", APP_NAME);
 }
 
 /* Given an arbitrary date, return the day of week */
-int weekday_sakamoto(int y, const int m, const int d) {
+static int weekday_sakamoto(int y, const int m, const int d) {
     static int t[] = {0,3,2,5,0,3,5,1,4,6,2,4};
     y -= m < 3;
     return (y + y/4 - y/100 + y/400 + t[m-1] + d) % 7;
 }
 
 /* Determine if given year is leap or common */
-int is_leap(const int y) {
+static int is_leap(const int y) {
     return (y % 4 == 0) && ((y % 100 != 0) || (y % 400 == 0));
 }
 
 /* Map from month to number of days in month*/
-int month_len[2][24] = {
+static int month_len[2][24] = {
     {31,28,31,30,31,30,31,31,30,31,30,31}, /* common */
     {31,29,31,30,31,30,31,31,30,31,30,31}  /* leap */
 };
@@ -68,8 +72,8 @@ static const char *month_names[12] = {
  *       days: the number of days in the month
  *        buf: the buffer to build the array in
  * just_month: an int flag which tells if we are just printing a single month */
-void build_month(const int year, const int m, const int start_wd,
-                 const int days, char buf[8][21], const int just_month) {
+static void build_month(const int year, const int m, const int start_wd,
+                        const int days, char buf[8][21], const int just_month) {
     /* fill whole buffer with spaces + terminating NUL */
     for (int r=0; r<8; r++) {
         memset(buf[r], ' ', 20);
@@ -84,7 +88,7 @@ void build_month(const int year, const int m, const int start_wd,
         snprintf(header, sizeof(header), "%s", month_names[m]);
     }
     int len = (int)strlen(header);
-    int start = (20 - len) / 2;
+    const int start = (20 - len) / 2;
     memcpy(buf[0] + start, header, len);
 
     /* Row 1: weekday labels */
@@ -94,16 +98,16 @@ void build_month(const int year, const int m, const int start_wd,
     int row = 2;
     int col = start_wd * 3;   /* 3 chars per weekday slot */
 
-    for (int d=1; d<=days; d++) {
-        buf[row][col]     = (d < 10) ? ' ' : '0' + d/10;
-        buf[row][col + 1] = '0' + (d % 10);
+    for (int d = 1; d <= days; d++) {
+        buf[row][col] = (d < 10) ? ' ' : (char)('0' + d/10);
+        buf[row][col + 1] = (char)('0' + (d % 10));
         /* col+2 already a space from memset() */
         col += 3;
         if (col >= 21) { col = 0; row++; }
     }
 }
 
-int print_year(const int year) {
+static int print_year(const int year) {
     /* Start with the year header */
     printf("                               %i\n", year);
     /* Loop once for each 'season' */
@@ -134,7 +138,7 @@ int print_year(const int year) {
     return EXIT_SUCCESS;
 }
 
-int print_month(const int year, const int month) {
+static int print_month(const int year, const int month) {
     /* Initialize empty month array */
     char month_array[8][21];
     /* Determine how many days in the month */
@@ -145,7 +149,7 @@ int print_month(const int year, const int month) {
     build_month(year, month, start_day, n_days, month_array, 1);
 
     /* Figure out today's date */
-    const time_t now = time(NULL);
+    const time_t now = time(nullptr);
     const struct tm *t = localtime(&now);
     const int today_y = t->tm_year + 1900;
     const int today_m = t->tm_mon;   /* already zero-indexed */
@@ -166,11 +170,11 @@ int print_month(const int year, const int month) {
             if (c % 3 == 0 && isdigit(month_array[r][c])) {
                 int day;
                 if (isdigit(month_array[r][c+1])) {
-                    char buf[3] = {month_array[r][c], month_array[r][c+1], '\0'};
-                    day = atoi(buf);
+                    const char buf[3] = {month_array[r][c], month_array[r][c+1], '\0'};
+                    day = (int)strtol(buf, nullptr, 10);
                 } else {
-                    char buf[2] = {month_array[r][c], '\0'};
-                    day = atoi(buf);
+                    const char buf[2] = {month_array[r][c], '\0'};
+                    day = (int)strtol(buf, nullptr, 10);
                 }
 
                 if (highlight && day == today_d) {
@@ -191,36 +195,41 @@ int print_month(const int year, const int month) {
 
 int main(const int argc, char *argv[]) {
     int opt;
+    int context = 0;
 
     const struct option long_opts[] = {
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {NULL,0,NULL,0}
+        {"context", 0, nullptr, '3'},
+        {"help", 0, nullptr, 'h'},
+        {"version", 0, nullptr, 'V'},
+        {nullptr,0,nullptr,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "Vhnu", long_opts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "Vhnu3", long_opts, nullptr)) != -1) {
         switch(opt) {
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'h':
                 show_help();
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
+            case '3':
+                context = 1;
+                break;
             default:
                 show_help();
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
         }
     }
-    int args = argc - optind;
+    const int args = argc - optind;
     int year, month;
     int print_mon;
 
     if (args == 0) {
         /* no args, use current year and month */
-        const time_t now = time(NULL);
+        const time_t now = time(nullptr);
         const struct tm *t = localtime(&now);
 
         year = t->tm_year + 1900;
@@ -228,39 +237,43 @@ int main(const int argc, char *argv[]) {
         print_mon = 1;
     } else if (args == 1) {
         /* one arg: take a year */
-        year = (int)strtol(argv[1], NULL, 10);
+        year = (int)strtol(argv[1], nullptr, 10);
         /* month is arbitrary - value not needed */
         month = 1;
         if (year < 1000 || year > 9999) {
             fprintf(stderr, "%s: bad argument: %s%s%s. Year must be 4-digit integer.\n",
-                APPNAME, ANSI_RED_B, argv[1], ANSI_RESET);
+                APP_NAME, ANSI_RED_B, argv[1], ANSI_RESET);
             return EXIT_FAILURE;
         }
         print_mon = 0;
     } else if (args == 2) {
         /* two args: take a month and a year */
-        month = (int)strtol(argv[1], NULL, 10);
-        year = (int)strtol(argv[2], NULL, 10);
+        month = (int)strtol(argv[1], nullptr, 10);
+        year = (int)strtol(argv[2], nullptr, 10);
         if (year < 1000 || year > 9999) {
             fprintf(stderr, "%s: bad argument: %s%s%s. Year must be 4-digit integer.\n",
-                APPNAME, ANSI_RED_B, argv[1], ANSI_RESET);
+                APP_NAME, ANSI_RED_B, argv[1], ANSI_RESET);
             return EXIT_FAILURE;
         }
         if (month < 1 || month > 12) {
             fprintf(stderr, "%s: bad argument: %s%s%s. Month must be 1-12 inclusive.\n)",
-                APPNAME, ANSI_RED_B, argv[1], ANSI_RESET);
+                APP_NAME, ANSI_RED_B, argv[1], ANSI_RESET);
             return EXIT_FAILURE;
         }
         print_mon = 1;
     } else {
         /* three or more args: feel the shame */
-        fprintf(stderr, "%s: bad arguments.\n", APPNAME);
+        fprintf(stderr, "%s: bad arguments.\n", APP_NAME);
         show_help();
         return EXIT_FAILURE;
     }
 
     /* subtract 1 from month arg for zero-indexing */
     month -= 1;
+
+    if (context) {
+        printf("Not yet implemented\n");
+    }
 
     if (print_mon) {
         /* We're just printing a single month */

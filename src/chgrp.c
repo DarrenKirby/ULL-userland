@@ -1,8 +1,8 @@
 /***************************************************************************
  *   chgrp.c - change group ownership of file                              *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,22 +20,28 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fts.h>
+#include <getopt.h>
+
 #include "common.h"
-#include <ftw.h>
 
-const char *APPNAME = "chgrp";
+#define MAX_GROUP_LEN 32
 
-struct group *grp_buf;
-char to_grp[FILEMAX];
 
-struct opt_struct {
-    int no_dereference;
-    int recursive;
-    int verbose;
+static const char *APP_NAME = "chgrp";
+
+static struct group *grp_buf;
+static char *to_grp;
+
+static struct {
+    bool no_dereference;
+    bool recursive;
+    bool verbose;
 } opts;
 
-
-static void show_help(void) {
+static void show_help() {
     printf("Usage: %s [OPTION] group FILE [FILE]...\n\n\
 Change group ownership of file(s)\n\n\
 Options:\n\
@@ -44,107 +50,140 @@ Options:\n\
     -d, --no-dereference\toperate on symbolic links rather than their targets\n\
     -h, --help\t\t\tdisplay this help\n\
     -V, --version\t\tdisplay version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
-int chgrp_recurse(const char *path, const struct stat *stat_ptr, const int type, struct FTW *p_fwt) {
-    if (type == FTW_NS) {
-        fprintf(stderr, "stat failed on `%s' (permissions?)\n", path);
-        return EXIT_FAILURE;
-        /* non-fatal */
+/* Compare function for FTS. */
+static int cmp(const FTSENT **s1, const FTSENT **s2)
+{
+    return strcoll((*s1)->fts_name, (*s2)->fts_name);
+}
+
+static int chgrp_recurse(char *path) {
+    FTSENT *f;
+    char  *argv[] = { path , nullptr };
+
+    const int flags = opts.no_dereference ? FTS_PHYSICAL : FTS_LOGICAL;
+    FTS *tree = fts_open(argv, flags | FTS_NOSTAT, cmp);
+    if (!tree) {
+        fprintf(stderr, "fts_open() failed: %s\n", strerror(errno));
+        return -1;
     }
 
-    if (type == FTW_SL && opts.no_dereference == 1) {
-        if (lchown(path, -1, grp_buf->gr_gid) != 0) {
-            fprintf(stderr, "lchown failed on `%s'\n", path);
+    while ((f = fts_read(tree))) {
+        switch (f->fts_info) {
+        case FTS_DNR:
+            fprintf(stderr, "could not read '%s': %s\n", f->fts_path, strerror(f->fts_errno));
+            continue;
+        case FTS_ERR:
+            fprintf(stderr, "failed on '%s': %s", f->fts_path, strerror(f->fts_errno));
+            /* Intentional fall-through to the continue... */
+        case FTS_DP:
+            continue;
+        default:
+            if (f->fts_info == FTS_SL && opts.no_dereference == 1) {
+                if (lchown(f->fts_path, -1, grp_buf->gr_gid) != 0) {
+                    fprintf(stderr, "lchown failed on '%s'\n", path);
+                }
+            } else {
+                if (chown(f->fts_path, -1, grp_buf->gr_gid) != 0) {
+                    fprintf(stderr, "chown failed on '%s'\n", path);
+                }
+            }
         }
-    } else {
-        if (chown(path, -1, grp_buf->gr_gid) != 0) {
-            fprintf(stderr, "chown failed on `%s'\n", path);
+        if (opts.verbose) {
+            printf("Changed group ownership of '%s' to '%s'\n", f->fts_path, to_grp);
         }
     }
 
-    if (opts.verbose == 1) {
-        printf("Changed group ownership of `%s' to `%s'\n", path, to_grp);
-    }
-    return EXIT_SUCCESS;
+    fts_close(tree);
+    return 0;
 }
 
 int main(const int argc, char *argv[]) {
-    int opt;
-
     const struct option long_opts[] = {
-        {"help",           0, NULL, 'h'},
-        {"version",        0, NULL, 'V'},
-        {"recursive",      0, NULL, 'R'},
-        {"verbose",        0, NULL, 'v'},
-        {"no-dereference", 0, NULL, 'd'},
-        {NULL,0,NULL,0}
+        {"help",           0, nullptr, 'h'},
+        {"version",        0, nullptr, 'V'},
+        {"recursive",      0, nullptr, 'R'},
+        {"verbose",        0, nullptr, 'v'},
+        {"no-dereference", 0, nullptr, 'd'},
+        {nullptr,0,nullptr,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "VhRvd", long_opts, NULL)) != -1) {
+    int opt;
+    while ((opt = getopt_long(argc, argv, "VhRvd", long_opts, nullptr)) != -1) {
         switch(opt) {
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'h':
                 show_help();
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'R':
-                opts.recursive = 1;
+                opts.recursive = true;
                 break;
             case 'v':
-                opts.verbose = 1;
+                opts.verbose = true;
                 break;
             case 'd':
-                opts.no_dereference = 1;
+                opts.no_dereference = true;
                 break;
             default:
                 show_help();
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
                 break;
         }
     }
 
-    strncpy(to_grp, argv[optind], FILEMAX);
+    to_grp = malloc(MAX_GROUP_LEN);
+    if (!to_grp) {
+        fprintf(stderr, "malloc failed\n");
+        return EXIT_FAILURE;
+    }
+    strncpy(to_grp, argv[optind], MAX_GROUP_LEN - 1);
 
     grp_buf = getgrnam(argv[optind]);
     if (grp_buf == NULL) {
         printf("Could not resolve group name: %s", argv[optind]);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
     optind++;
 
-    if (opts.recursive == 1) {
+    if (opts.recursive) {
         /* Status of chgrp calls checked within chgrp_recursive()
          * A failure of any particular file will be noted, but we
          * will continue to run... */
-        if (opts.no_dereference == 1) {
-            nftw(argv[optind], chgrp_recurse, 10, FTW_PHYS);
-        } else {
-            nftw(argv[optind], chgrp_recurse, 10, 0);
+        if (chgrp_recurse(argv[optind]) != 0) {
+            return EXIT_FAILURE;
         }
         return EXIT_SUCCESS;
     }
 
     while (optind < argc) {
-        if (opts.no_dereference == 1) {
+        if (opts.recursive) {
+            /* Status of chgrp calls checked within chgrp_recursive()
+             * A failure of any particular file will be noted, but we
+             * will continue to run... */
+            chgrp_recurse(argv[optind++]);
+            continue;
+        }
+
+        if (opts.no_dereference) {
             if (lchown(argv[optind], -1, grp_buf->gr_gid) != 0) {
                 fprintf(stderr, "lchown failed on `%s'\n", argv[optind]);
             }
-        }else {
+        } else {
             if (chown(argv[optind], -1, grp_buf->gr_gid) != 0) {
-                fprintf(stderr, "chown failed on `%s'\n", argv[optind]);
+                fprintf(stderr, "chown failed on `%s'\n", argv[optind++]);
             }
         }
 
-        if (opts.verbose == 1) {
-            printf("Changed group ownership of `%s' to `%s'\n", argv[optind], to_grp);
+        if (opts.verbose) {
+            printf("Changed group ownership of `%s' to `%s'\n", argv[optind++], to_grp);
         }
-        optind++;
     }
     return EXIT_SUCCESS;
 }

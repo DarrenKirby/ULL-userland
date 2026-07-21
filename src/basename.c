@@ -2,7 +2,7 @@
  *   basename.c - strip directory and suffix from paths/filenames          *
  *                                                                         *
  *   Copyright (C) 2014-2025 by Darren Kirby                               *
- *   bulliver@gmail.com                                                    *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,54 +20,61 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <getopt.h>
+#include <libgen.h>
+
 #include "common.h"
 
-const char *APPNAME = "basename";
 
-static void show_help(void) {
+static const char *APP_NAME = "basename";
+
+static void show_help() {
     printf("Usage: %s PATH\n\
    or: %s [OPTION] [PATH]\n\n\
 Strip leading directories and optional suffix from PATH.\n\n\
 Options:\n\
-    -s, --suffix=SUFFIX\tremove trailing suffix\n\
-    -h, --help\t\t\tdisplay this help\n\
-    -V, --version\t\tdisplay version information\n\n\
+    -s, --suffix=SUFFIX\t remove trailing suffix\n\
+    -h, --help\t\t\t display this help\n\
+    -V, --version\t\t display version information\n\n\
     Examples:\n\
-    \tbasename /usr/bin/sort         Output: 'sort'.\n\
-    \tbasename -s .h include/stdio.h Output: 'stdio'. \n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME, APPNAME);
+    \t basename /usr/bin/sort         Output: 'sort'.\n\
+    \t basename -s .h include/stdio.h Output: 'stdio'. \n\n\
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME, APP_NAME);
 }
 
 int main(const int argc, char *argv[]) {
-    int  opt;
-    char name[PATHMAX];
-    int  sfx = 0;
-    int  sdn = 0;
-    char suffix[PATHMAX];
+    size_t PATH_MAX = get_path_max() + 1;
+    char name[PATH_MAX];
+    char suffix[PATH_MAX];
+    bool sfx = false;
+    bool sdn = false;
 
     const struct option long_opts[] = {
-        {"suffix", required_argument, NULL, 's'},
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {NULL,0,NULL,0}
+        {"suffix", required_argument, nullptr, 's'},
+        {"help", 0, nullptr, 'h'},
+        {"version", 0, nullptr, 'V'},
+        {nullptr,0,nullptr,0}
     };
 
-    while ((opt = getopt_long(argc, argv, "Vs:h", long_opts, NULL)) != -1) {
+    int opt;
+    while ((opt = getopt_long(argc, argv, "Vs:h", long_opts, nullptr)) != -1) {
         switch(opt) {
             case 's':
-                sfx = 1;
-                strncpy(suffix, optarg, PATHMAX - 1); /* leave room in buffer for null byte */
+                sfx = true;
+                strncpy(suffix, optarg, PATH_MAX);
                 break;
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
-                printf("%s compiled on %s at %s\n", strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__, __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
+                printf("%s compiled on %s at %s\n",
+                    strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
+                    __DATE__, __TIME__);
+                return EXIT_SUCCESS;
             case 'h':
                 show_help();
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             default:
                 show_help();
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
         }
     }
 
@@ -76,13 +83,13 @@ int main(const int argc, char *argv[]) {
 
     /* Read path from STDIN */
     if (n_args == 0 || strcmp(argv[optind], "-") == 0) {
-        if (fgets(name, PATHMAX, stdin) == NULL) {
+        if (fgets(name, (int)PATH_MAX, stdin) == NULL) {
             fprintf(stderr, "Error reading stdin\n");
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
-        sdn = 1;
+        sdn = true;
     } else {
-	    strcpy(name, argv[optind]);
+	    strncpy(name, argv[optind], PATH_MAX);
     }
 
     /* Strip the trailing suffix */

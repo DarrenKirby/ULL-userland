@@ -1,8 +1,8 @@
 /***************************************************************************
  *   common.h - includes and functions common to all files                 *
  *                                                                         *
- *   Copyright (C) 2014-2025 by Darren Kirby                               *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014-2026 by Darren Kirby                               *
+ *   darren#dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,36 +20,24 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef _MY_COMMON_H
-#define _MY_COMMON_H
+#ifndef COMMON_H
+#define COMMON_H
 
-#ifdef __linux__
-#define _POSIX_C_SOURCE 200809L
-#endif
-
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-
-/* includes required for functions defined in _this_ file*/
-
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <unistd.h>
 #include <string.h>
 #include <ctype.h>
 #include <pwd.h>
 #include <grp.h>
-#include <libgen.h>
-#include <getopt.h>
+
 
 /* Version information */
-#define APPSUITE   "ull-userland"
-#define APPVERSION "0.3"
-extern const char *APPNAME;
+#define APP_SUITE   "ULL-userland"
+#define APP_VERSION "0.4.1"
 
 /* For OS X */
 #if defined(__APPLE__) && defined(__MACH__)
@@ -60,18 +48,14 @@ extern const char *APPNAME;
 #endif
 
 /* determine portable max path length */
-#ifdef _XOPEN_PATH_MAX
-#define   PATHMAX   _XOPEN_PATH_MAX
-#else
-#define   PATHMAX   255
-#endif
+extern inline size_t get_path_max() {
+    return pathconf(".", _PC_PATH_MAX);
+}
 
 /* determine portable max filename length */
-#ifdef _XOPEN_NAME_MAX
-#define   FILEMAX  _XOPEN_NAME_MAX
-#else
-#define   FILEMAX  255
-#endif
+extern inline size_t get_filename_max() {
+    return pathconf(".", _PC_NAME_MAX);
+}
 
 /*
  * ANSI colour codes
@@ -97,7 +81,7 @@ extern const char *APPNAME;
 
 
 /* Debugging aids */
-int dump_args(int argc, char *argv[]) {
+inline int dump_args(int argc, char *argv[]) {
   printf("argc: %i\n", argc);
     for (int i = 1; i < argc; i++) {
         printf("argv[%i]: %s\n", i, argv[i]);
@@ -106,12 +90,12 @@ int dump_args(int argc, char *argv[]) {
 }
 
 /* trims leading and tailing whitespace from strings */
-char *trim_whitespace(char *str) {
+inline char *trim_whitespace(char *str) {
     size_t len = 0;
     char *frontp = str;
-    char *endp = NULL;
+    char *endp = nullptr;
 
-    if( str == NULL ) { return NULL; }
+    if( str == NULL ) { return nullptr; }
     if( str[0] == '\0' ) { return str; }
 
     len = strlen(str);
@@ -151,8 +135,8 @@ bit information in returned string */
 /* Return 'ls -l' style string for file permissions mask, This is from
  * 'The Linux Programming Interface'
  */
-char *file_perm_str(const mode_t perm, const int flags) {
-    static char str[PERM_STR_SIZE];
+inline char *file_perm_str(const mode_t perm, const int flags) {
+    char str[PERM_STR_SIZE];
     snprintf(str, PERM_STR_SIZE, "%c%c%c%c%c%c%c%c%c",
     (perm & S_IRUSR) ? 'r' : '-', (perm & S_IWUSR) ? 'w' : '-',
     (perm & S_IXUSR) ?
@@ -170,7 +154,7 @@ char *file_perm_str(const mode_t perm, const int flags) {
 }
 
 /* Returns octal permissions of a file/directory */
-int file_perm_oct(const mode_t perm) {
+inline int file_perm_oct(const mode_t perm) {
     int oct_perm = 00;
     (perm & S_ISUID) ? (oct_perm += 04000) : (oct_perm += 00);
     (perm & S_ISGID) ? (oct_perm += 02000) : (oct_perm += 00);
@@ -187,7 +171,7 @@ int file_perm_oct(const mode_t perm) {
     return oct_perm;
 }
 
-char *filetype(const mode_t st_mode, const int flag) {
+inline char *filetype(const mode_t st_mode, const int flag) {
     switch (st_mode & S_IFMT) {
     case S_IFBLK:
         return (flag == 1) ? (char *)"block device" : (char *)"b";
@@ -208,7 +192,7 @@ char *filetype(const mode_t st_mode, const int flag) {
     }
 }
 
-char *get_username(const uid_t uid) {
+inline char *get_username(const uid_t uid) {
     errno = 0;
     const struct passwd *pwd = getpwuid(uid);
 
@@ -222,7 +206,7 @@ char *get_username(const uid_t uid) {
     return pwd->pw_name;
 }
 
-char *get_groupname(const gid_t gid) {
+inline char *get_groupname(const gid_t gid) {
     errno = 0;
     const struct group *grp = getgrgid(gid);
     if (grp == NULL) {
@@ -235,4 +219,4 @@ char *get_groupname(const gid_t gid) {
     return grp->gr_name;
 }
 
-#endif /* _MY_COMMON_H */
+#endif /* COMMON_H */
