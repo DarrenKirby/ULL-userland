@@ -43,41 +43,41 @@ static void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
     Print certain system information. With no OPTION, same as -s.\n\n\
 Options:\n\
-    -a, --all\t\t\tprint all information, in the following order:\n\
-    -s, --kernel-name\t\tprint the kernel name\n\
-    -n, --nodename\t\tprint the network node hostname\n\
-    -r, --kernel-release\tprint the kernel release\n\
-    -v, --kernel-version\tprint the kernel version\n\
-    -m, --machine\t\tprint the machine hardware name\n\
-    -p, --processor\t\tprint the processor type or 'unknown'\n\
-    -i, --hardware-platform\tprint the hardware platform or 'unknown'\n\
-    -o, --operating-system\tprint the operating system\n\n\
-    -h, --help\t\tdisplay this help\n\
-    -V, --version\tdisplay version information\n\n\
+    -a, --all\t\t\t print all information, in the following order:\n\
+    -s, --kernel-name\t\t print the kernel name\n\
+    -n, --nodename\t\t print the network node hostname\n\
+    -r, --kernel-release\t print the kernel release\n\
+    -v, --kernel-version\t print the kernel version\n\
+    -m, --machine\t\t print the machine hardware name\n\
+    -p, --processor\t\t print the processor type or 'unknown'\n\
+    -i, --hardware-platform\t print the hardware platform or 'unknown'\n\
+    -o, --operating-system\t print the operating system\n\n\
+    -h, --help\t\t display this help\n\
+    -V, --version\t display version information\n\n\
 Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     int opt;
 
-    struct option longopts[] = {
-        {"all", 0, NULL, 'a'},
-        {"kernel-name", 0, NULL, 's'},
-        {"nodename", 0, NULL, 'n'},
-        {"kernel-release", 0, NULL, 'r'},
-        {"kernel-version", 0, NULL, 'v'},
-        {"machine", 0, NULL, 'm'},
-        {"processor", 0, NULL, 'p'},
-        {"hardware-platform", 0, NULL, 'i'},
-        {"operating-system", 0, NULL, 'o'},
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {0,0,0,0}
+    const struct option long_opts[] = {
+        {"all", 0, nullptr, 'a'},
+        {"kernel-name", 0, nullptr, 's'},
+        {"nodename", 0, nullptr, 'n'},
+        {"kernel-release", 0, nullptr, 'r'},
+        {"kernel-version", 0, nullptr, 'v'},
+        {"machine", 0, nullptr, 'm'},
+        {"processor", 0, nullptr, 'p'},
+        {"hardware-platform", 0, nullptr, 'i'},
+        {"operating-system", 0, nullptr, 'o'},
+        {"help", 0, nullptr, 'h'},
+        {"version", 0, nullptr, 'V'},
+        {nullptr,0,nullptr,0}
     };
 
     struct packed_flags optflags = { 0,0,0,0,0,0,0,0 };
 
-    while ((opt = getopt_long(argc, argv, "snrvmpioaVh", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "snrvmpioaVh", long_opts, nullptr)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
                 show_help();
                 exit(EXIT_SUCCESS);
             case 'a':
-                optflags.s = 1;     /* all of the below */
+                optflags.s = 1;     /* all the below */
                 optflags.n = 1;
                 optflags.r = 1;
                 optflags.v = 1;
@@ -128,13 +128,13 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    struct cpuinfo {
+    struct cpu_info {
         char vendor[50];
         char name[50];
     };
 
 #if defined (__linux__)
-    struct cpuinfo cpu;
+    struct cpu_info cpu;
 
     char *line = NULL;
     size_t len = 0;

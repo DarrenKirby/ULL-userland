@@ -95,7 +95,7 @@ static int print_uptime(void) {
     }
 
     const time_t boot_sec = boot_time.tv_sec;
-    const time_t current_sec = time(NULL);
+    const time_t current_sec = time(nullptr);
     uptime_in_seconds = (long)difftime(current_sec, boot_sec);
 
     /* Get load average *BSD */
@@ -143,18 +143,18 @@ static int print_uptime(void) {
 
 static void showHelp(void) {
     printf("Usage: %s [-V, --version] [-h, --help]\n\n\
-    -V, --version\tdisplay version\n \
-    -h, --help\t\tdisplay this help\n\n \
-    Report bugs to <bulliver@gmail.com>\n", APPNAME);
+    -V, --version\t display version\n\
+    -h, --help\t\t display this help\n\n\
+Report bugs to <bulliver@gmail.com>\n", APPNAME);
 }
 
 int main(const int argc, char *argv[]) {
     int opt;
 
     const struct option long_opts[] = {
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {NULL,0,NULL,0}
+        {"help", 0, nullptr, 'h'},
+        {"version", 0, nullptr, 'V'},
+        {nullptr,0,nullptr,0}
     };
 
     while ((opt = getopt_long(argc, argv, "Vh", long_opts, NULL)) != -1) {

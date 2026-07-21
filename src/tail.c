@@ -131,13 +131,13 @@ int main(const int argc, char *argv[]) {
     int opt;
 
     const struct option long_opts[] = {
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {"lines", required_argument, NULL, 'n'},
-        {"bytes", required_argument, NULL, 'b'},
-        {"quiet", 0, NULL, 'q'},
-        {"verbose", 0, NULL, 'v'},
-        {NULL,0,NULL,0}
+        {"help", 0, nullptr, 'h'},
+        {"version", 0, nullptr, 'V'},
+        {"lines", required_argument, nullptr, 'n'},
+        {"bytes", required_argument, nullptr, 'b'},
+        {"quiet", 0, nullptr, 'q'},
+        {"verbose", 0, nullptr, 'v'},
+        {nullptr,0,nullptr,0}
     };
 
     /* defaults */
@@ -147,7 +147,7 @@ int main(const int argc, char *argv[]) {
     opts.quiet = 0;
     opts.verbose = 0;
 
-    while ((opt = getopt_long(argc, argv, "Vhn:b:qv", long_opts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "Vhn:b:qv", long_opts, nullptr)) != -1) {
       switch (opt) {
       case 'V':
         printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
@@ -169,12 +169,12 @@ int main(const int argc, char *argv[]) {
       case 'n':
         opts.lines = 1;
         opts.bytes = 0;
-        n_units = strtol(optarg, NULL, 10);
+        n_units = strtol(optarg, nullptr, 10);
         break;
       case 'b':
         opts.lines = 0;
         opts.bytes = 1;
-        n_units = strtol(optarg, NULL, 10);
+        n_units = strtol(optarg, nullptr, 10);
         break;
       default:
         show_help();

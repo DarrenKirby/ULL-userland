@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    char pathbuf[PATHMAX + 1]; // account for null byte
+    char pathbuf[PATHMAX + 1];
     char *path = pathbuf;
 
     if (argc == 1) {
