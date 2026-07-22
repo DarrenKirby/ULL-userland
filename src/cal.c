@@ -1,7 +1,7 @@
 /***************************************************************************
  *   cal - display calendar for a given year/month                         *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
+ *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
  *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -198,10 +198,10 @@ int main(const int argc, char *argv[]) {
     int context = 0;
 
     const struct option long_opts[] = {
-        {"context", 0, nullptr, '3'},
-        {"help", 0, nullptr, 'h'},
-        {"version", 0, nullptr, 'V'},
-        {nullptr,0,nullptr,0}
+        {.name = "context", .has_arg = 0, .flag = nullptr, .val = '3'},
+        {.name = "help",    .has_arg = 0, .flag = nullptr, .val = 'h'},
+        {.name = "version", .has_arg = 0, .flag = nullptr, .val = 'V'},
+        {.name = nullptr,   .has_arg = 0, .flag = nullptr, .val = 0}
     };
 
     while ((opt = getopt_long(argc, argv, "Vhnu3", long_opts, nullptr)) != -1) {

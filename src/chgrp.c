@@ -39,7 +39,7 @@ static struct {
     bool no_dereference;
     bool recursive;
     bool verbose;
-} opts;
+} opts = {.no_dereference = false, .recursive = false, .verbose = false};
 
 static void show_help() {
     printf("Usage: %s [OPTION] group FILE [FILE]...\n\n\
@@ -102,12 +102,12 @@ static int chgrp_recurse(char *path) {
 
 int main(const int argc, char *argv[]) {
     const struct option long_opts[] = {
-        {"help",           0, nullptr, 'h'},
-        {"version",        0, nullptr, 'V'},
-        {"recursive",      0, nullptr, 'R'},
-        {"verbose",        0, nullptr, 'v'},
-        {"no-dereference", 0, nullptr, 'd'},
-        {nullptr,0,nullptr,0}
+        {.name = "help", .has_arg = no_argument, .flag = nullptr, .val = 'h'},
+        {.name = "version", .has_arg = no_argument, .flag = nullptr, .val = 'V'},
+        {.name = "recursive", .has_arg = no_argument, .flag = nullptr, .val = 'R'},
+        {.name = "verbose", .has_arg = no_argument, .flag = nullptr, .val = 'v'},
+        {.name = "no-dereference", .has_arg = no_argument, .flag = nullptr, .val = 'd'},
+        {.name = nullptr, .has_arg = 0, .flag = nullptr, .val = 0}
     };
 
     int opt;

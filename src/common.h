@@ -2,7 +2,7 @@
  *   common.h - includes and functions common to all files                 *
  *                                                                         *
  *   Copyright (C) 2014-2026 by Darren Kirby                               *
- *   darren#dragonbyte.ca                                                  *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -47,12 +47,12 @@
 #define st_birthtim  st_birthtimespec
 #endif
 
-/* determine portable max path length */
+/* Determine portable, local max path length. */
 extern inline size_t get_path_max() {
     return pathconf(".", _PC_PATH_MAX);
 }
 
-/* determine portable max filename length */
+/* Determine portable, local max filename length. */
 extern inline size_t get_filename_max() {
     return pathconf(".", _PC_NAME_MAX);
 }
@@ -102,26 +102,25 @@ inline char *trim_whitespace(char *str) {
     endp = str + len;
 
     /* Move the front and back pointers to address the first non-whitespace
-     * characters from each end.
-     */
-    while( isspace(*frontp) ) { ++frontp; }
-    if( endp != frontp ) {
-        while( isspace(*(--endp)) && endp != frontp ) {}
+     * characters from each end. */
+    while (isspace(*frontp)) { ++frontp; }
+    if (endp != frontp) {
+        while (isspace(*(--endp)) && endp != frontp) {}
     }
 
-    if( str + len - 1 != endp )
-            *(endp + 1) = '\0';
-    else if( frontp != str &&  endp == frontp )
-            *str = '\0';
+    if (str + len - 1 != endp) {
+        *(endp + 1) = '\0';
+    } else if (frontp != str &&  endp == frontp) {
+        *str = '\0';
+    }
 
     /* Shift the string so that it starts at str so that if it's dynamically
      * allocated, we can still free it on the returned pointer.  Note the reuse
-     * of endp to mean the front of the string buffer now.
-     */
+     * of endp to mean the front of the string buffer now. */
     endp = str;
-    if( frontp != str ) {
-            while( *frontp ) { *endp++ = *frontp++; }
-            *endp = '\0';
+    if (frontp != str) {
+        while (*frontp) { *endp++ = *frontp++; }
+        *endp = '\0';
     }
     return str;
 }
@@ -133,10 +132,13 @@ bit information in returned string */
 #define PERM_STR_SIZE sizeof("rwxrwxrwx")
 
 /* Return 'ls -l' style string for file permissions mask, This is from
- * 'The Linux Programming Interface'
- */
-inline char *file_perm_str(const mode_t perm, const int flags) {
-    char str[PERM_STR_SIZE];
+ * 'The Linux Programming Interface' */
+extern inline char *file_perm_str(const mode_t perm, const int flags) {
+    char *str = malloc(PERM_STR_SIZE + 1); //[PERM_STR_SIZE];
+    if (!str) {
+        fprintf(stderr, "malloc failed\n");
+        exit(EXIT_FAILURE);
+    }
     snprintf(str, PERM_STR_SIZE, "%c%c%c%c%c%c%c%c%c",
     (perm & S_IRUSR) ? 'r' : '-', (perm & S_IWUSR) ? 'w' : '-',
     (perm & S_IXUSR) ?
@@ -154,7 +156,7 @@ inline char *file_perm_str(const mode_t perm, const int flags) {
 }
 
 /* Returns octal permissions of a file/directory */
-inline int file_perm_oct(const mode_t perm) {
+extern inline int file_perm_oct(const mode_t perm) {
     int oct_perm = 00;
     (perm & S_ISUID) ? (oct_perm += 04000) : (oct_perm += 00);
     (perm & S_ISGID) ? (oct_perm += 02000) : (oct_perm += 00);
@@ -171,7 +173,7 @@ inline int file_perm_oct(const mode_t perm) {
     return oct_perm;
 }
 
-inline char *filetype(const mode_t st_mode, const int flag) {
+extern inline char *filetype(const mode_t st_mode, const int flag) {
     switch (st_mode & S_IFMT) {
     case S_IFBLK:
         return (flag == 1) ? (char *)"block device" : (char *)"b";

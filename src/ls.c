@@ -1,8 +1,8 @@
 /***************************************************************************
  *   ls.c - list files and directories                                     *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,26 +20,29 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "common.h"
 
 #include <term.h>
 #include <curses.h>
 #include <dirent.h>
 #include <time.h>
+#include <getopt.h>
 
-const char *APPNAME = "ls";
+#include "common.h"
 
-struct opt_struct {
+
+static const char *APP_NAME = "ls";
+
+static struct {
     unsigned int ls_long:1;
     unsigned int human:1;
     unsigned int all:1;
     unsigned int one:1;
     unsigned int inode:1;
     unsigned int dereference:1;
-} opts = {0,0,0,0,0,0};
+} opts = {.ls_long = 0, .human = 0, .all = 0, .one = 0, .inode = 0, .dereference = 0};
 
 
-static void show_help(void) {
+static void show_help() {
     printf("Usage: %s [OPTION]... [FILE]...\n\n\
 List and show info for files and directories\n\n\
 Options:\n\
@@ -52,7 +55,7 @@ Options:\n\
     -w, --width=N\tset display screen width to 'N' characters\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
 static void format(const long long int bytes) {
@@ -84,7 +87,7 @@ static void format(const long long int bytes) {
 /*
  * Return a color for a filetype
  */
-const char* file_color(const mode_t mode)
+static const char* file_color(const mode_t mode)
 {
     if (S_ISDIR(mode)) {
         return ANSI_BLUE_B;
@@ -105,7 +108,7 @@ const char* file_color(const mode_t mode)
 }
 
 /* Comparison function for strings */
-int compare_strings(const void *a, const void *b) {
+static int compare_strings(const void *a, const void *b) {
     return strcmp(a, b);
 }
 
@@ -114,22 +117,22 @@ int main(const int argc, char *argv[]) {
     int screen_width = 0;
 
     const struct option long_opts[] = {
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {"all", 0, NULL, 'a'},
-        {"human", 0, NULL, 'H'},
-        {"long", 0, NULL, 'l'},
-        {"one", 0, NULL, '1'},
-        {"inode", 0, NULL, 'i'},
-        {"dereference", 0, NULL, 'd'},
-        {"width", required_argument, NULL, 'w'},
-        {NULL,0,NULL,0}
+        {.name = "help",        .has_arg = no_argument, .flag = nullptr, .val = 'h'},
+        {.name = "version",     .has_arg = no_argument, .flag = nullptr, .val = 'V'},
+        {.name = "all",         .has_arg = no_argument, .flag = nullptr, .val = 'a'},
+        {.name = "human",       .has_arg = 0, .flag = nullptr, .val = 'H'},
+        {.name = "long",        .has_arg = 0, .flag = nullptr, .val = 'l'},
+        {.name = "one",         .has_arg = 0, .flag = nullptr, .val = '1'},
+        {.name = "inode",       .has_arg = 0, .flag = nullptr, .val = 'i'},
+        {.name = "dereference", .has_arg = 0, .flag = nullptr, .val = 'd'},
+        {.name = "width",       .has_arg = required_argument, .flag = nullptr, .val = 'w'},
+        {.name = nullptr,       .has_arg = 0, .flag = nullptr, .val = 0}
     };
 
-    while ((opt = getopt_long(argc, argv, "VhalH1idw:", long_opts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "VhalH1idw:", long_opts, nullptr)) != -1) {
         switch(opt) {
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
@@ -155,7 +158,7 @@ int main(const int argc, char *argv[]) {
                 opts.dereference = 1;
                 break;
             case 'w':
-                screen_width = (int)strtol(optarg, NULL, 10);
+                screen_width = (int)strtol(optarg, nullptr, 10);
                 break;
             case 'H':
                 opts.human = 1;
@@ -170,19 +173,20 @@ int main(const int argc, char *argv[]) {
 
     /*
      * get width of terminal
-     */
+     * TODO: use TIOCGWINSZ for this, lose curses linking */
     if (screen_width == 0) {
-        setupterm(NULL, fileno(stdout), 0);
+        setupterm(nullptr, fileno(stdout), nullptr);
         screen_width = tigetnum("cols");
     }
 
     DIR *dp;
     struct dirent *list;
 
-    char path_to_ls[PATHMAX];
+    size_t PATH_MAX = get_path_max();
+    char path_to_ls[PATH_MAX];
 
     if (argv[optind] != NULL) {
-        strncpy(path_to_ls, argv[optind], PATHMAX);
+        strncpy(path_to_ls, argv[optind], PATH_MAX);
     } else {
         strncpy(path_to_ls, ".", 2);
     }
@@ -217,7 +221,7 @@ int main(const int argc, char *argv[]) {
     n_per_line = screen_width / (longest_so_far+2); /* number of filenames per column */
     rewinddir(dp);
 
-    char filenames[n_files][PATHMAX]; /* dirent strings are 256 bytes */
+    char filenames[n_files][PATH_MAX]; /* dirent strings are 256 bytes */
     n = 0;
 
     while ((list = readdir(dp)) != NULL) {
@@ -227,7 +231,7 @@ int main(const int argc, char *argv[]) {
                 continue;
             }
         }
-        strncpy(filenames[n], list->d_name, PATHMAX);
+        strncpy(filenames[n], list->d_name, PATH_MAX);
         n++;
     }
     closedir(dp);
@@ -236,11 +240,11 @@ int main(const int argc, char *argv[]) {
     qsort(filenames, n_files, sizeof(filenames[0]), compare_strings);
 
     /* cd to path_to_ls */
-    char cwd[PATHMAX];
+    char cwd[PATH_MAX];
     char *cwd_p;
     cwd_p = cwd;
 
-    if (getcwd(cwd_p, PATHMAX) == NULL) {
+    if (getcwd(cwd_p, PATH_MAX) == NULL) {
         perror("getcwd");
         exit(EXIT_FAILURE);
     }

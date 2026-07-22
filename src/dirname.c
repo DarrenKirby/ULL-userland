@@ -1,8 +1,8 @@
 /***************************************************************************
  *   dirname - strip non-directory suffix from file name                   *
  *                                                                         *
- *   Copyright (C) 2014-2025 by Darren Kirby                               *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014-2026 by Darren Kirby                               *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,65 +20,69 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <getopt.h>
+#include <libgen.h>
+
 #include "common.h"
 
-const char *APPNAME = "dirname";
 
-static void show_help(void) {
+static const char *APP_NAME = "dirname";
+
+static void show_help() {
     printf("Usage: %s OPTION\n\
    or: %s PATH [PATH...]\n\n\
 Options:\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME, APPNAME);
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME, APP_NAME);
 }
 
 int main(int argc, char *argv[]) {
     int opt;
 
-    struct option longopts[] = {
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {0,0,0,0}
+    const struct option longopts[] = {
+        {.name = "help",    .has_arg = 0, .flag = nullptr, .val = 'h'},
+        {.name = "version", .has_arg = 0, .flag = nullptr, .val = 'V'},
+        {.name = nullptr,   .has_arg = 0, .flag = nullptr, .val = 0}
     };
 
-    while ((opt = getopt_long(argc, argv, "Vh", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "Vh", longopts, nullptr)) != -1) {
         switch(opt) {
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
                 break;
             case 'h':
                 show_help();
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
                 break;
             case ':':
                  /* getopt_long prints own error message */
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
                 break;
             case '?':
                  /* getopt_long prints own error message */
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
             default:
                 show_help();
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
                 break;
         }
     }
 
     if (argc == 1) {
         show_help();
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     char *d;
     while (optind < argc) {
         if ((d = dirname(argv[optind])) == NULL) {
             perror("dirname");
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
 
         printf("%s\n", d);
