@@ -23,7 +23,7 @@
 #if defined(__APPLE__) && defined(__MACH__)
 #include <copyfile.h>
 #endif
-#if defined(__LINUX__)
+#if defined(__linux__)
 #define _GNU_SOURCE
 #define _FILE_OFFSET_BITS 64
 #include <sys/types.h>
