@@ -34,7 +34,6 @@ base64    :: not started
 basename  :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
 cal       :: in progress  # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works - not all options implemented
 cat       :: completed    # Linux: compiles, works | OS X: compiles, works | FreeBSD: compiles, works
-cd        :: completed    # Linux: compiles | OS X: compiles | FreeBSD: compiles (But useless on all: read cd.c source)
 chgrp     :: completed    # Linux compiles, works | OS X: compiles, works | FreeBSD compiles, works
 chmod     :: not started
 chown     :: completed    # Linux compiles, works | OS X: compiles, works | FreeBSD compiles, works
@@ -43,7 +42,7 @@ chroot    :: in progress  # started but not functional
 cksum     :: not started
 comm      :: not started
 cmp       :: not started
-cp        :: in progress  # Linux: compiles, works | OS X: ? | FreeBSD compiles, works - barebones, many opts not implemented
+cp        :: in progress  # Linux: compiles, works | OS X: Compiles, works | FreeBSD: ?
 csplit    :: not started
 cut       :: not started
 date      :: not started
