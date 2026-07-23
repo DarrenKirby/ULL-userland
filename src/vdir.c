@@ -20,57 +20,69 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "common.h"
+
 #include <stddef.h>
 #include <time.h>
 #include <dirent.h>
+#include <getopt.h>
 
-const char *APPNAME = "vdir";
+#include "common.h"
 
-struct opt_struct {
-    unsigned int human:1;
-    unsigned int all:1;
-    unsigned int inode:1;
-    unsigned int dereference:1;
-    unsigned int colour:1;
-    unsigned int classify:1;
-} opts;
+static const char *APP_NAME = "vdir";
+static size_t PATH_MAX;
 
-static void show_help(void) {
+static struct {
+    bool human:1;
+    bool all:1;
+    bool inode:1;
+    bool dereference:1;
+    bool colour:1;
+    bool classify:1;
+} opts = { .human = false,
+            .all = false,
+            .inode = false,
+            .dereference = false,
+            .colour = false,
+            .classify = false };
+
+static void show_help()
+{
     printf("Usage: %s [OPTION]... [FILE]...\n\n\
 Print long-form directory contents\n\n\
 Options:\n\
-    -H, --human\t\t display filesize in kilobytes and megabytes if appropriate (implies --long)\n\
+    -H, --human\t\t display file size in kilobytes and megabytes if appropriate (implies --long)\n\
     -a, --all\t\t include dotfiles and implied `.' and `..' entries\n\
     -i, --inode\t\t display inode numbers\n\
     -d, --dereference\t show information for the file links reference rather than for the link itself\n\
     -h, --help\t\t display this help\n\
     -c, --colour\t use colour output\n\
+    -F, --classify\t\tappend indicator (one of */=>@|) to entries\n\
     -V, --version\t display version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
-static void p_colour(char * filename, mode_t st_mode) {
+static void p_colour(char * filename, const mode_t st_mode)
+{
     switch (st_mode & S_IFMT) {
         case S_IFBLK:
-            printf(ANSI_YELLOW "%s" ANSI_RESET, filename); // "block device"
+            printf(ANSI_YELLOW "%s" ANSI_RESET, filename); /* block device */
             break;
         case S_IFCHR:
-            printf(ANSI_YELLOW_B "%s" ANSI_RESET, filename); // "character device"
+            printf(ANSI_YELLOW_B "%s" ANSI_RESET, filename); /* character device */
             break;
         case S_IFDIR:
-            printf(ANSI_BLUE_B "%s" ANSI_RESET, filename); // "directory"
+            printf(ANSI_BLUE_B "%s" ANSI_RESET, filename); /* directory */
             break;
         case S_IFIFO:
-            printf(ANSI_YELLOW "%s" ANSI_RESET, filename); // "FIFO/pipe"
+            printf(ANSI_YELLOW "%s" ANSI_RESET, filename); /* FIFO/pipe */
             break;
         case S_IFLNK:
-            printf(ANSI_CYAN_B "%s" ANSI_RESET, filename); // "symlink"
+            printf(ANSI_CYAN_B "%s" ANSI_RESET, filename); /* symlink */
             break;
         case S_IFSOCK:
-            printf("%s", filename); // "socket"
+            printf("%s", filename); /* socket */
             break;
-        default:   // "regular file"
+        default:   /* regular file */
             /* Is it executable ? */
             if ((st_mode & S_IXUSR) || (st_mode & S_IXGRP) || (st_mode & S_IXOTH)) {
                 printf(ANSI_GREEN_B "%s" ANSI_RESET, filename);
@@ -81,93 +93,106 @@ static void p_colour(char * filename, mode_t st_mode) {
     }
 }
 
-static void format(const long long int bytes) {
-    char size_string[22];
-    double result;
-    if (bytes < 1024) {
-        if (sprintf(size_string, "%lld", bytes) < 0) {
-            perror("sprintf"); exit(EXIT_FAILURE);
-        }
-    } else if (bytes > 1025 && bytes <= 1025000) {
-        result = (double)bytes / 1024.0;
-        if (sprintf(size_string, "%5.1fK", result) < 0) {
-            perror("sprintf"); exit(EXIT_FAILURE);
-        }
-    } else if (bytes > 1025000 && bytes <= 1025000000) {
-        result = (double)bytes / 1024.0 / 1024.0;
-        if (sprintf(size_string, "%5.1fM", result) < 0) {
-            perror("sprintf"); exit(EXIT_FAILURE);
-        }
-    } else {
-        result = (double)bytes / 1024.0 / 1024.0 / 1024.0;
-        if (sprintf(size_string, "%5.1fG", result) < 0) {
-            perror("sprintf"); exit(EXIT_FAILURE);
-        }
+static void p_classify(char * filename, const mode_t st_mode)
+{
+    switch (st_mode & S_IFMT) {
+        case S_IFBLK:
+            printf("%s", filename); /* block device */
+            break;
+        case S_IFCHR:
+            printf("%s", filename); /* character device */
+            break;
+        case S_IFDIR:
+            printf("%s/", filename); /* directory */
+            break;
+        case S_IFIFO:
+            printf("%s|", filename); /* FIFO/pipe */
+            break;
+        case S_IFLNK:
+            /* FIXME: links should point to their targets. */
+            printf("%s ->", filename); /* symlink */
+            break;
+        case S_IFSOCK:
+            printf("%s=", filename); /* socket */
+            break;
+        default:   /* regular file */
+            /* Is it executable ? */
+            if ((st_mode & S_IXUSR) || (st_mode & S_IXGRP) || (st_mode & S_IXOTH)) {
+                printf("%s*", filename);
+            } else {
+                printf("%s", filename);
+            }
+            break;
     }
-    printf("%6s ", size_string);
 }
 
-
-int main(const int argc, char *argv[]) {
-    int opt;
-
+int main(const int argc, char *argv[])
+{
     const struct option long_opts[] = {
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {"all", 0, NULL, 'a'},
-        {"human", 0, NULL, 'H'},
-        {"inode", 0, NULL, 'i'},
-        {"dereference", 0, NULL, 'd'},
-        {"colour", 0, NULL, 'c'},
-        {NULL,0,NULL,0}
+        {.name = "help",        .has_arg = 0, .flag = nullptr, .val = 'h'},
+        {.name = "version",     .has_arg = 0, .flag = nullptr, .val = 'V'},
+        {.name = "all",         .has_arg = 0, .flag = nullptr, .val = 'a'},
+        {.name = "human",       .has_arg = 0, .flag = nullptr, .val = 'H'},
+        {.name = "inode",       .has_arg = 0, .flag = nullptr, .val = 'i'},
+        {.name = "dereference", .has_arg = 0, .flag = nullptr, .val = 'd'},
+        {.name = "colour",      .has_arg = 0, .flag = nullptr, .val = 'c'},
+        {.name = "classify",    .has_arg = 0, .flag = nullptr, .val = 'F'},
+        {.name = nullptr,       .has_arg = 0, .flag = nullptr, .val = 0}
     };
 
-    while ((opt = getopt_long(argc, argv, "VhaHidc", long_opts, NULL)) != -1) {
+    int opt;
+    while ((opt = getopt_long(argc, argv, "VhaHidcF", long_opts, NULL)) != -1) {
         switch(opt) {
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'h':
                 show_help();
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'a':
-                opts.all = 1;
+                opts.all = true;
                 break;
             case 'H':
-                opts.human = 1;
+                opts.human = true;
                 break;
             case 'i':
-                opts.inode = 1;
+                opts.inode = true;
                 break;
             case 'd':
-                opts.dereference = 1;
+                opts.dereference = true;
                 break;
+                /* Fixme: these probably should not be mutually exclusive. */
             case 'c':
-                opts.colour = 1;
+                opts.colour = true;
+                opts.classify = false;
+                break;
+            case 'F':
+                opts.classify = true;
+                opts.colour = false;
                 break;
             default:
                 show_help();
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
         }
     }
 
     DIR *dp;
     struct dirent *list;
 
-    char path_to_ls[PATHMAX];
+    char path_to_ls[PATH_MAX];
 
     if (argv[optind] != NULL) {
-        strncpy(path_to_ls, argv[optind], PATHMAX);
+        strncpy(path_to_ls, argv[optind], PATH_MAX);
     } else {
         strncpy(path_to_ls, ".", 2);
     }
 
-    if ((dp = opendir(path_to_ls)) == NULL){
-        perror("opendir");
-        exit(EXIT_FAILURE);
+    if ((dp = opendir(path_to_ls)) == NULL) {
+        fprintf(stderr, "%s: opendir() failed: %s\n", APP_NAME, strerror(errno));
+        return EXIT_FAILURE;
     }
 
     int n_files = 0;          /* number of files to print */
@@ -188,7 +213,7 @@ int main(const int argc, char *argv[]) {
 
     rewinddir(dp);
 
-    char filenames[n_files][PATHMAX];
+    char filenames[n_files][PATH_MAX];
     int n = 0;
 
     while ((list = readdir(dp)) != NULL) {
@@ -197,22 +222,22 @@ int main(const int argc, char *argv[]) {
                 continue;
             }
         }
-        strncpy(filenames[n], list->d_name, PATHMAX);
+        strncpy(filenames[n], list->d_name, PATH_MAX);
         n++;
     }
     closedir(dp);
 
-    char cwd[PATHMAX];
+    char cwd[PATH_MAX];
     char *cwd_p = cwd;
 
-    if (getcwd(cwd_p, PATHMAX) == NULL) {
-        fprintf(stderr, "getcwd failed: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
+    if (getcwd(cwd_p, PATH_MAX) == NULL) {
+        fprintf(stderr, "%s: getcwd() failed: %s\n", APP_NAME, strerror(errno));
+        return EXIT_FAILURE;
     }
 
     if (chdir(path_to_ls) == -1) {
-        fprintf(stderr, "chdir failed: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "%s: chdir() failed: %s\n", APP_NAME, strerror(errno));
+        return EXIT_FAILURE;
     }
 
     struct stat buf;
@@ -225,13 +250,13 @@ int main(const int argc, char *argv[]) {
     for (int f = 0; f < n_files; f++) {
         if (opts.dereference == 1) {
             if (stat(filenames[f], &buf) == -1) {
-                perror("stat");
-                exit(EXIT_FAILURE);
+                fprintf(stderr, "%s: stat() failed: %s\n", APP_NAME, strerror(errno));
+                return EXIT_FAILURE;
             }
         } else {
             if (lstat(filenames[f], &buf) == -1) {
-                perror("stat");
-                exit(EXIT_FAILURE);
+                fprintf(stderr, "%s: lstat() failed: %s\n", APP_NAME, strerror(errno));
+                return EXIT_FAILURE;
             }
         }
 
@@ -255,17 +280,15 @@ int main(const int argc, char *argv[]) {
 
         printf("%s ", string_time);
 
-        if (opts.colour == 1) {
+        if (opts.colour) {
             p_colour(filenames[f], buf.st_mode);
+        } else if (opts.classify) {
+            p_classify(filenames[f], buf.st_mode);
         } else {
             printf("%s", filenames[f]);
         }
         printf("\n");
     }
 
-    if (chdir(cwd) == -1) {
-        perror("chdir");
-        exit(EXIT_FAILURE); /* no biggie, already printed the output... */
-    }
     return EXIT_SUCCESS;
 }

@@ -1,8 +1,8 @@
 /***************************************************************************
  *   df.c - report file system disk space usage                            *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,8 +20,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "common.h"
-
+#include <getopt.h>
 #if defined(__APPLE__) && defined(__MACH__) || defined(__FreeBSD__)
 #include <sys/param.h>
 #include <sys/ucred.h>
@@ -30,9 +29,12 @@
 #include "mount.h"
 #endif
 
-const char *APPNAME = "df";
+#include "common.h"
 
-struct packed_flags {
+
+static const char *APP_NAME = "df";
+
+static struct  {
     unsigned int b : 1; /* block size (k, m, g, t, p, e, z, y (*1024) or K, M, G..etc (*1000)) */
     unsigned int r : 1; /* human readable (*1024) */
     unsigned int H : 1; /* human readable si (*1000) */
@@ -40,21 +42,20 @@ struct packed_flags {
     unsigned int T : 1; /* FS type */
     unsigned int t : 1; /* total */
     unsigned int a : 1; /* include dummy file systems */
-};
+} opts = {.b = 0,.r = 0,.H = 0,.i = 0,.T = 0,.t = 0,.a = 0};;
 
-struct packed_flags flags = {0,0,0,0,0,0,0};
 int fmt = 0;
 char get_option_char;
 
-void show_help(void) {
+static void show_help() {
     printf("Usage: %s [OPTION]...\n\n\
 Options:\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
-long int calculate_percent(long int total, long int free) {
+static long int calculate_percent(long int total, long int free) {
     long int result;
     long int used = (total - free);
     result = ((double)used / (double)total) * 100;
@@ -64,7 +65,7 @@ long int calculate_percent(long int total, long int free) {
 int main(int argc, char *argv[]) {
     int opt;
 
-    struct option longopts[] = {
+    const struct option longopts[] = {
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
         {"block-size", required_argument, NULL, 'b'},
@@ -84,7 +85,7 @@ int main(int argc, char *argv[]) {
     while ((opt = getopt_long(argc, argv, "Vhb:rHikmgsTta", longopts, NULL)) != -1) {
         switch(opt) {
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
@@ -113,16 +114,17 @@ int main(int argc, char *argv[]) {
                     case 'E': fmt = 14; break;
                     case 'Z': fmt = 15; break;
                     case 'Y': fmt = 16; break;
+                    default: ;
                 }
                 break;
             case 'r':
-                flags.r = 1;
+                opts.r = 1;
                 break;
             case 'H':
-                flags.H = 1;
+                opts.H = 1;
                 break;
             case 'i':
-                flags.i = 1;
+                opts.i = 1;
                 break;
             case 'k':
                 fmt = 1;
@@ -137,13 +139,13 @@ int main(int argc, char *argv[]) {
                 sync();
                 break;
             case 'T':
-                flags.T = 1;
+                opts.T = 1;
                 break;
             case 't':
-                flags.t = 1;
+                opts.t = 1;
                 break;
             case 'a':
-                flags.a = 1;
+                opts.a = 1;
                 break;
             case ':':
                  /* getopt_long prints own error message */
