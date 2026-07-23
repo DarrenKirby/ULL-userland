@@ -116,38 +116,38 @@ int main(const int argc, char *argv[])
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'h':
                 show_help();
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'a':
-                opts.all = 1;
+                opts.all = true;
                 break;
             case 'l':
-                opts.ls_long = 1;
-                opts.one = 1;     /* '-l' implies '-1' one */
+                opts.ls_long = true;
+                opts.one = true;     /* '-l' implies '-1' one */
                 break;
             case '1':
-                opts.one = 1;
+                opts.one = true;
                 break;
             case 'i':
-                opts.inode = 1;
-                opts.ls_long = 1;   /* '-i' implies '-l' */
+                opts.inode = true;
+                opts.ls_long = true;   /* '-i' implies '-l' */
                 break;
             case 'd':
-                opts.dereference = 1;
+                opts.dereference = true;
                 break;
             case 'w':
                 screen_width = (uint16_t)strtoul(optarg, nullptr, 10);
                 break;
             case 'H':
-                opts.human = 1;
-                opts.ls_long = 1;   /* '-H' implies '-l' ls_long */
-                opts.one = 1;       /* '-H' implies '-1' one     */
+                opts.human = true;
+                opts.ls_long = true;   /* '-H' implies '-l' ls_long */
+                opts.one = true;       /* '-H' implies '-1' one     */
                 break;
             default:
                 show_help();
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
         }
     }
 
@@ -162,7 +162,7 @@ int main(const int argc, char *argv[])
             if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) != 0) {
                 fprintf(stderr, "ioctl failed: %s\n",
                     strerror(errno));
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
             }
             screen_width = w.ws_col;
         }
@@ -181,7 +181,7 @@ int main(const int argc, char *argv[])
     struct dirent *list;
     if ((dp = opendir(path_to_ls)) == NULL) {
         fprintf(stderr, "%s: opendir failed: %s", APP_NAME, strerror(errno));
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     int32_t n_files = 0;           /* number of files to print */
@@ -234,12 +234,12 @@ int main(const int argc, char *argv[])
 
     if (getcwd(cwd_p, PATH_MAX) == NULL) {
         fprintf(stderr, "%s: getcwd() failed: %s\n", APP_NAME, strerror(errno));
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     if (chdir(path_to_ls) == -1) {
         fprintf(stderr, "%s: chdir failed: %s", APP_NAME, strerror(errno));
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     int f;
@@ -251,13 +251,13 @@ int main(const int argc, char *argv[])
         for (f = 0; f < n_files; f++) {
             struct stat buf;
             if (lstat(filenames[f], &buf) == -1) {
-                perror("lstat");
-                exit(EXIT_FAILURE);
+                fprintf(stderr, "%s: lstat failed: %s", APP_NAME, strerror(errno));
+                return EXIT_FAILURE;
             }
             printf("%s%s%s\n", file_color(buf.st_mode), filenames[f], ANSI_RESET);
         }
 
-    } else if (opts.ls_long == 1) {
+    } else if (opts.ls_long) {
         /*
          * We are displaying long format, one file per line
          */
@@ -271,26 +271,26 @@ int main(const int argc, char *argv[])
         char string_time[13];
 
         for (f = 0; f < n_files; f++) {
-            if (opts.dereference == 1) {
+            if (opts.dereference) {
                 if (stat(filenames[f], &buf) == -1) {
                     fprintf(stderr, "%s: %s", filenames[f], strerror(errno));
-                    exit(EXIT_FAILURE);
+                    return EXIT_FAILURE;
                 }
             } else {
                 if (lstat(filenames[f], &buf) == -1) {
                     fprintf(stderr, "%s: %s", filenames[f], strerror(errno));
-                    exit(EXIT_FAILURE);
+                    return EXIT_FAILURE;
                 }
             }
 
-            if (opts.inode == 1) {
+            if (opts.inode) {
                 printf("%8d ", (int) buf.st_ino);
             }
             printf("%s", filetype(buf.st_mode, 0));
             printf("%s ", file_perm_str(buf.st_mode, 1));
             printf("%2ld ", (long) buf.st_nlink);
             printf("%s %s ", get_username(buf.st_uid), get_groupname(buf.st_gid));
-            (opts.human == 0) ?
+            (!opts.human) ?
 #ifdef __linux__
                 (void)printf("%6ld ", buf.st_size) :     /* bytes */
 #else
@@ -320,18 +320,18 @@ int main(const int argc, char *argv[])
         for (f = 0; f < n_files; f++) {
             struct stat buf;
             if (lstat(filenames[f], &buf) == -1) {
-                fprintf(stderr, "%s: %s", filenames[f], strerror(errno));
-                exit(EXIT_FAILURE);
+                fprintf(stderr, "%s: lstat() failed on %s: %s", APP_NAME, filenames[f], strerror(errno));
+                return EXIT_FAILURE;
             }
 
-            printf("%s%-*s%s", file_color(buf.st_mode), (int)longest_so_far+1, filenames[f], ANSI_RESET);
+            printf("%s%-*s%s", file_color(buf.st_mode), (int)longest_so_far + 1, filenames[f], ANSI_RESET);
             if (i % n_per_line == 0) {
                 printf("\n");
             }
             i++;
         }
 
-        if ((i-1) % n_per_line != 0) {
+        if ((i - 1) % n_per_line != 0) {
             printf("\n");
         }
     }
