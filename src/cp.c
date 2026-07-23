@@ -42,14 +42,13 @@ static struct {
     bool verbose;
     bool recursive;
     bool force;
-} opts = { .interactive = false,
+} opts = { .interactive = true,
            .verbose     = false,
            .recursive   = false,
            .force       = false };
 
-#define BUFF_SIZE 4096
-
-static void show_help() {
+static void show_help()
+{
     printf("Usage: %s [OPTION] file1 file2 [file1 dir1]\n\n\
 Copy files to a new location\n\n\
     -h, --help\t\tdisplay this help\n\
@@ -60,8 +59,9 @@ Copy files to a new location\n\n\
 Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
-static int prompt(char *to) {
-    printf("%s: %s exists. Overwrite ('y' or 'n')? ", APP_NAME, to);
+static int prompt(char *to)
+{
+    printf("%s: '%s' exists. Overwrite ('y' or 'n')? ", APP_NAME, to);
     int response;
     do {
         response = getchar();
@@ -74,7 +74,8 @@ static int prompt(char *to) {
     return 0;
 }
 
-static int copy_file(char *from, char *to) {
+static int copy_file(char *from, char *to)
+{
     int rv = 0;
     int from_fd = -1;
     int to_fd = -1;
@@ -148,7 +149,8 @@ cleanup:
     return rv;
 }
 
-int main(const int argc, char *argv[]) {
+int main(const int argc, char *argv[])
+{
     PATH_MAX = get_path_max();
 
     const struct option long_opts[] = {
@@ -174,7 +176,9 @@ int main(const int argc, char *argv[]) {
                 show_help();
                 return EXIT_SUCCESS;
                 /* --interactive and --force are mutually exclusive.
-                 * The last flag passed will be the one that 'wins'. */
+                 * The last flag passed will be the one that 'wins'.
+                 * --interactive is 'on' by default if neither are
+                 * explicitly passed. */
             case 'i':
                 opts.interactive = true;
                 opts.force = false;
