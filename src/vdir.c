@@ -29,7 +29,6 @@
 #include "common.h"
 
 static const char *APP_NAME = "vdir";
-static size_t PATH_MAX;
 
 static struct {
     bool human:1;
@@ -61,9 +60,9 @@ Options:\n\
 Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
-static void p_colour(char * filename, const mode_t st_mode)
+static void p_colour(char * filename, const struct stat buf)
 {
-    switch (st_mode & S_IFMT) {
+    switch (buf.st_mode & S_IFMT) {
         case S_IFBLK:
             printf(ANSI_YELLOW "%s" ANSI_RESET, filename); /* block device */
             break;
@@ -71,21 +70,24 @@ static void p_colour(char * filename, const mode_t st_mode)
             printf(ANSI_YELLOW_B "%s" ANSI_RESET, filename); /* character device */
             break;
         case S_IFDIR:
-            printf(ANSI_BLUE_B "%s" ANSI_RESET, filename); /* directory */
+            printf(ANSI_BLUE_B "%s" ANSI_RESET "%s",
+                filename, opts.classify ? "/" : ""); /* directory */
             break;
         case S_IFIFO:
-            printf(ANSI_YELLOW "%s" ANSI_RESET, filename); /* FIFO/pipe */
+            printf(ANSI_YELLOW "%s" ANSI_RESET "%s",
+                filename, opts.classify ? "|" : ""); /* FIFO/pipe */
             break;
         case S_IFLNK:
-            printf(ANSI_CYAN_B "%s" ANSI_RESET, filename); /* symlink */
+            printf(ANSI_CYAN_B "%s" ANSI_RESET "%s",
+                filename, opts.classify ? " ->" : ""); /* symlink */
             break;
         case S_IFSOCK:
-            printf("%s", filename); /* socket */
+            printf("%s%s", filename, opts.classify ? "=" : ""); /* socket */
             break;
         default:   /* regular file */
             /* Is it executable ? */
-            if ((st_mode & S_IXUSR) || (st_mode & S_IXGRP) || (st_mode & S_IXOTH)) {
-                printf(ANSI_GREEN_B "%s" ANSI_RESET, filename);
+            if ((buf.st_mode & S_IXUSR) || (buf.st_mode & S_IXGRP) || (buf.st_mode & S_IXOTH)) {
+                printf(ANSI_GREEN_B "%s" ANSI_RESET "%s", filename, opts.classify ? "*" : "");
             } else {
                 printf("%s", filename);
             }
@@ -93,9 +95,9 @@ static void p_colour(char * filename, const mode_t st_mode)
     }
 }
 
-static void p_classify(char * filename, const mode_t st_mode)
+static void p_classify(char * filename, const struct stat buf)
 {
-    switch (st_mode & S_IFMT) {
+    switch (buf.st_mode & S_IFMT) {
         case S_IFBLK:
             printf("%s", filename); /* block device */
             break;
@@ -117,7 +119,7 @@ static void p_classify(char * filename, const mode_t st_mode)
             break;
         default:   /* regular file */
             /* Is it executable ? */
-            if ((st_mode & S_IXUSR) || (st_mode & S_IXGRP) || (st_mode & S_IXOTH)) {
+            if ((buf.st_mode & S_IXUSR) || (buf.st_mode & S_IXGRP) || (buf.st_mode & S_IXOTH)) {
                 printf("%s*", filename);
             } else {
                 printf("%s", filename);
@@ -164,14 +166,11 @@ int main(const int argc, char *argv[])
             case 'd':
                 opts.dereference = true;
                 break;
-                /* Fixme: these probably should not be mutually exclusive. */
             case 'c':
                 opts.colour = true;
-                opts.classify = false;
                 break;
             case 'F':
                 opts.classify = true;
-                opts.colour = false;
                 break;
             default:
                 show_help();
@@ -179,35 +178,31 @@ int main(const int argc, char *argv[])
         }
     }
 
-    DIR *dp;
-    struct dirent *list;
-
+    const size_t PATH_MAX = get_path_max();
     char path_to_ls[PATH_MAX];
 
     if (argv[optind] != NULL) {
-        strncpy(path_to_ls, argv[optind], PATH_MAX);
+        strlcpy(path_to_ls, argv[optind], sizeof(path_to_ls));
     } else {
-        strncpy(path_to_ls, ".", 2);
+        strlcpy(path_to_ls, ".", sizeof(path_to_ls));
     }
 
+    DIR *dp;
+    struct dirent *list;
     if ((dp = opendir(path_to_ls)) == NULL) {
         fprintf(stderr, "%s: opendir() failed: %s\n", APP_NAME, strerror(errno));
         return EXIT_FAILURE;
     }
 
-    int n_files = 0;          /* number of files to print */
+    int n_files = 0; /* number of files to print */
 
     while ((list = readdir(dp)) != NULL) {
-        /*
-         * first time around
-         * get max file length
-         */
-        if (opts.all == 0) {
+        /* First time around get max file length. */
+        if (!opts.all) {
             if (list->d_name[0] == '.') {
                 continue;
             }
         }
-
         n_files++;
     }
 
@@ -222,7 +217,7 @@ int main(const int argc, char *argv[])
                 continue;
             }
         }
-        strncpy(filenames[n], list->d_name, PATH_MAX);
+        snprintf(filenames[n], sizeof filenames[n], "%s", list->d_name);
         n++;
     }
     closedir(dp);
@@ -281,9 +276,9 @@ int main(const int argc, char *argv[])
         printf("%s ", string_time);
 
         if (opts.colour) {
-            p_colour(filenames[f], buf.st_mode);
+            p_colour(filenames[f], buf);
         } else if (opts.classify) {
-            p_classify(filenames[f], buf.st_mode);
+            p_classify(filenames[f], buf);
         } else {
             printf("%s", filenames[f]);
         }

@@ -168,18 +168,17 @@ int main(const int argc, char *argv[])
         }
     }
 
-    DIR *dp;
-    struct dirent *list;
-
     size_t PATH_MAX = get_path_max();
     char path_to_ls[PATH_MAX];
 
     if (argv[optind] != NULL) {
-        (void)strncpy(path_to_ls, argv[optind], PATH_MAX);
+        strlcpy(path_to_ls, argv[optind], sizeof(path_to_ls));
     } else {
-        strncpy(path_to_ls, ".", 2);
+        strlcpy(path_to_ls, ".", sizeof(path_to_ls));
     }
 
+    DIR *dp;
+    struct dirent *list;
     if ((dp = opendir(path_to_ls)) == NULL) {
         fprintf(stderr, "%s: opendir failed: %s", APP_NAME, strerror(errno));
         exit(EXIT_FAILURE);
@@ -195,7 +194,7 @@ int main(const int argc, char *argv[])
          * first time around
          * get max file length
          */
-        if (opts.all == 0) {
+        if (!opts.all) {
             if (list->d_name[0] == '.') {
                 continue;
             }
@@ -214,13 +213,13 @@ int main(const int argc, char *argv[])
     n = 0;
 
     while ((list = readdir(dp)) != NULL) {
-        if (opts.all == 0) {
+        if (!opts.all) {
 
             if (list->d_name[0] == '.') {
                 continue;
             }
         }
-        snprintf(filenames[n], sizeof filenames[n], "%s", list->d_name);
+        snprintf(filenames[n], sizeof(filenames[n]), "%s", list->d_name);
         n++;
     }
     closedir(dp);
@@ -244,7 +243,7 @@ int main(const int argc, char *argv[])
     }
 
     int f;
-    if (opts.one == 1 && opts.ls_long != 1) {
+    if (opts.one && (!opts.ls_long)) {
         /*
          * We are displaying short format, one file per line
          */
