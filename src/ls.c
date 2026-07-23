@@ -20,29 +20,34 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-
-#include <term.h>
-#include <curses.h>
+#include <sys/ioctl.h>
 #include <dirent.h>
 #include <time.h>
 #include <getopt.h>
 
 #include "common.h"
 
+#define DIRENT_STRING_SIZE 256
 
 static const char *APP_NAME = "ls";
 
 static struct {
-    unsigned int ls_long:1;
-    unsigned int human:1;
-    unsigned int all:1;
-    unsigned int one:1;
-    unsigned int inode:1;
-    unsigned int dereference:1;
-} opts = {.ls_long = 0, .human = 0, .all = 0, .one = 0, .inode = 0, .dereference = 0};
+    bool ls_long:1;
+    bool human:1;
+    bool all:1;
+    bool one:1;
+    bool inode:1;
+    bool dereference:1;
+} opts = { .ls_long = false,
+           .human = false,
+           .all = false,
+           .one = false,
+           .inode = false,
+           .dereference = false };
 
 
-static void show_help() {
+static void show_help()
+{
     printf("Usage: %s [OPTION]... [FILE]...\n\n\
 List and show info for files and directories\n\n\
 Options:\n\
@@ -56,32 +61,6 @@ Options:\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
 Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
-}
-
-static void format(const long long int bytes) {
-    char size_string[22];
-    double result;
-    if (bytes < 1024) {
-        if (sprintf(size_string, "%lld", bytes) < 0) {
-            perror("sprintf"); exit(EXIT_FAILURE);
-        }
-    } else if ((bytes > 1025) && (bytes <= 1025000)) {
-        result = (double)bytes / 1024.0;
-        if (sprintf(size_string, "%5.1fK", result) < 0) {
-            perror("sprintf"); exit(EXIT_FAILURE);
-        }
-    } else if ((bytes > 1025000) && (bytes <= 1025000000)) {
-        result = (double)bytes / 1024.0 / 1024.0;
-        if (sprintf(size_string, "%5.1fM", result) < 0) {
-            perror("sprintf"); exit(EXIT_FAILURE);
-        }
-    } else {
-        result = (double)bytes / 1024.0 / 1024.0 / 1024.0;
-        if (sprintf(size_string, "%5.1fG", result) < 0) {
-            perror("sprintf"); exit(EXIT_FAILURE);
-        }
-    }
-    printf("%6s ", size_string);
 }
 
 /*
@@ -108,14 +87,14 @@ static const char* file_color(const mode_t mode)
 }
 
 /* Comparison function for strings */
-static int compare_strings(const void *a, const void *b) {
+static int compare_strings(const void *a, const void *b)
+{
     return strcmp(a, b);
 }
 
-int main(const int argc, char *argv[]) {
-    int opt;
-    int screen_width = 0;
-
+int main(const int argc, char *argv[])
+{
+    uint16_t screen_width = 0;
     const struct option long_opts[] = {
         {.name = "help",        .has_arg = no_argument, .flag = nullptr, .val = 'h'},
         {.name = "version",     .has_arg = no_argument, .flag = nullptr, .val = 'V'},
@@ -129,6 +108,7 @@ int main(const int argc, char *argv[]) {
         {.name = nullptr,       .has_arg = 0, .flag = nullptr, .val = 0}
     };
 
+    int opt;
     while ((opt = getopt_long(argc, argv, "VhalH1idw:", long_opts, nullptr)) != -1) {
         switch(opt) {
             case 'V':
@@ -158,7 +138,7 @@ int main(const int argc, char *argv[]) {
                 opts.dereference = 1;
                 break;
             case 'w':
-                screen_width = (int)strtol(optarg, nullptr, 10);
+                screen_width = (uint16_t)strtoul(optarg, nullptr, 10);
                 break;
             case 'H':
                 opts.human = 1;
@@ -171,12 +151,21 @@ int main(const int argc, char *argv[]) {
         }
     }
 
-    /*
-     * get width of terminal
-     * TODO: use TIOCGWINSZ for this, lose curses linking */
+    /* Get width of term. */
     if (screen_width == 0) {
-        setupterm(nullptr, fileno(stdout), nullptr);
-        screen_width = tigetnum("cols");
+        /* Check if stdout is redirected to a file or a pipe. */
+        if (!isatty(STDOUT_FILENO)) {
+            /* Just set a reasonable value. */
+            screen_width = 82;
+        } else {
+            struct winsize w;
+            if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) != 0) {
+                fprintf(stderr, "ioctl failed: %s\n",
+                    strerror(errno));
+                exit(EXIT_FAILURE);
+            }
+            screen_width = w.ws_col;
+        }
     }
 
     DIR *dp;
@@ -186,20 +175,20 @@ int main(const int argc, char *argv[]) {
     char path_to_ls[PATH_MAX];
 
     if (argv[optind] != NULL) {
-        strncpy(path_to_ls, argv[optind], PATH_MAX);
+        (void)strncpy(path_to_ls, argv[optind], PATH_MAX);
     } else {
         strncpy(path_to_ls, ".", 2);
     }
 
-    if ((dp = opendir(path_to_ls)) == NULL){
-        perror("opendir");
+    if ((dp = opendir(path_to_ls)) == NULL) {
+        fprintf(stderr, "%s: opendir failed: %s", APP_NAME, strerror(errno));
         exit(EXIT_FAILURE);
     }
 
-    int n_files = 0;                    /* number of files to print */
-    unsigned long n_per_line = 0;       /* number of files per line */
-    unsigned long longest_so_far = 0;   /* longest filename seen so far */
-    unsigned long n;                    /* return value of strlen() calls */
+    int32_t n_files = 0;           /* number of files to print */
+    uint32_t n_per_line = 0;       /* number of files per line */
+    uint32_t longest_so_far = 0;   /* longest filename seen so far */
+    uint32_t n;                    /* return value of strlen() calls */
 
     while ((list = readdir(dp)) != NULL) {
         /*
@@ -218,10 +207,10 @@ int main(const int argc, char *argv[]) {
         }
     }
 
-    n_per_line = screen_width / (longest_so_far+2); /* number of filenames per column */
+    n_per_line = screen_width / (longest_so_far + 2); /* number of filenames per column */
     rewinddir(dp);
 
-    char filenames[n_files][PATH_MAX]; /* dirent strings are 256 bytes */
+    char filenames[n_files][PATH_MAX];
     n = 0;
 
     while ((list = readdir(dp)) != NULL) {
@@ -231,7 +220,7 @@ int main(const int argc, char *argv[]) {
                 continue;
             }
         }
-        strncpy(filenames[n], list->d_name, PATH_MAX);
+        snprintf(filenames[n], sizeof filenames[n], "%s", list->d_name);
         n++;
     }
     closedir(dp);
@@ -245,12 +234,12 @@ int main(const int argc, char *argv[]) {
     cwd_p = cwd;
 
     if (getcwd(cwd_p, PATH_MAX) == NULL) {
-        perror("getcwd");
+        fprintf(stderr, "%s: getcwd() failed: %s\n", APP_NAME, strerror(errno));
         exit(EXIT_FAILURE);
     }
 
     if (chdir(path_to_ls) == -1) {
-        perror("chdir");
+        fprintf(stderr, "%s: chdir failed: %s", APP_NAME, strerror(errno));
         exit(EXIT_FAILURE);
     }
 
