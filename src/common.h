@@ -79,6 +79,34 @@ extern inline size_t get_filename_max() {
 
 #define ANSI_RESET     "\x1b[0m"
 
+/* Formats 'human readable' output.
+ * Used by ls and vdir. */
+extern inline void format(const long long int bytes)
+{
+    char size_string[22];
+    double result;
+    if (bytes < 1024) {
+        if (snprintf(size_string, 21, "%lld", bytes) < 0) {
+            perror("sprintf"); exit(EXIT_FAILURE);
+        }
+    } else if ((bytes > 1025) && (bytes <= 1025000)) {
+        result = (double)bytes / 1024.0;
+        if (snprintf(size_string, 21, "%5.1fK", result) < 0) {
+            perror("sprintf"); exit(EXIT_FAILURE);
+        }
+    } else if ((bytes > 1025000) && (bytes <= 1025000000)) {
+        result = (double)bytes / 1024.0 / 1024.0;
+        if (snprintf(size_string, 21, "%5.1fM", result) < 0) {
+            perror("sprintf"); exit(EXIT_FAILURE);
+        }
+    } else {
+        result = (double)bytes / 1024.0 / 1024.0 / 1024.0;
+        if (snprintf(size_string, 21, "%5.1fG", result) < 0) {
+            perror("sprintf"); exit(EXIT_FAILURE);
+        }
+    }
+    printf("%6s ", size_string);
+}
 
 /* Debugging aids */
 inline int dump_args(int argc, char *argv[]) {
@@ -194,7 +222,7 @@ extern inline char *filetype(const mode_t st_mode, const int flag) {
     }
 }
 
-inline char *get_username(const uid_t uid) {
+extern inline char *get_username(const uid_t uid) {
     errno = 0;
     const struct passwd *pwd = getpwuid(uid);
 
@@ -208,7 +236,7 @@ inline char *get_username(const uid_t uid) {
     return pwd->pw_name;
 }
 
-inline char *get_groupname(const gid_t gid) {
+extern inline char *get_groupname(const gid_t gid) {
     errno = 0;
     const struct group *grp = getgrgid(gid);
     if (grp == NULL) {
