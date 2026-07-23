@@ -1,4 +1,4 @@
-CC ?= gcc
+CC ?= cc
 
 CFLAGS       = -Wall -Wextra -Werror -Wdeprecated-declarations -O2 -std=gnu2x
 CFLAGS_DEBUG = -Wall -Wextra -Werror -g -O0 -std=gnu2x -fsanitize=address -fno-omit-frame-pointer
@@ -6,21 +6,13 @@ LDFLAGS ?=
 
 PKG_CONFIG ?= pkg-config
 
-# Ask pkg-config for the correct flags for ncurses
-NCURSES_LIBS := $(shell $(PKG_CONFIG) --libs ncurses 2>/dev/null)
-
-# Fallback if pkg-config fails (rare, but possible)
-ifeq ($(NCURSES_LIBS),)
-    NCURSES_LIBS := -lncurses
-endif
-
 SRCDIR := src
 BINDIR := bin
 
 PROGRAMS := basename cal cat cd chgrp chown cp df dirname env false free head link ln ls mount mkdir mv nl od printenv pwd rm rmdir sleep stat sync tail tee touch true uname unlink uptime vdir wc who whoami yes
 
 package := ull-userland
-version := 0.3
+version := 0.4.1
 tarname := $(package)
 distdir := $(tarname)-$(version)
 
@@ -35,7 +27,6 @@ $(PROGRAMS):
 	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $(SRCDIR)/$@.c $(LDFLAGS_$@) $(LDFLAGS)
 
 # Special link flags per program
-LDFLAGS_ls = $(NCURSES_LIBS)
 LDFLAGS_nl = -lm
 
 # Tarball distribution
