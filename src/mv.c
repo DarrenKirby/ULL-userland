@@ -1,8 +1,8 @@
 /***************************************************************************
  *   mv.c - move (rename) files                                            *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
+ *   darren@dragonbyte.ca                                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,17 +20,24 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <getopt.h>
+
 #include "common.h"
 
-const char *APPNAME = "mv";
 
-struct opt_struct {
-    int force;
-    int interactive;
-    int verbose;
-} opts;
+static const char *APP_NAME = "mv";
+static size_t PATH_MAX;
 
-static void show_help(void) {
+static struct {
+    bool force;
+    bool interactive;
+    bool verbose;
+} opts = { .force = false,
+           .interactive = true,
+           .verbose = false };
+
+static void show_help()
+{
     printf("Usage: %s [OPTION]... SOURCE DEST\n\
    or: %s [OPTION]... SOURCE... DIRECTORY\n\n\
 Rename SOURCE to DEST, or move SOURCE(s) to DIRECTORY.\n\n\
@@ -39,11 +46,12 @@ Options:\n\
     -i, --interactive\tprompt before overwrite\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME, APPNAME);
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME, APP_NAME);
 }
 
-static int prompt(char *to) {
-    printf("%s: %s exists. Overwrite ('y' or 'n')? ", APPNAME, to);
+static int prompt(char *to)
+{
+    printf("%s: '%s' exists. Overwrite ('y' or 'n')? ", APP_NAME, to);
     int response;
     do {
         response = getchar();
@@ -56,54 +64,59 @@ static int prompt(char *to) {
     return 0;
 }
 
-int main(const int argc, char *argv[]) {
-    int opt;
-
+int main(const int argc, char *argv[])
+{
     const struct option long_opts[] = {
-        {"force", 0, NULL, 'f'},
-        {"interactive", 0, NULL, 'i'},
-        {"verbose", 0, NULL, 'v'},
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {NULL,0,NULL,0}
+        {.name = "force",       .has_arg = 0, .flag = NULL, .val = 'f'},
+        {.name = "interactive", .has_arg = 0, .flag = NULL, .val = 'i'},
+        {.name = "verbose",     .has_arg = 0, .flag = NULL, .val = 'v'},
+        {.name = "help",        .has_arg = 0, .flag = NULL, .val = 'h'},
+        {.name = "version",     .has_arg = 0, .flag = NULL, .val = 'V'},
+        {.name = NULL,          .has_arg = 0, .flag = NULL, .val = 0}
     };
 
+    int opt;
     while ((opt = getopt_long(argc, argv, "fivVh", long_opts, NULL)) != -1) {
         switch(opt) {
             case 'v':
-                opts.verbose = 1;
+                opts.verbose = true;
                 break;
+                /* --interactive and --force are mutually exclusive.
+                 * The last one passed on the CLI 'wins'. */
             case 'i':
-                opts.interactive = 1;
+                opts.interactive = true;
+                opts.force = false;
                 break;
             case 'f':
-                opts.force = 1;
+                opts.force = true;
+                opts.interactive = false;
                 break;
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'h':
                 show_help();
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             default:
                 show_help();
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
         }
     }
 
+    PATH_MAX = get_path_max();
     int n_args = argc - optind;    /* Number of arguments */
-    int isdir = 0;                 /* Final arg a directory? */
-    char tmp[FILEMAX];             /* Tmp name for 'to' when it is a directory */
+    bool is_dir = false;           /* Final arg a directory? */
+    char tmp[PATH_MAX];            /* Tmp name for 'to' when it is a directory */
 
     struct stat s;
 
     if (n_args < 2) {
-        fprintf(stderr, "at least two arguments required\n");
+        fprintf(stderr, "%s: at least two arguments required\n", APP_NAME);
         show_help();
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     char *from = argv[optind];  /* From name */
@@ -111,39 +124,37 @@ int main(const int argc, char *argv[]) {
 
     stat(to, &s);
     if (S_ISDIR(s.st_mode))
-        isdir = 1;
-    if (n_args > 2 && isdir == 0) {
-        printf("%s: '%s' must be a directory\n", APPNAME, to);
-        exit(EXIT_FAILURE);
+        is_dir = true;
+    if (n_args > 2 && !is_dir) {
+        printf("%s: '%s' must be a directory\n", APP_NAME, to);
+        return EXIT_FAILURE;
     }
 
     n_args--; /* Already 'popped' last arg */
 
     do {
-        if (isdir == 1) {
-
-            snprintf(tmp, FILEMAX, "%s/%s", to, from); /* Rename 'to' */
+        if (is_dir) {
+            snprintf(tmp, PATH_MAX, "%s/%s", to, from); /* Rename 'to' */
             if (opts.interactive && access(to, F_OK) == 0) {
                 if (!prompt(to)) {
-                    exit(EXIT_FAILURE);
+                    return EXIT_FAILURE;
                 }
             }
             if (rename(from, tmp) != 0) {
-                fprintf(stderr, "%s: cannot rename\n", APPNAME);
+                fprintf(stderr, "%s: cannot rename\n", APP_NAME);
             }
         } else {
-            /* FIXME: This clobbers existing files even without -f */
             if (opts.interactive && access(to, F_OK) == 0) {
                 if (!prompt(to)) {
-                    exit(EXIT_FAILURE);
+                    return EXIT_FAILURE;
                 }
             }
             if (rename(from, to) != 0) {
-                fprintf(stderr, "%s: cannot rename\n", APPNAME);
+                fprintf(stderr, "%s: cannot rename\n", APP_NAME);
             }
         }
         if (opts.verbose) {
-            printf("'%s' -> '%s'\n", from, isdir == 0 ? to : tmp);
+            printf("'%s' moved to '%s'\n", from, is_dir == 0 ? to : tmp);
         }
         optind++;
         n_args--;
