@@ -1,8 +1,8 @@
 /***************************************************************************
  *   chown.c - change ownership of files                                   *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,25 +20,30 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+/* TODO: allow for passing uid/gid. */
+
+#include <fts.h>
+#include <getopt.h>
+
 #include "common.h"
-#include <ftw.h>
 
-const char *APPNAME = "chown";
 
-struct group *grp_buf;
-struct passwd *own_buf;
-char to_grp[FILEMAX ];
-char to_own[FILEMAX];
+static const char *APP_NAME = "chown";
+static size_t FILE_MAX;
 
-char *pg;
-char *po;
+static struct group *grp_buf;
+static struct passwd *own_buf;
 
-struct opt_struct {
-    unsigned int no_dereference;
-    unsigned int recursive;
-    unsigned int verbose;
-    unsigned int group_too;
-} opts;
+static struct {
+    bool no_dereference;
+    bool recursive;
+    bool verbose;
+    bool group_too;
+} opts = {
+    .no_dereference = false,
+    .recursive = false,
+    .verbose = false,
+    .group_too = false };
 
 static void show_help(void) {
     printf("Usage: %s [OPTION] user[:group]...\n\n\
@@ -49,150 +54,176 @@ Options:\n\
     -d, --no-dereference\toperate on symbolic links rather than their targets\n\
     -h, --help\t\t\tdisplay this help\n\
     -V, --version\t\tdisplay version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
-static int chown_recurse(const char *path, const struct stat *stat_buf, int type, struct FTW *ftw_buf) {
-    if (type == FTW_NS) {
-        printf("stat failed on `%s' (permissions?)\n", path);
-        /* non-fatal */
-        return 1;
+/* Compare function for FTS. */
+static int cmp(const FTSENT **s1, const FTSENT **s2)
+{
+    return strcoll((*s1)->fts_name, (*s2)->fts_name);
+}
+
+static int chown_recurse(char *path, char to_own[], char to_grp[])
+{
+    FTSENT *f;
+    char  *argv[] = { path , nullptr };
+
+    const int flags = opts.no_dereference ? FTS_PHYSICAL : FTS_LOGICAL;
+    FTS *tree = fts_open(argv, flags | FTS_NOSTAT, cmp);
+    if (!tree) {
+        fprintf(stderr, "fts_open() failed: %s\n", strerror(errno));
+        return -1;
     }
 
-    if (type == FTW_SL && opts.no_dereference == 1) {
-        if (opts.group_too == 1) {
-            if (lchown(path, own_buf->pw_uid, grp_buf->gr_gid) != 0) {
-                fprintf(stderr, "lchown failed: %s\n", strerror(errno));
-            }
-        } else {
-            if (lchown(path, own_buf->pw_uid, -1) != 0) {
-                fprintf(stderr, "lchown failed: %s\n", strerror(errno));
-            }
+    while ((f = fts_read(tree))) {
+        switch (f->fts_info) {
+            case FTS_DNR:
+                fprintf(stderr, "%s: could not read '%s': %s\n", APP_NAME, f->fts_path, strerror(f->fts_errno));
+                continue;
+            case FTS_ERR:
+                fprintf(stderr, "%s: failed on '%s': %s", APP_NAME, f->fts_path, strerror(f->fts_errno));
+                /* Intentional fall-through to the continue... */
+            case FTS_DP:
+                continue;
+            default:
+                if (opts.group_too) {
+                    if (f->fts_info == FTS_SL && opts.no_dereference) {
+                        if (lchown(f->fts_path, own_buf->pw_uid, grp_buf->gr_gid) != 0) {
+                            fprintf(stderr, "%s: lchown failed on '%s'\n", APP_NAME, path);
+                        }
+                    } else {
+                        if (chown(f->fts_path, own_buf->pw_uid, grp_buf->gr_gid) != 0) {
+                            fprintf(stderr, "%s: chown failed on '%s'\n", APP_NAME, path);
+                        }
+                    }
+                } else {
+                    if (f->fts_info == FTS_SL && opts.no_dereference) {
+                        if (lchown(f->fts_path, own_buf->pw_uid, -1) != 0) {
+                            fprintf(stderr, "%s: lchown failed on '%s'\n", APP_NAME, path);
+                        }
+                    } else {
+                        if (chown(f->fts_path, own_buf->pw_uid, -1) != 0) {
+                            fprintf(stderr, "%s: chown failed on '%s'\n", APP_NAME, path);
+                        }
+                    }
+                }
         }
-    } else {
-        if (opts.group_too == 1) {
-            if (chown(path, own_buf->pw_uid, grp_buf->gr_gid) != 0) {
-                fprintf(stderr, "chown failed: %s\n", strerror(errno));
-            }
-        } else {
-            if (chown(path, own_buf->pw_uid, -1) != 0) {
-                fprintf(stderr, "chown failed: %s\n", strerror(errno));
+        if (opts.verbose) {
+            printf("Changed ownership of '%s' to '%s'\n", f->fts_path, to_own);
+            if (opts.group_too) {
+                printf("Changed group ownership of '%s' to '%s'\n", f->fts_path, to_grp);
             }
         }
     }
 
-    if (opts.verbose == 1) {
-        printf("changed file ownership of `%s' to `%s'\n", path, to_own);
-        if (opts.group_too == 1) {
-            printf("changed group ownership of `%s' to `%s'\n", path, to_grp);
-        }
-    }
-
+    fts_close(tree);
     return 0;
 }
 
-int main(const int argc, char *argv[]) {
-    int opt;
-
+int main(const int argc, char *argv[])
+{
     const struct option long_opts[] = {
-        {"help",           0, NULL, 'h'},
-        {"version",        0, NULL, 'V'},
-        {"recursive",      0, NULL, 'R'},
-        {"verbose",        0, NULL, 'v'},
-        {"no-dereference", 0, NULL, 'd'},
-        {NULL,0,NULL,0}
+        {.name = "help",           .has_arg = 0, .flag = nullptr, .val = 'h'},
+        {.name = "version",        .has_arg = 0, .flag = nullptr, .val = 'V'},
+        {.name = "recursive",      .has_arg = 0, .flag = nullptr, .val = 'R'},
+        {.name = "verbose",        .has_arg = 0, .flag = nullptr, .val = 'v'},
+        {.name = "no-dereference", .has_arg = 0, .flag = nullptr, .val = 'd'},
+        {.name = nullptr,.has_arg = 0, .flag = nullptr,.val = 0}
     };
 
+    int opt;
     while ((opt = getopt_long(argc, argv, "VhRvd", long_opts, NULL)) != -1) {
         switch(opt) {
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'h':
                 show_help();
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'R':
-                opts.recursive = 1;
+                opts.recursive = true;
                 break;
             case 'v':
-                opts.verbose = 1;
+                opts.verbose = true;
                 break;
             case 'd':
-                opts.no_dereference = 1;
+                opts.no_dereference = true;
                 break;
             default:
                 show_help();
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
         }
     }
 
+    FILE_MAX = get_filename_max();
+
+    char to_grp[FILE_MAX];
+    char to_own[FILE_MAX];
+
     if (strchr(argv[optind], 58) != NULL) {
         /* user:group */
-        po = strtok(argv[optind], ":");
-        pg = strtok(NULL, ":");
-        strncpy(to_own, po, FILEMAX);
-        strncpy(to_grp, pg, FILEMAX);
+        const char *po = strtok(argv[optind], ":");
+        const char *pg = strtok(NULL, ":");
+        strncpy(to_own, po, FILE_MAX);
+        strncpy(to_grp, pg, FILE_MAX);
 
-        opts.group_too = 1;
+        opts.group_too = true;
     } else {
         /* only specified user (new owner) */
-        strncpy(to_own, argv[optind], FILEMAX);
+        strncpy(to_own, argv[optind], FILE_MAX);
     }
     optind++;
 
     own_buf = getpwnam(to_own);
     if (own_buf == NULL) {
-        fprintf(stderr, "Could not resolve user name: %s\n", to_own);
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "%s: could not resolve user name: %s\n", APP_NAME, to_own);
+        return EXIT_FAILURE;
     }
 
     grp_buf = getgrnam(to_grp);
-    if (opts.group_too == 1 && grp_buf == NULL) {
-        fprintf(stderr, "Could not resolve group name: %s\n", to_grp);
-        exit(EXIT_FAILURE);
+    if (opts.group_too && grp_buf == NULL) {
+        fprintf(stderr, "%s: could not resolve group name: %s\n", APP_NAME, to_grp);
+        return EXIT_FAILURE;
     }
 
-    if (opts.recursive == 1) {
-        if (opts.no_dereference == 1) {
-            if (nftw(argv[optind], chown_recurse, 10, FTW_PHYS) != 0) {
-                fprintf(stderr, "nftw failed: %s\n", strerror(errno));
-            }
-        } else {
-            if (nftw(argv[optind], chown_recurse, 10, 0) != 0) {
-                fprintf(stderr, "nftw failed: %s\n", strerror(errno));
-            }
+    if (opts.recursive) {
+        /* Status of chown calls checked within chown_recursive()
+        * A failure of any particular file will be noted, but we
+        * will continue to run... */
+        if (chown_recurse(argv[optind], to_own, to_grp) != 0) {
+            return EXIT_FAILURE;
         }
         return EXIT_SUCCESS;
     }
 
     while (optind < argc) {
-        if (opts.no_dereference == 1) {
-            if (opts.group_too == 1) {
+        if (opts.no_dereference) {
+            if (opts.group_too) {
                 if (lchown(argv[optind], own_buf->pw_uid, grp_buf->gr_gid) != 0) {
-                fprintf(stderr, "lchown failed: %s\n", strerror(errno));
+                fprintf(stderr, "%s: lchown failed: %s\n", APP_NAME, strerror(errno));
                 }
             } else {
                 if (lchown(argv[optind], own_buf->pw_uid, -1) != 0) {
-                fprintf(stderr, "lchown failed: %s\n", strerror(errno));
+                fprintf(stderr, "%s: lchown failed: %s\n", APP_NAME, strerror(errno));
                 }
             }
 
         } else {
-            if (opts.group_too == 1) {
+            if (opts.group_too) {
                 if (chown(argv[optind], own_buf->pw_uid, grp_buf->gr_gid) != 0) {
-                fprintf(stderr, "chown failed: %s\n", strerror(errno));
+                fprintf(stderr, "%s: chown failed: %s\n", APP_NAME, strerror(errno));
                 }
             } else {
                 if (chown(argv[optind], own_buf->pw_uid, -1) != 0) {
-                fprintf(stderr, "chown failed: %s\n", strerror(errno));
+                fprintf(stderr, "%s: chown failed: %s\n", APP_NAME, strerror(errno));
                 }
             }
         }
 
-        if (opts.verbose == 1) {
+        if (opts.verbose) {
             printf("changed file ownership of `%s' to `%s'\n", argv[optind], to_own);
             if (opts.group_too == 1) {
                 printf("changed group ownership of `%s' to `%s'\n", argv[optind], to_grp);

@@ -20,6 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+/* TODO: allow for passing gid. */
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fts.h>
@@ -39,9 +41,13 @@ static struct {
     bool no_dereference;
     bool recursive;
     bool verbose;
-} opts = {.no_dereference = false, .recursive = false, .verbose = false};
+} opts = {
+    .no_dereference = false,
+    .recursive = false,
+    .verbose = false };
 
-static void show_help() {
+static void show_help()
+{
     printf("Usage: %s [OPTION] group FILE [FILE]...\n\n\
 Change group ownership of file(s)\n\n\
 Options:\n\
@@ -59,7 +65,8 @@ static int cmp(const FTSENT **s1, const FTSENT **s2)
     return strcoll((*s1)->fts_name, (*s2)->fts_name);
 }
 
-static int chgrp_recurse(char *path) {
+static int chgrp_recurse(char *path)
+{
     FTSENT *f;
     char  *argv[] = { path , nullptr };
 
@@ -81,7 +88,7 @@ static int chgrp_recurse(char *path) {
         case FTS_DP:
             continue;
         default:
-            if (f->fts_info == FTS_SL && opts.no_dereference == 1) {
+            if (f->fts_info == FTS_SL && opts.no_dereference) {
                 if (lchown(f->fts_path, -1, grp_buf->gr_gid) != 0) {
                     fprintf(stderr, "lchown failed on '%s'\n", path);
                 }
@@ -100,14 +107,15 @@ static int chgrp_recurse(char *path) {
     return 0;
 }
 
-int main(const int argc, char *argv[]) {
+int main(const int argc, char *argv[])
+{
     const struct option long_opts[] = {
-        {.name = "help", .has_arg = no_argument, .flag = nullptr, .val = 'h'},
-        {.name = "version", .has_arg = no_argument, .flag = nullptr, .val = 'V'},
-        {.name = "recursive", .has_arg = no_argument, .flag = nullptr, .val = 'R'},
-        {.name = "verbose", .has_arg = no_argument, .flag = nullptr, .val = 'v'},
+        {.name = "help",           .has_arg = no_argument, .flag = nullptr, .val = 'h'},
+        {.name = "version",        .has_arg = no_argument, .flag = nullptr, .val = 'V'},
+        {.name = "recursive",      .has_arg = no_argument, .flag = nullptr, .val = 'R'},
+        {.name = "verbose",        .has_arg = no_argument, .flag = nullptr, .val = 'v'},
         {.name = "no-dereference", .has_arg = no_argument, .flag = nullptr, .val = 'd'},
-        {.name = nullptr, .has_arg = 0, .flag = nullptr, .val = 0}
+        {.name = nullptr,          .has_arg = 0,           .flag = nullptr, .val = 0}
     };
 
     int opt;
@@ -185,5 +193,6 @@ int main(const int argc, char *argv[]) {
             printf("Changed group ownership of `%s' to `%s'\n", argv[optind++], to_grp);
         }
     }
+    free(to_grp);
     return EXIT_SUCCESS;
 }
