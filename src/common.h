@@ -48,12 +48,14 @@
 #endif
 
 /* Determine portable, local max path length. */
-extern inline size_t get_path_max() {
+extern inline size_t get_path_max()
+{
     return pathconf(".", _PC_PATH_MAX);
 }
 
 /* Determine portable, local max filename length. */
-extern inline size_t get_filename_max() {
+extern inline size_t get_filename_max()
+{
     return pathconf(".", _PC_NAME_MAX);
 }
 
@@ -109,7 +111,8 @@ extern inline void format(const long long int bytes)
 }
 
 /* Debugging aids */
-inline int dump_args(int argc, char *argv[]) {
+inline int dump_args(int argc, char *argv[])
+{
   printf("argc: %i\n", argc);
     for (int i = 1; i < argc; i++) {
         printf("argv[%i]: %s\n", i, argv[i]);
@@ -118,7 +121,8 @@ inline int dump_args(int argc, char *argv[]) {
 }
 
 /* trims leading and tailing whitespace from strings */
-inline char *trim_whitespace(char *str) {
+inline char *trim_whitespace(char *str)
+{
     size_t len = 0;
     char *frontp = str;
     char *endp = nullptr;
@@ -161,7 +165,8 @@ bit information in returned string */
 
 /* Return 'ls -l' style string for file permissions mask, This is from
  * 'The Linux Programming Interface' */
-extern inline char *file_perm_str(const mode_t perm, const int flags) {
+extern inline char *file_perm_str(const mode_t perm, const int flags)
+{
     char *str = malloc(PERM_STR_SIZE + 1); //[PERM_STR_SIZE];
     if (!str) {
         fprintf(stderr, "malloc failed\n");
@@ -184,7 +189,8 @@ extern inline char *file_perm_str(const mode_t perm, const int flags) {
 }
 
 /* Returns octal permissions of a file/directory */
-extern inline int file_perm_oct(const mode_t perm) {
+extern inline int file_perm_oct(const mode_t perm)
+{
     int oct_perm = 00;
     (perm & S_ISUID) ? (oct_perm += 04000) : (oct_perm += 00);
     (perm & S_ISGID) ? (oct_perm += 02000) : (oct_perm += 00);
@@ -201,7 +207,8 @@ extern inline int file_perm_oct(const mode_t perm) {
     return oct_perm;
 }
 
-extern inline char *filetype(const mode_t st_mode, const int flag) {
+extern inline char *filetype(const mode_t st_mode, const int flag)
+{
     switch (st_mode & S_IFMT) {
     case S_IFBLK:
         return (flag == 1) ? (char *)"block device" : (char *)"b";
@@ -222,7 +229,8 @@ extern inline char *filetype(const mode_t st_mode, const int flag) {
     }
 }
 
-extern inline char *get_username(const uid_t uid) {
+extern inline char *get_username(const uid_t uid)
+{
     errno = 0;
     const struct passwd *pwd = getpwuid(uid);
 
@@ -236,7 +244,8 @@ extern inline char *get_username(const uid_t uid) {
     return pwd->pw_name;
 }
 
-extern inline char *get_groupname(const gid_t gid) {
+extern inline char *get_groupname(const gid_t gid)
+{
     errno = 0;
     const struct group *grp = getgrgid(gid);
     if (grp == NULL) {
