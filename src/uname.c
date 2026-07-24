@@ -1,8 +1,8 @@
 /***************************************************************************
  *   uname.c - print system information                                    *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 Darren Kirby                                *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014 - 2026 Darren Kirby                                *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,26 +20,38 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "common.h"
+#include <getopt.h>
 #include <sys/utsname.h>
 #ifndef __linux__
 #include <sys/sysctl.h>
 #endif
 
-const char *APPNAME = "uname";
+#include "common.h"
 
-struct packed_flags {
-    unsigned int s : 1;
-    unsigned int n : 1;
-    unsigned int r : 1;
-    unsigned int v : 1;
-    unsigned int m : 1;
-    unsigned int p : 1;
-    unsigned int i : 1;
-    unsigned int o : 1;
-};
 
-static void show_help(void) {
+static const char *APP_NAME = "uname";
+
+static struct {
+    bool s :1;
+    bool n :1;
+    bool r :1;
+    bool v :1;
+    bool m :1;
+    bool p :1;
+    bool i :1;
+    bool o :1;
+} opts = {
+    .s = true,
+    .n = false,
+    .r = false,
+    .v = false,
+    .m = false,
+    .p = false,
+    .i = false,
+    .o = false };
+
+static void show_help()
+{
     printf("Usage: %s [OPTION]...\n\n\
     Print certain system information. With no OPTION, same as -s.\n\n\
 Options:\n\
@@ -54,77 +66,82 @@ Options:\n\
     -o, --operating-system\t print the operating system\n\n\
     -h, --help\t\t display this help\n\
     -V, --version\t display version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
-int main(const int argc, char *argv[]) {
-    int opt;
-
+int main(const int argc, char *argv[])
+{
     const struct option long_opts[] = {
-        {"all", 0, nullptr, 'a'},
-        {"kernel-name", 0, nullptr, 's'},
-        {"nodename", 0, nullptr, 'n'},
-        {"kernel-release", 0, nullptr, 'r'},
-        {"kernel-version", 0, nullptr, 'v'},
-        {"machine", 0, nullptr, 'm'},
-        {"processor", 0, nullptr, 'p'},
-        {"hardware-platform", 0, nullptr, 'i'},
-        {"operating-system", 0, nullptr, 'o'},
-        {"help", 0, nullptr, 'h'},
-        {"version", 0, nullptr, 'V'},
-        {nullptr,0,nullptr,0}
+        {.name = "all",               .has_arg = 0, .flag = nullptr, .val = 'a'},
+        {.name = "kernel-name",       .has_arg = 0, .flag = nullptr, .val = 's'},
+        {.name = "nodename",          .has_arg = 0, .flag = nullptr, .val = 'n'},
+        {.name = "kernel-release",    .has_arg = 0, .flag = nullptr, .val = 'r'},
+        {.name = "kernel-version",    .has_arg = 0, .flag = nullptr, .val = 'v'},
+        {.name = "machine",           .has_arg = 0, .flag = nullptr, .val = 'm'},
+        {.name = "processor",         .has_arg = 0, .flag = nullptr, .val = 'p'},
+        {.name = "hardware-platform", .has_arg = 0, .flag = nullptr, .val = 'i'},
+        {.name = "operating-system",  .has_arg = 0, .flag = nullptr, .val = 'o'},
+        {.name = "help",              .has_arg = 0, .flag = nullptr, .val = 'h'},
+        {.name = "version",           .has_arg = 0, .flag = nullptr, .val = 'V'},
+        {.name = nullptr,             .has_arg = 0, .flag = nullptr, .val = 0}
     };
-
-    struct packed_flags optflags = { 0,0,0,0,0,0,0,0 };
-
+    
+    int opt;
     while ((opt = getopt_long(argc, argv, "snrvmpioaVh", long_opts, nullptr)) != -1) {
         switch(opt) {
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'h':
                 show_help();
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'a':
-                optflags.s = 1;     /* all the below */
-                optflags.n = 1;
-                optflags.r = 1;
-                optflags.v = 1;
-                optflags.m = 1;
-                optflags.p = 1;
-                optflags.i = 1;
-                optflags.o = 1;
+                /* all the below */
+                opts.n = true;
+                opts.r = true;
+                opts.v = true;
+                opts.m = true;
+                opts.p = true;
+                opts.i = true;
+                opts.o = true;
                 break;
             case 's':
-                optflags.s = 1;     /* kernel name */
+                opts.s = true;     /* kernel name */
                 break;
             case 'n':
-                optflags.n = 1;     /* network node hostname */
+                opts.s = false;
+                opts.n = true;     /* network node hostname */
                 break;
             case 'r':
-                optflags.r = 1;     /* kernel release */
+                opts.s = false;
+                opts.r = true;     /* kernel release */
                 break;
             case 'v':
-                optflags.v = 1;     /* kernel version */
+                opts.s = false;
+                opts.v = true;     /* kernel version */
                 break;
             case 'm':
-                optflags.m = 1;     /* machine hardware name */
+                opts.s = false;
+                opts.m = true;     /* machine hardware name */
                 break;
             case 'p':
-                optflags.p = 1;     /* processor type or 'unknown' */
+                opts.s = false;
+                opts.p = true;     /* processor type or 'unknown' */
                 break;
             case 'i':
-                optflags.i = 1;     /* hardware platform or 'unknown' */
+                opts.s = false;
+                opts.i = true;     /* hardware platform or 'unknown' */
                 break;
             case 'o':
-                optflags.o = 1;     /* operating system */
+                opts.s = false;
+                opts.o = true;     /* operating system */
                 break;
             default:
                 show_help();
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
         }
     }
 
@@ -187,32 +204,35 @@ int main(const int argc, char *argv[]) {
 #endif
 
     struct utsname uts;
-    uname(&uts);
+    if (uname(&uts) == -1) {
+        fprintf(stderr, "%s: uname() failed: %s\n", APP_NAME, strerror(errno));
+        return EXIT_FAILURE;
+    }
 
     int t = 0;
 
-    if (optflags.s) {
+    if (opts.s) {
         printf("%s ", uts.sysname);
         t = 1;
     }
-    if (optflags.n) {
+    if (opts.n) {
         printf("%s ", uts.nodename);
         t = 1;
     }
-    if (optflags.r) {
+    if (opts.r) {
         printf("%s ", uts.release);
         t = 1;
     }
-    if (optflags.v) {
+    if (opts.v) {
         printf("%s ", uts.version);
         t = 1;
     }
-    if (optflags.m) {
+    if (opts.m) {
         printf("%s ", uts.machine);
         t = 1;
     }
-    if (optflags.p) {
-#if defined (__linux__)
+    if (opts.p) {
+#ifdef __linux__
         printf("%s ", cpu.name);
 #elif defined (BSD) && defined (__unix__)
         size_t len;
@@ -227,8 +247,8 @@ int main(const int argc, char *argv[]) {
 #endif
         t = 1;
     }
-    if (optflags.i) {
-#if defined (__linux__)
+    if (opts.i) {
+#ifdef __linux__
         printf("%s ", cpu.vendor);
 #elif defined (BSD) && defined (__unix__)
         ;
@@ -239,13 +259,13 @@ int main(const int argc, char *argv[]) {
         t = 1;
 #endif
     }
-    if (optflags.o) {
-#if defined (__linux__)
+    if (opts.o) {
+#ifdef __linux__
         printf("GNU/Linux");
 #elif defined (BSD) && defined (__unix__)
         printf("%s ", uts.sysname);
 #elif defined (__APPLE__) && defined (__MACH__)
-        printf("OS X ");
+        printf("macOS ");
 #elif defined (__sun) && defined (__SVR4)
         printf("Solaris");
 #endif
