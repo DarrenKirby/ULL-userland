@@ -1,8 +1,8 @@
 /***************************************************************************
  *    -                                      *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
+ *   darren@dragonbyte.ca                                                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,44 +20,48 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <getopt.h>
+
 #include "common.h"
 
-const char *APPNAME =  "";
 
-struct opt_struct {
-} opts;
+static const char *APP_NAME =  "";
 
-static void show_help(void) {
+static struct {
+} opts = {};
+
+static void show_help()
+{
     printf("Usage: %s [OPTION]...\n\n\
 Options:\n\
     -h, --help\t\t display this help\n\
     -V, --version\t display version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
-int main(const int argc, char *argv[]) {
-    int opt;
-
+int main(const int argc, char *argv[])
+{
     const struct option long_opts[] = {
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {NULL,0,NULL,0}
+        {.name = "help",    .has_arg = 0, .flag = nullptr, .val = 'h'},
+        {.name = "version", .has_arg = 0, .flag = nullptr, .val = 'V'},
+        {.name = nullptr,   .has_arg = 0, .flag = nullptr, .val = 0}
     };
 
+    int opt;
     while ((opt = getopt_long(argc, argv, "Vh", long_opts, NULL)) != -1) {
         switch(opt) {
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'h':
                 show_help();
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             default:
                 show_help();
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
         }
     }
     return EXIT_SUCCESS;
