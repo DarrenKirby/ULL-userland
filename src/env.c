@@ -1,8 +1,8 @@
 /***************************************************************************
  *   env.c - run a program in a modified environment                       *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,15 +20,21 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+/* TODO: printing and setting mostly works, but needs a lot of
+ * work to run commands in the specified environment. */
+
+#include <getopt.h>
+
 #include "common.h"
 
-const char *APPNAME = "env";
+
+static const char *APP_NAME = "env";
 
 extern char **environ;
 
 /* Cycle through and print all env variables */
-static int print_all_env(void) {
-
+static int print_all_env()
+{
     while (*environ) {
         printf("%s\n", *environ);
         environ++;
@@ -36,7 +42,7 @@ static int print_all_env(void) {
     return EXIT_SUCCESS;
 }
 
-static void show_help(void) {
+static void show_help() {
     printf("Usage: %s [OPTION]... [NAME=VALUE]... [COMMAND [ARG]...]\n\n\
     Set each NAME to VALUE in the environment and run COMMAND.\n\
     With no args just print all environmental variables.\n\n\
@@ -45,24 +51,26 @@ Options:\n\
     -u, --unset=NAME           remove variable from the environment\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
-int main(int argc, char *argv[]) {
-    int opt, es;
+int main(const int argc, char *argv[])
+{
+    int es;
 
-    struct option longopts[] = {
-        {"ignore-environment", 0, NULL, 'i'},
-        {"unset", 0, NULL, 'u'},
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {0,0,0,0}
+    const struct option longopts[] = {
+        {.name = "ignore-environment", .has_arg = 0, .flag = nullptr, .val = 'i'},
+        {.name = "unset",   .has_arg = 0, .flag = nullptr, .val = 'u'},
+        {.name = "help",    .has_arg = 0, .flag = nullptr, .val = 'h'},
+        {.name = "version", .has_arg = 0, .flag = nullptr, .val = 'V'},
+        {.name = nullptr,   .has_arg = 0, .flag = nullptr, .val = 0}
     };
 
+    int opt;
     while ((opt = getopt_long(argc, argv, "iu:Vh", longopts, NULL)) != -1) {
         switch(opt) {
             case 'i':
-#if defined (__linux__)
+#ifdef __linux__
                 es = clearenv();
                 if (es != 0) {
                     fprintf(stderr, "clearenv failed: %s\n", strerror(errno));
@@ -77,27 +85,23 @@ int main(int argc, char *argv[]) {
             case 'u':
                 es = unsetenv(optarg);
                 if (es != 0) {
-                    char message[50];
-                    sprintf(message, "Cound not unset %s", optarg);
-                    fprintf(stderr, "%s\n", message);
+                    fprintf(stderr, "%s: could not unset %s\n", APP_NAME, optarg);
                 }
-                break;
+                return EXIT_FAILURE;
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
-            case 'h': show_help(); exit(EXIT_SUCCESS);
-            default : show_help(); exit(EXIT_FAILURE);
+                return EXIT_SUCCESS;
+            case 'h': show_help(); return EXIT_SUCCESS;
+            default : show_help(); return EXIT_FAILURE;
         }
     }
 
-    if (argc == optind) {      /* Just dump algen_error("Could not clear environment");l env variables */
-        if (print_all_env() != 0) {
-            perror("print_all_env");
-            exit(EXIT_FAILURE);
-        }
+    /* Just dump all env variables. */
+    if (argc == optind) {
+        return print_all_env();
     }
 
     return EXIT_SUCCESS;
