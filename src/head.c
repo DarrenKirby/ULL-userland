@@ -1,8 +1,8 @@
 /***************************************************************************
  *   head.c - print first n lines or bytes of file                         *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,21 +20,28 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "common.h"
+#include <getopt.h>
 #include <sys/fcntl.h>
+
+#include "common.h"
 
 #define MAX_LINE_LENGTH 2048
 
-const char *APPNAME =  "head";
+static const char *APP_NAME =  "head";
 
-struct opt_struct {
-    unsigned int quiet:1;
-    unsigned int verbose:1;
-    unsigned int bytes:1;
-    unsigned int lines:1;
-} opts;
+static struct {
+    bool quiet:1;
+    bool verbose:1;
+    bool bytes:1;
+    bool lines:1;
+} opts = {
+    .lines = true,
+    .verbose = false,
+    .bytes = false,
+    .quiet = false };
 
-static void show_help(void) {
+static void show_help()
+{
     printf("Usage: %s [OPTION]... FILE [FILE...]\n\n\
 Options:\n\
     -n, --lines=N\tprint first N lines\n\
@@ -43,10 +50,11 @@ Options:\n\
     -q, --quiet\t\tnever print file header(s)\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <bulliver@gmail.com>\n", APP_NAME);
 }
 
-int head_bytes(char *filename, long int n_bytes) {
+static int head_bytes(char *filename, const long int n_bytes)
+{
     if (opts.verbose) {
         printf("==> %s%s%s <==\n", ANSI_BLUE_B, filename, ANSI_RESET);
     }
@@ -69,7 +77,8 @@ int head_bytes(char *filename, long int n_bytes) {
     return EXIT_SUCCESS;
 }
 
-int head_lines(char *filename, long int n_lines) {
+static int head_lines(char *filename, long int n_lines)
+{
     if (opts.verbose) {
         printf("==> %s%s%s <==\n", ANSI_BLUE_B, filename, ANSI_RESET);
     }
@@ -96,33 +105,29 @@ int main(const int argc, char *argv[]) {
     int opt;
 
     const struct option long_opts[] = {
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {"lines", required_argument, NULL, 'n'},
-        {"bytes", required_argument, NULL, 'b'},
-        {"quiet", 0, NULL, 'q'},
-        {"verbose", 0, NULL, 'v'},
-        {0,0,0,0}
+        {.name = "help",    .has_arg = no_argument,       .flag = nullptr, .val = 'h'},
+        {.name = "version", .has_arg = no_argument,       .flag = nullptr, .val = 'V'},
+        {.name = "lines",   .has_arg = required_argument, .flag = nullptr, .val = 'n'},
+        {.name = "bytes",   .has_arg = required_argument, .flag = nullptr, .val = 'b'},
+        {.name = "quiet",   .has_arg = no_argument,       .flag = nullptr, .val = 'q'},
+        {.name = "verbose", .has_arg = no_argument,       .flag = nullptr, .val = 'v'},
+        {.name = nullptr,   .has_arg = no_argument,       .flag = nullptr, .val = 0}
     };
 
-    /* defaults */
+    /* Print 10 lines by default. */
     long int n_units = 10;
-    opts.lines = 1;
-    opts.bytes = 0;
-    opts.quiet = 0;
-    opts.verbose = 0;
 
-    while ((opt = getopt_long(argc, argv, "Vhn:b:qv", long_opts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "Vhn:b:qv", long_opts, nullptr)) != -1) {
       switch (opt) {
       case 'V':
-        printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+        printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
         printf("%s compiled on %s at %s\n",
                strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                __DATE__, __TIME__);
-        exit(EXIT_SUCCESS);
+        return EXIT_SUCCESS;
       case 'h':
         show_help();
-        exit(EXIT_SUCCESS);
+        return EXIT_SUCCESS;
       case 'v':
         opts.verbose = 1;
         opts.quiet = 0;
@@ -134,20 +139,16 @@ int main(const int argc, char *argv[]) {
       case 'n':
         opts.lines = 1;
         opts.bytes = 0;
-        n_units = strtol(optarg, NULL, 10);
+        n_units = strtol(optarg, nullptr, 10);
         break;
       case 'b':
         opts.lines = 0;
         opts.bytes = 1;
-        n_units = strtol(optarg, NULL, 10);
+        n_units = strtol(optarg, nullptr, 10);
         break;
-      case ':':
-      case '?':
-        /* getopt_long prints own error message */
-        exit(EXIT_FAILURE);
       default:
         show_help();
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
       }
     }
 

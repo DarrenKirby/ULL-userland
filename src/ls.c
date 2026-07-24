@@ -24,6 +24,7 @@
 #include <dirent.h>
 #include <time.h>
 #include <getopt.h>
+#include <inttypes.h>
 
 #include "common.h"
 
@@ -168,8 +169,8 @@ int main(const int argc, char *argv[])
         }
     }
 
-    size_t PATH_MAX = get_path_max();
-    char path_to_ls[PATH_MAX];
+    const size_t path_max = get_path_max();
+    char path_to_ls[path_max];
 
     if (argv[optind] != NULL) {
         strlcpy(path_to_ls, argv[optind], sizeof(path_to_ls));

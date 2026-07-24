@@ -1,8 +1,8 @@
 /***************************************************************************
  *   mount.c - display mounted filesystems                                 *
  *                                                                         *
- *   Copyright (C) 2014-2025 by Darren Kirby                               *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014-2026 by Darren Kirby                               *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -22,7 +22,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/param.h>
 #include <sys/mount.h>
 
 #ifndef __linux__
@@ -31,9 +30,11 @@
 #include "mount.h"
 #endif // __linux__
 
-const char *APPNAME = "mount";
+// Commented whilst unused
+//static const char *APP_NAME = "mount";
 
-int main(int argc, char *argv[]) {
+int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[])
+{
     int n_mounts; /* number of currently mounted filesystems */
 #ifdef __linux__
     struct statfs_ext *mounted_fs = malloc(sizeof(struct statfs_ext));
@@ -46,7 +47,7 @@ int main(int argc, char *argv[]) {
     }
 
 #ifdef __linux__
-    n_mounts = getfsstat_linux(NULL);
+    n_mounts = getfsstat_linux(nullptr);
 #else
     n_mounts = getfsstat(NULL, 0, MNT_NOWAIT);
     n_mounts = getfsstat(mounted_fs, sizeof(struct statfs)*n_mounts, MNT_NOWAIT);

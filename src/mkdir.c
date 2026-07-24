@@ -1,8 +1,8 @@
 /***************************************************************************
  *   mkdir.c - create a new empty directory                                *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
+ *   darren@dagonbyte.ca                                                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,62 +20,57 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <getopt.h>
 #include "common.h"
 
-const char *APPNAME = "mkdir";
+static const char *APP_NAME = "mkdir";
 
-static void show_help(void) {
+static void show_help()
+{
     printf("Usage: %s [OPTION]...\n\n \
     -h, --help\t\tdisplay this help\n \
     -V, --version\tdisplay version information\n \
     -m, --mode=MODE\tset file mode (as in chmod), not a=rwx - umask\n \
     -v, --verbose\tdisplay directories created\n\n \
-    Report bugs to <bulliver@gmail.com>\n", APPNAME);
+    Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     int opt;
     umask(0); /* so our permissions are set as expected */
     mode_t mode = 0755; /* sensible default for dirs */
     int verbose = 0;
 
     static struct option longopts[] = {
-        {"verbose", 0, NULL, 'v'},
-        {"mode",    required_argument, NULL, 'm'},
-        {"help",    0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {0,0,0,0}
+        {.name = "verbose", .has_arg = no_argument,       .flag = nullptr, .val = 'v'},
+        {.name = "mode",    .has_arg = required_argument, .flag = nullptr, .val = 'm'},
+        {.name = "help",    .has_arg = no_argument,       .flag = nullptr, .val = 'h'},
+        {.name = "version", .has_arg = no_argument,       .flag = nullptr, .val = 'V'},
+        {.name = nullptr,   .has_arg = no_argument,       .flag = nullptr, .val = 0}
     };
 
-    while ((opt = getopt_long(argc, argv, "vm:hV", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "vm:hV", longopts, nullptr)) != -1) {
         switch(opt) {
             case 'v':
                 verbose = 1;
                 break;
             case 'm':
-                mode = strtoul(optarg, NULL, 8);
+                mode = strtoul(optarg, nullptr, 8);
                 break;
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
                 break;
             case 'h':
                 show_help();
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
                 break;
-            case ':':
-                /* getopt_long print own error message */
-                exit(EXIT_FAILURE);
-                break;
-            case '?':
-                /* getopt_long prints own error message */
-                exit(EXIT_FAILURE);
             default:
                 show_help();
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
                 break;
         }
     }
@@ -86,7 +81,7 @@ int main(int argc, char *argv[]) {
     while (optind < argc) {
         mkdir(argv[optind], mode);
         if (verbose == 1)
-            printf("%s: created directory '%s'\n", APPNAME, argv[optind]);
+            printf("%s: created directory '%s'\n", APP_NAME, argv[optind]);
         optind++;
     }
     return EXIT_SUCCESS;

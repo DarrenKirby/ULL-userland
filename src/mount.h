@@ -20,8 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef _MOUNT_H
-#define _MOUNT_H
+#ifndef MOUNT_H
+#define MOUNT_H
 
 #include <stdio.h>
 #ifdef __linux__
@@ -33,7 +33,6 @@
 #include <string.h>          /* for strncpy */
 #include <unistd.h>          /* for access() */
 #include <sys/stat.h>        /* for stat   */
-#include <sys/syslimits.h>
 #include <sys/types.h>       /*  "    "    */
 
 #define ERROR  -1
@@ -298,7 +297,7 @@ int statfs_ext(const char *path, struct statfs_ext *struct_buf) {
     return SUCCESS;
 }
 
-int getfsstat_ext(struct statfs_ext **struct_array_buf, long int bufsize, int flags) {
+int getfsstat_ext(struct statfs_ext **struct_array_buf, long int bufsize, [[maybe_unused]] int flags) {
 
     FILE *fp;
     if ((fp = fopen("/proc/mounts", "r")) == NULL) {
@@ -735,5 +734,4 @@ int getfsstat_linux(struct statfs_ext *buf) {
     return i2;
 }
 
-#endif /* _MOUNT_H */
-
+#endif /* MOUNT_H */

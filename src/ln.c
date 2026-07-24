@@ -1,8 +1,8 @@
 /***************************************************************************
  *   ln.c - make links between files                                       *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,11 +20,16 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <getopt.h>
+#include <libgen.h>
+
 #include "common.h"
 
-const char *APPNAME = "ln";
 
-static void show_help(void) {
+static const char *APP_NAME = "ln";
+
+static void show_help()
+{
     printf("Usage: %s [OPTION]... TARGET LINK_NAME\t(1st form)\n\
    or: %s [OPTION]... TARGET\t\t(2nd form)\n\n\
 Make links between files\n\n\
@@ -35,59 +40,64 @@ Options:\n\
     -v, --verbose\tprint out links created\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME, APPNAME);
+Report bugs to <bulliver@gmail.com>\n", APP_NAME, APP_NAME);
 }
 
-struct opt_struct {
-    unsigned int symbolic:1;
-    unsigned int force:1;
-    unsigned int verbose:1;
-    unsigned int interactive:1;
-} opts;
+static struct {
+    bool symbolic:1;
+    bool force:1;
+    bool verbose:1;
+    bool interactive:1;
+} opts = {
+    .symbolic = false,
+    .force = false,
+    .verbose = false,
+    .interactive = false };
 
-int main(const int argc, char *argv[]) {
-    int opt;
-
-    const struct option long_opts[] = {
-        {"symbolic",    0, NULL, 's'},
-        {"force",       0, NULL, 'f'},
-        {"interactive", 0, NULL, 'i'},
-        {"verbose",     0, NULL, 'v'},
-        {"help",        0, NULL, 'h'},
-        {"version",     0, NULL, 'V'},
-        {NULL,0,NULL,0}
+int main(const int argc, char *argv[])
+{
+     const struct option long_opts[] = {
+        {.name = "symbolic",    .has_arg = 0, .flag = nullptr, .val = 's'},
+        {.name = "force",       .has_arg = 0, .flag = nullptr, .val = 'f'},
+        {.name = "interactive", .has_arg = 0, .flag = nullptr, .val = 'i'},
+        {.name = "verbose",     .has_arg = 0, .flag = nullptr, .val = 'v'},
+        {.name = "help",        .has_arg = 0, .flag = nullptr, .val = 'h'},
+        {.name = "version",     .has_arg = 0, .flag = nullptr, .val = 'V'},
+        {.name = nullptr,       .has_arg = 0, .flag = nullptr, .val = 0}
     };
 
-    while ((opt = getopt_long(argc, argv, "sfivVh", long_opts, NULL)) != -1) {
+    int opt;
+    while ((opt = getopt_long(argc, argv, "sfivVh", long_opts, nullptr)) != -1) {
         switch(opt) {
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'h':
                 show_help();
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 's':
-                opts.symbolic = 1;
+                opts.symbolic = true;
                 break;
             case 'f':
-                opts.force = 1;
+                opts.force = true;
                 break;
             case 'v':
-                opts.verbose = 1;
+                opts.verbose = true;
                 break;
             case 'i':
-                opts.interactive = 1;
+                opts.interactive = true;
                 break;
             default :
                 show_help();
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
         }
     }
 
     const int args = argc - optind;
+    const size_t PATH_MAX = get_path_max();
 
     /* 1st form */
     if (args == 2) {
@@ -125,7 +135,7 @@ int main(const int argc, char *argv[]) {
 
         /* 2nd form */
     } else if (args == 1) {
-        char target[PATHMAX];
+        char target[PATH_MAX];
         char *target_p = target;
         target_p = basename(argv[optind]);
 
