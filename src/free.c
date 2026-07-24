@@ -1,8 +1,8 @@
 /***************************************************************************
  *   free.c - report memory usage                                          *
  *                                                                         *
- *   Copyright (C) 2014-2025 by Darren Kirby                               *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014-2026 by Darren Kirby                               *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,18 +20,25 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <getopt.h>
+
 #include "common.h"
 
-const char *APPNAME = "free";
 
-struct opt_struct {
+static const char *APP_NAME = "free";
+
+static struct {
     char base;     /* -b, -k, or -m */
-    int P;         /* polling? */
-    int T;         /* print total? */
-    int BC;        /* display -/+ buffer/cache? */
-} opts;
+    bool P;        /* polling? */
+    bool T;        /* print total? */
+    bool BC;       /* display -/+ buffer/cache? */
+} opts = {
+    .P = false,
+    .T = false,
+    .BC = true };
 
-static unsigned long int fmt(const unsigned long n) {
+static unsigned long int fmt(const unsigned long n)
+{
 #ifdef __linux__
     if (opts.base == 'b') {
         return n / 1024;
@@ -141,20 +148,21 @@ static int get_free(void) {
 #include <fcntl.h>
 #endif
 
-struct Meminfo {
+static struct {
     /* core */
-    unsigned long mem_total;
-    unsigned long mem_used;
-    unsigned long mem_free;
-    unsigned long mem_used_bc; /* +/- buffers/cache */
-    unsigned long mem_free_bc; /*     ibid          */
+    uint64_t mem_total;
+    uint64_t mem_used;
+    uint64_t mem_free;
+    uint64_t mem_used_bc; /* +/- buffers/cache */
+    uint64_t mem_free_bc; /*     ibid          */
     /* swap */
-    unsigned long swap_total;
-    unsigned long swap_used;
-    unsigned long swap_free;
+    uint64_t swap_total;
+    uint64_t swap_used;
+    uint64_t swap_free;
 } m_info;
 
-static int get_mem(void) {
+static void get_mem()
+{
 #ifdef __FreeBSD__
     /* kvm requires privileged access -
      * code below parses output of swapinfo
@@ -270,20 +278,21 @@ static int get_mem(void) {
     if ((fd = popen("vm_stat", "r")) == NULL) {
         fprintf(stderr, "popen failed, errno %d - %s",
                 errno, strerror(errno));
+        exit(EXIT_FAILURE);
     }
 
     char *line = NULL;
-    size_t linecap = 0;
-    ssize_t linelen;
+    size_t line_cap = 0;
 
     /* first line is throwaway */
-    if ((linelen = getline(&line, &linecap, fd)) < 0) {
-        perror("linelength");
+    if (getline(&line, &line_cap, fd) < 0) {
+        perror("getline");
+        exit(EXIT_FAILURE);
     }
     long int value[3];
 
     for (int i = 0; i < 3; i++) {
-        linelen = getline(&line, &linecap, fd);
+        getline(&line, &line_cap, fd);
         sscanf(line, "Pages %*s %ld.", &value[i]);
     }
 
@@ -292,14 +301,11 @@ static int get_mem(void) {
 
     pclose(fd);
 #endif
-    return 0;
 }
 
-
-static int get_free(void) {
-    if (get_mem() != 0)
-        printf("Could not get memory statistics\n");
-
+static int get_free(void)
+{
+    get_mem();
     printf("\t%10s\t%10s\t%10s\n", "Total", "Used", "Free");
     printf("Mem:\t%10ld\t%10ld\t%10ld\n", fmt(m_info.mem_total),fmt(m_info.mem_used),fmt(m_info.mem_free));
 #ifdef __FreeBSD__
@@ -310,10 +316,10 @@ static int get_free(void) {
     printf("Swap:\t%10ld\t%10ld\t%10ld\n", fmt(m_info.swap_total),fmt(m_info.swap_used),fmt(m_info.swap_free));
     return 0;
 }
-
 #endif
 
-static int showHelp(void) {
+static void showHelp()
+{
     printf("usage: %s [-b|-k|-m] [-o] [-t] [-s delay] [-V, --version] [-h, --help]\n\
 Report memory usage\n\n\
 Options:\n\
@@ -323,25 +329,25 @@ Options:\n\
     -s\t\t   update every [delay] seconds\n\
     -h, --help\t   display this help\n\
     -V, --version  display version information and exit\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
-	return EXIT_SUCCESS;
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
-int main(const int argc, char *argv[]) {
+int main(const int argc, char *argv[])
+{
 #ifdef __linux__
     opts.base = 'k'; /* Linux shows values in k by default */
 #else
     opts.base = 'b';
 #endif
-    int opt;
     int poll_interval = 0;
 
     const struct option long_opts[] = {
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {NULL,0,NULL,0}
+        {.name = "help",    .has_arg = 0, .flag = nullptr, .val = 'h'},
+        {.name = "version", .has_arg = 0, .flag = nullptr, .val = 'V'},
+        {.name = nullptr,   .has_arg = 0, .flag = nullptr, .val = 0}
     };
 
+    int opt;
     /* show +/- buffers/cache by default */
     opts.BC = 1;
     while ((opt = getopt_long(argc, argv, "bkmths:oV", long_opts, NULL)) != -1) {
@@ -360,16 +366,16 @@ int main(const int argc, char *argv[]) {
                 poll_interval = atoi(optarg);
                 break;
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
                 return EXIT_SUCCESS;
             case 't':
-                opts.T = 1;
+                opts.T = true;
                 break;
             case 'o':
-                opts.BC = 0;
+                opts.BC = false;
                 break;
             case 'h':
                 showHelp();
@@ -381,7 +387,7 @@ int main(const int argc, char *argv[]) {
     }
 
     /* Polling */
-    if (opts.P == 1) {
+    if (opts.P) {
         while (1) {
             get_free();
             printf("\n");
