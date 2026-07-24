@@ -1,7 +1,7 @@
 INSTALLING the ULL-userland utils
 
 You actually really don't want to install these in a common system-wide 
-binary directory. You will almost certainly clobber the good gnu stuff 
+binary directory. You will almost certainly clobber the good GNU/BSD stuff
 with this junk. Therefore, there is no install target in the Makefile.
 
 To build the tools, simply do a:
