@@ -210,7 +210,7 @@ int main(const int argc, char *argv[])
     n_per_line = screen_width / (longest_so_far + 2); /* number of filenames per column */
     rewinddir(dp);
 
-    char filenames[n_files][PATH_MAX];
+    char filenames[n_files][path_max];
     n = 0;
 
     while ((list = readdir(dp)) != NULL) {
@@ -229,11 +229,11 @@ int main(const int argc, char *argv[])
     qsort(filenames, n_files, sizeof(filenames[0]), compare_strings);
 
     /* cd to path_to_ls */
-    char cwd[PATH_MAX];
+    char cwd[path_max];
     char *cwd_p;
     cwd_p = cwd;
 
-    if (getcwd(cwd_p, PATH_MAX) == NULL) {
+    if (getcwd(cwd_p, path_max) == NULL) {
         fprintf(stderr, "%s: getcwd() failed: %s\n", APP_NAME, strerror(errno));
         return EXIT_FAILURE;
     }
