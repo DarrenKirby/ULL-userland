@@ -9,7 +9,7 @@ PKG_CONFIG ?= pkg-config
 SRCDIR := src
 BINDIR := bin
 
-PROGRAMS := basename cal cat cd chgrp chown cp df dirname env false free head link ln ls mount mkdir mv nl od printenv pwd rm rmdir sleep stat sync tail tee touch true uname unlink uptime vdir wc who whoami yes
+PROGRAMS := basename cal cat cd chgrp chown cp df dirname env false free head link ln logname ls mount mkdir mv nl od printenv pwd rm rmdir sleep stat sync tail tee touch true uname unlink uptime vdir wc who whoami yes
 
 package := ull-userland
 version := 0.4.1
@@ -24,7 +24,7 @@ prep:
 
 # Build each program
 $(PROGRAMS):
-	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $(SRCDIR)/$@.c $(LDFLAGS_$@) $(LDFLAGS)
+	$(CC) $(CFLAGS_DEBUG) -o $(BINDIR)/$@ $(SRCDIR)/$@.c $(LDFLAGS_$@) $(LDFLAGS)
 
 # Special link flags per program
 LDFLAGS_nl = -lm
