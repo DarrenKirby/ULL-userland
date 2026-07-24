@@ -75,7 +75,7 @@ int head_lines(char *filename, long int n_lines) {
     }
 
     FILE *fd = fopen(filename, "r");
-    if (fd == NULL) {
+    if (!fd) {
         fprintf(stderr, "Unable to open '%s': %s\n", filename, strerror(errno));
         return EXIT_FAILURE;
     }
