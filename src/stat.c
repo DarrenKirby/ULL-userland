@@ -50,9 +50,13 @@ static char *format_time(const struct timespec *ts)
     static char str[TIME_SIZE + 10];
 
     if (localtime_r(&ts->tv_sec, &bdt) == NULL) {
-        /* FIXME: localtime_r's return value is not documented.
-         * Does it even set errno? */
+        /* Only Linux version sets errno. On macos/BSD, the
+         * cause of error is undetectable. */
+#ifdef __linux__
         fprintf(stderr, "%s: localtime_r failed: %s\n", APP_NAME, strerror(errno));
+#else
+        fprintf(stderr, "%s: localtime_r failed\n", APP_NAME);
+#endif
         exit(EXIT_FAILURE);
     }
 
