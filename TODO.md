@@ -30,15 +30,15 @@ on macOS and FreeBSD. See notes below...
 
 ========================================================================
 
-| Name       | Status      | Linux | macOS | FreeBSD | Notes                    |
-|------------|-------------|:-----:|:-----:|:-------:|--------------------------|
-| arch       | not started |  ❌   |  ❌   |   ❌    |
+| Name       | Status      | Linux | macOS | FreeBSD | Notes                                   |
+|------------|-------------|:-----:|:-----:|:-------:|-----------------------------------------|
+| arch       | not started |  ❌   |  ✅   |   ❌    |
 | b2sum      | not started |  ❌   |  ❌   |   ❌    |
 | base32     | not started |  ❌   |  ❌   |   ❌    |
 | base64     | not started |  ❌   |  ❌   |   ❌    |
 | basename   | completed   |  ✅   |  ✅   |   ✅    |
 | basenc     | not started |  ❌   |  ❌   |   ❌    |
-| cal        | in progress |  ✅   |  ✅   |   ✅    | Not all options complete |
+| cal        | in progress |  ✅   |  ✅   |   ✅    | Not all options complete                |
 | cat        | completed   |  ✅   |  ✅   |   ✅    |
 | chcon      | not started |  ❌   |  ❌   |   ❌    |
 | chgrp      | completed   |  ✅   |  ✅   |   ✅    |
@@ -60,7 +60,7 @@ on macOS and FreeBSD. See notes below...
 | domainname | not started |  ❌   |  ❌   |   ❌    |
 | du         | not started |  ❌   |  ❌   |   ❌    |
 | echo       | not started |  ❌   |  ❌   |   ❌    |
-| env        | in progress |  ❌   |  ❌   |   ✅    |
+| env        | in progress |  ❌   |  ❌   |   ✅    | Printing complete; setting, not so much |
 | expand     | not started |  ❌   |  ❌   |   ❌    |
 | expr       | not started |  ❌   |  ❌   |   ❌    |
 | factor     | not started |  ❌   |  ❌   |   ❌    |
@@ -90,7 +90,7 @@ on macOS and FreeBSD. See notes below...
 | nice       | not started |  ❌   |  ❌   |   ❌    |
 | nl         | in progress |  ✅   |  ✅   |   ✅    |
 | nohup      | not started |  ❌   |  ❌   |   ❌    |
-| nproc      | not started |  ❌   |  ❌   |   ❌    |
+| nproc      | not started |  ❌   |  ✅   |   ❌    |
 | numfmt     | not started |  ❌   |  ❌   |   ❌    |
 | od         | in progress |  ❌   |  ❌   |   ❌    |
 | paste      | not started |  ❌   |  ❌   |   ❌    |
