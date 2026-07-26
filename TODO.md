@@ -30,15 +30,15 @@ on macOS and FreeBSD. See notes below...
 
 ========================================================================
 
-| Name       | Status      | Linux | macOS | FreeBSD | Notes                                   |
-|------------|-------------|:-----:|:-----:|:-------:|-----------------------------------------|
-| arch       | not started |  ❌   |  ✅   |   ❌    |
+| Name       | Status      | Linux | macOS | FreeBSD | Notes                                      |
+|------------|-------------|:-----:|:-----:|:-------:|--------------------------------------------|
+| arch       | completed   |  ✅   |  ✅   |   ❌    |
 | b2sum      | not started |  ❌   |  ❌   |   ❌    |
-| base32     | not started |  ❌   |  ❌   |   ❌    |
+| base32     | completed   |  ✅   |  ✅   |   ✅    |
 | base64     | not started |  ❌   |  ❌   |   ❌    |
 | basename   | completed   |  ✅   |  ✅   |   ✅    |
 | basenc     | not started |  ❌   |  ❌   |   ❌    |
-| cal        | in progress |  ✅   |  ✅   |   ✅    | Not all options complete                |
+| cal        | in progress |  ✅   |  ✅   |   ✅    | Not all options complete                   |
 | cat        | completed   |  ✅   |  ✅   |   ✅    |
 | chcon      | not started |  ❌   |  ❌   |   ❌    |
 | chgrp      | completed   |  ✅   |  ✅   |   ✅    |
@@ -60,13 +60,13 @@ on macOS and FreeBSD. See notes below...
 | domainname | not started |  ❌   |  ❌   |   ❌    |
 | du         | not started |  ❌   |  ❌   |   ❌    |
 | echo       | not started |  ❌   |  ❌   |   ❌    |
-| env        | in progress |  ❌   |  ❌   |   ✅    | Printing complete; setting, not so much |
+| env        | in progress |  ❌   |  ❌   |   ✅    | Printing complete; setting, not so much    |
 | expand     | not started |  ❌   |  ❌   |   ❌    |
 | expr       | not started |  ❌   |  ❌   |   ❌    |
 | factor     | not started |  ❌   |  ❌   |   ❌    |
 | false      | completed   |  ✅   |  ✅   |   ✅    |
 | fmt        | not started |  ❌   |  ❌   |   ❌    |
-| fold       | not started |  ❌   |  ❌   |   ❌    |
+| fold       | in progress |  ✅   |  ✅   |   ❌    | Working, but will break on multi-col chars |
 | free       | in progress |  ✅   |  ✅   |   ❌    |
 | groups     | not started |  ❌   |  ❌   |   ❌    |
 | head       | completed   |  ✅   |  ✅   |   ✅    |
@@ -78,7 +78,7 @@ on macOS and FreeBSD. See notes below...
 | kill       | not started |  ❌   |  ❌   |   ❌    |
 | link       | in progress |  ✅   |  ✅   |   ✅    |
 | ln         | in progress |  ✅   |  ✅   |   ✅    |
-| logname    | completed   |  ❌   |  ✅   |   ❌    |
+| logname    | completed   |  ✅   |  ✅   |   ❌    |
 | ls         | in progress |  ✅   |  ✅   |   ✅    |
 | md5sum     | not started |  ❌   |  ❌   |   ❌    |
 | mkdir      | completed   |  ✅   |  ✅   |   ✅    |
@@ -90,7 +90,7 @@ on macOS and FreeBSD. See notes below...
 | nice       | not started |  ❌   |  ❌   |   ❌    |
 | nl         | in progress |  ✅   |  ✅   |   ✅    |
 | nohup      | not started |  ❌   |  ❌   |   ❌    |
-| nproc      | not started |  ❌   |  ✅   |   ❌    |
+| nproc      | completed   |  ✅   |  ✅   |   ❌    |
 | numfmt     | not started |  ❌   |  ❌   |   ❌    |
 | od         | in progress |  ❌   |  ❌   |   ❌    |
 | paste      | not started |  ❌   |  ❌   |   ❌    |
