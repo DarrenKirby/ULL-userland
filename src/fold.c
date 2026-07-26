@@ -126,12 +126,12 @@ static void fold_on_chars(char *file) {
 int main(const int argc, char *argv[])
 {
     const struct option long_opts[] = {
-        {.name = "help",    .has_arg = no_argument,       .flag = nullptr, .val = 'h'},
-        {.name = "version", .has_arg = no_argument,       .flag = nullptr, .val = 'V'},
-        {.name = "width",   .has_arg = required_argument, .flag = nullptr, .val = 'w'},
-        {.name = "chars",   .has_arg = no_argument,       .flag = nullptr, .val = 'c'},
-        {.name = "bytes",   .has_arg = no_argument,       .flag = nullptr, .val = 'b'},
-        {.name = nullptr,   .has_arg = no_argument,       .flag = nullptr, .val = 0}
+        { .name = "help",    .has_arg = no_argument,       .flag = nullptr, .val = 'h' },
+        { .name = "version", .has_arg = no_argument,       .flag = nullptr, .val = 'V' },
+        { .name = "width",   .has_arg = required_argument, .flag = nullptr, .val = 'w' },
+        { .name = "chars",   .has_arg = no_argument,       .flag = nullptr, .val = 'c' },
+        { .name = "bytes",   .has_arg = no_argument,       .flag = nullptr, .val = 'b' },
+        { .name = nullptr,   .has_arg = no_argument,       .flag = nullptr, .val = 0 }
     };
 
     int opt;

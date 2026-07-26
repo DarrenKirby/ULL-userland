@@ -33,7 +33,6 @@ static struct {
     bool decode;
     bool ignore;
     uint8_t wrap;
-
 } opts = {
     .decode = false,
     .ignore = false,
@@ -117,14 +116,14 @@ static void decode(char *name)
             if (opts.ignore) {
                 continue;
             }
-            fprintf(stderr, "%s: Invalid Base32 character '%c'\n", APP_NAME, ch);
+            fprintf(stderr, "%s: Invalid Base32 character: '%c'\n", APP_NAME, ch);
             exit(EXIT_FAILURE);
         }
 
         /* Handle valid chars and Padding. */
         if (decoded == -3) {
             pad_chars++;
-            val = (val << 5); /* Shift in 5 zero-bits to keep alignment. */
+            val = val << 5; /* Shift in 5 zero-bits to keep alignment. */
         } else {
             val = (val << 5) | (uint8_t)decoded;
         }
@@ -243,12 +242,12 @@ static void encode(char *name)
 int main(const int argc, char *argv[])
 {
     const struct option long_opts[] = {
-        {.name = "help",           .has_arg = no_argument,       .flag = nullptr, .val = 'h'},
-        {.name = "version",        .has_arg = no_argument,       .flag = nullptr, .val = 'V'},
-        {.name = "decode",         .has_arg = no_argument,       .flag = nullptr, .val = 'd'},
-        {.name = "ignore-garbage", .has_arg = no_argument,       .flag = nullptr, .val = 'i'},
-        {.name = "wrap",           .has_arg = required_argument, .flag = nullptr, .val = 'w'},
-        {.name = nullptr,          .has_arg = no_argument,       .flag = nullptr, .val = 0}
+        { .name = "help",           .has_arg = no_argument,       .flag = nullptr, .val = 'h' },
+        { .name = "version",        .has_arg = no_argument,       .flag = nullptr, .val = 'V' },
+        { .name = "decode",         .has_arg = no_argument,       .flag = nullptr, .val = 'd' },
+        { .name = "ignore-garbage", .has_arg = no_argument,       .flag = nullptr, .val = 'i' },
+        { .name = "wrap",           .has_arg = required_argument, .flag = nullptr, .val = 'w' },
+        { .name = nullptr,          .has_arg = no_argument,       .flag = nullptr, .val = 0 }
     };
 
     int opt;
@@ -291,11 +290,9 @@ int main(const int argc, char *argv[])
     while (optind < argc) {
         if (opts.decode) {
             init_decode_map();
-            decode(argv[optind]);
-            optind++;
+            decode(argv[optind++]);
         } else {
-            encode(argv[optind]);
-            optind++;
+            encode(argv[optind++]);
         }
     }
 
