@@ -20,16 +20,21 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+/* TODO: more cleanup. */
+
+#include <getopt.h>
+
 #include "common.h"
 
-const char *APPNAME = "sync";
+
+static const char *APP_NAME = "sync";
 
 void show_help(void) {
     printf("Usage: %s [OPTION]...\n\n\
 Options:\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <bulliver@gmail.com>\n", APP_NAME);
 }
 
 int main(int argc, char *argv[]) {
@@ -44,7 +49,7 @@ int main(int argc, char *argv[]) {
     while ((opt = getopt_long(argc, argv, "Vh", longopts, NULL)) != -1) {
         switch(opt) {
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);

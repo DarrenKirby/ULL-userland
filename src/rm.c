@@ -20,9 +20,14 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+/* TODO: more cleanup. */
+
+#include <getopt.h>
+
 #include "common.h"
 
-const char *APPNAME = "rm";
+
+static const char *APP_NAME = "rm";
 
 static void showHelp(void) {
     printf("Usage: %s [OPTION]... [FILE]...\n\n\
@@ -34,7 +39,7 @@ Options:\n\
     -v, --verbose\t explain what is being done\n\
     -h, --help\t\t display this help and exit\n\
     -V, --version\t display version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <bulliver@gmail.com>\n", APP_NAME);
 }
 
 struct opt_struct {
@@ -89,7 +94,7 @@ int main(const int argc, char *argv[]) {
                 showHelp();
                 exit(EXIT_SUCCESS);
             case 'V':
-                printf("%s (%s) %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);

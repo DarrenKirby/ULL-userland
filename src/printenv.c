@@ -1,8 +1,8 @@
 /***************************************************************************
  *   printenv.c - print all or part of environment                         *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -19,16 +19,19 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+/* TODO: more cleanup. */
+#include <getopt.h>
 
 #include "common.h"
 
-const char *APPNAME = "printenv";
+
+static const char *APP_NAME = "printenv";
 
 extern char **environ;
 
-/* Cycle through and print all env variables */
-static int print_all_env(void) {
-
+/* Cycle through and print all env variables. */
+static int print_all_env(void)
+{
     while (*environ) {
         printf("%s\n", *environ);
         environ++;
@@ -36,11 +39,11 @@ static int print_all_env(void) {
     return EXIT_SUCCESS;
 }
 
-/* Print a single env variable */
-static int print_env(char *name) {
-    char *var, *value;
-    var = name;
-    value = getenv(var);
+/* Print a single env variable. */
+static int print_env(const char *name)
+{
+    const char *var = name;
+    char *value = getenv(var);
     if (value)
         printf("%s\n", value);
     else
@@ -48,7 +51,8 @@ static int print_env(char *name) {
     return EXIT_SUCCESS;
 }
 
-static void show_help(void) {
+static void show_help()
+{
     printf("Usage: %s [VARIABLE]...\n\
    or: %s OPTION\n\n\
     Print the value of VARIABLE.\n\
@@ -56,22 +60,22 @@ static void show_help(void) {
 Options:\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME, APPNAME);
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME, APP_NAME);
 }
 
-int main(int argc, char *argv[]) {
-    int opt;
-
+int main(const int argc, char *argv[])
+{
     struct option longopts[] = {
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
-        {0,0,0,0}
+        {nullptr,0,nullptr,0}
     };
 
+    int opt;
     while ((opt = getopt_long(argc, argv, "Vh", longopts, NULL)) != -1) {
         switch(opt) {
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
@@ -87,12 +91,13 @@ int main(int argc, char *argv[]) {
 
     if (argc == 2) {
         print_env(argv[1]);
-    }else if (argc == 1) {
+    } else if (argc == 1) {
         print_all_env();
     } else {
-        fprintf(stderr, "%s takes either zero or one argument\n", APPNAME);
-        show_help(); exit(EXIT_FAILURE);
+        fprintf(stderr, "%s takes either zero or one argument\n", APP_NAME);
+        show_help();
+        exit(EXIT_FAILURE);
     }
+
     return EXIT_SUCCESS;
 }
-

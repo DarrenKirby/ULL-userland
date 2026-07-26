@@ -20,9 +20,14 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+/* TODO: more cleanup. */
+
+#include <getopt.h>
+
 #include "common.h"
 
-const char *APPNAME = "rmdir";
+
+static const char *APP_NAME = "rmdir";
 
 void show_help(void) {
     printf("Usage: %s [OPTION]... DIRECTORY...\n\n\
@@ -31,7 +36,7 @@ Options:\n\
     -v, --verbose\toutput a diagnostic for every directory processed\n\
     -h, --help\t\tdisplay this help\n \
     -V, --version\tdisplay version information\n\n \
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <bulliver@gmail.com>\n", APP_NAME);
 }
 
 int main(int argc, char *argv[]) {
@@ -51,7 +56,7 @@ int main(int argc, char *argv[]) {
                 verbose = 1;
                 break;
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
@@ -73,7 +78,7 @@ int main(int argc, char *argv[]) {
             fprintf(stderr, "rmdir failed: %s\n", strerror(errno));
         }
         if (verbose) {
-            printf("%s: Removed directory '%s'\n", APPNAME, argv[optind]);
+            printf("%s: Removed directory '%s'\n", APP_NAME, argv[optind]);
         }
     }
     return EXIT_SUCCESS;

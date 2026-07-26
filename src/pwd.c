@@ -1,8 +1,8 @@
 /***************************************************************************
  *   pwd.c - print name of current/working directory                       *
  *                                                                         *
- *   Copyright (C) 2014-2025 by Darren Kirby                               *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014-2026 by Darren Kirby                               *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -19,33 +19,37 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+/* TODO: more cleanup. */
+#include <getopt.h>
 
 #include "common.h"
 
-const char *APPNAME = "pwd";
 
-void show_help(void) {
+static const char *APP_NAME = "pwd";
+
+static void show_help()
+{
     printf("Usage: %s [OPTION]\n\n\
     Print the full filename of the current working directory.\n\n\
 Options:\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <bulliver@gmail.com>\n", APP_NAME);
 }
 
-int main(int argc, char *argv[]) {
-    int opt;
-
-    struct option longopts[] = {
+int main(int argc, char *argv[])
+{
+    const struct option longopts[] = {
         {"help", 0, NULL, 'h'},
         {"version", 0, NULL, 'V'},
         {0,0,0,0}
     };
 
+    int opt;
     while ((opt = getopt_long(argc, argv, "Vh", longopts, NULL)) != -1) {
         switch(opt) {
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
@@ -59,13 +63,14 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    char cwd[PATHMAX];
-    char *cwd_p;
-    cwd_p = cwd;
+    const size_t path_max = get_path_max();
+    char cwd[path_max];
+    char *cwd_p = cwd;
 
-    if (getcwd(cwd_p, PATHMAX) == NULL)
-        fprintf(stderr, "getcwd failed: %s\n", strerror(errno));
+    if (getcwd(cwd_p, path_max) == NULL)
+        fprintf(stderr, "%s: getcwd() failed: %s\n", APP_NAME, strerror(errno));
 
     printf("%s\n", cwd);
+
     return EXIT_SUCCESS;
 }
