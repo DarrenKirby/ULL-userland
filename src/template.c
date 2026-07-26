@@ -2,7 +2,7 @@
  *    -                                      *
  *                                                                         *
  *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
- *   darren@dragonbyte.ca                                                   *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -25,7 +25,7 @@
 #include "common.h"
 
 
-static const char *APP_NAME =  "";
+static const char *APP_NAME = "";
 
 static struct {
 } opts = {};
@@ -42,13 +42,13 @@ Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 int main(const int argc, char *argv[])
 {
     const struct option long_opts[] = {
-        {.name = "help",    .has_arg = 0, .flag = nullptr, .val = 'h'},
-        {.name = "version", .has_arg = 0, .flag = nullptr, .val = 'V'},
-        {.name = nullptr,   .has_arg = 0, .flag = nullptr, .val = 0}
+        {.name = "help",    .has_arg = no_argument, .flag = nullptr, .val = 'h'},
+        {.name = "version", .has_arg = no_argument, .flag = nullptr, .val = 'V'},
+        {.name = nullptr,   .has_arg = no_argument, .flag = nullptr, .val = 0}
     };
 
     int opt;
-    while ((opt = getopt_long(argc, argv, "Vh", long_opts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "Vh", long_opts, nullptr)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
