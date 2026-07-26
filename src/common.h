@@ -37,7 +37,7 @@
 
 /* Version information */
 #define APP_SUITE   "ULL-userland"
-#define APP_VERSION "0.4.1"
+#define APP_VERSION "0.4.3"
 
 /* For OS X */
 #if defined(__APPLE__) && defined(__MACH__)
@@ -110,6 +110,39 @@ extern inline void format(const long long int bytes)
     printf("%6s ", size_string);
 }
 
+extern inline long parse_numeric_arg(char *arg, const int min, const int max, const char *name) {
+    char *end_ptr;
+    errno = 0;
+
+    const long conv = strtol(arg, &end_ptr, 0);
+
+    if (errno == ERANGE) {
+        fprintf(stderr, "%s: arg  %s out of range\n", name, arg);
+        exit(EXIT_FAILURE);
+    }
+
+    if (min) {
+        if (conv < min) {
+            fprintf(stderr, "%s: arg %s below minimum of %d\n", name, arg, min);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    if (max) {
+        if (conv > max) {
+            fprintf(stderr, "%s: arg %s above maximum of %d\n", name, arg, max);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    if (end_ptr == arg) {
+        fprintf(stderr, "%s: argument is not parsable as a number\n", name);
+        exit(EXIT_FAILURE);
+    }
+
+    return conv;
+}
+
 /* Debugging aids */
 inline int dump_args(int argc, char *argv[])
 {
@@ -121,7 +154,7 @@ inline int dump_args(int argc, char *argv[])
 }
 
 /* trims leading and tailing whitespace from strings */
-inline char *trim_whitespace(char *str)
+extern inline char *trim_whitespace(char *str)
 {
     size_t len = 0;
     char *frontp = str;
