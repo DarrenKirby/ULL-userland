@@ -1,8 +1,8 @@
 /***************************************************************************
  *   touch.c - update timestamp or create empty file                       *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -32,25 +32,33 @@
  *       you specify (using -m) to only update mtime.
  */
 
-#include "common.h"
+#include <getopt.h>
 #include <fcntl.h>
 
-const char *APPNAME = "touch";
+#include "common.h"
 
-struct opt_struct {
-    unsigned int access:1;
-    unsigned int modification:1;
-    unsigned int nocreate:1;
-    unsigned int no_dereference:1;
-    unsigned int date:1;
-    unsigned int reference:1;
-} opts = {.access = 0, .modification = 0,
-          .nocreate = 0, .reference = 0,
-          .date = 0, .no_dereference = 0};
 
-struct timespec times[2];
+static const char *APP_NAME = "touch";
 
-void show_help(void) {
+static struct {
+    bool access:1;
+    bool modification:1;
+    bool nocreate:1;
+    bool no_dereference:1;
+    bool date:1;
+    bool reference:1;
+} opts = {
+    .access = false,
+    .modification = false,
+    .nocreate = false, 
+    .reference = false,
+    .date = false, 
+    .no_dereference = false };
+
+static struct timespec times[2];
+
+static void show_help()
+{
     printf("Usage: %s [OPTION]...\n\n\
 Update timestamp or create empty file\n\n\
 Options:\n\
@@ -61,11 +69,12 @@ Options:\n\
     -r, --reference=FILE\t use FILE as reference for timestamps\n\
     -h, --help\t\t\t display this help\n\
     -V, --version\t\t display version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
-static void to_time(char * r_file) {
-    if (opts.reference == 1) {
+static void to_time(char * r_file)
+{
+    if (opts.reference) {
         struct stat buf;
 
         if (stat(r_file, &buf) == -1) {
@@ -108,88 +117,92 @@ static void to_time(char * r_file) {
     }
 }
 
-int main(const int argc, char *argv[]) {
-
+int main(const int argc, char *argv[])
+{
     const struct option long_opts[] = {
-        {"help", 0, nullptr, 'h'},
-        {"version", 0, nullptr, 'V'},
-        {"access", 0, nullptr, 'a'},
-        {"modification", 0, nullptr, 'm'},
-        {"nocreate", 0, nullptr, 'c'},
-        {"no-dereference", 0, nullptr, 'n'},
-        {"date", required_argument, nullptr, 'd'},
-        {"reference", required_argument, nullptr, 'r'},
-        {nullptr,0,nullptr,0}
+        { .name = "help",           .has_arg = no_argument,       .flag = nullptr, .val = 'h' },
+        { .name = "version",        .has_arg = no_argument,       .flag = nullptr, .val = 'V' },
+        { .name = "access",         .has_arg = no_argument,       .flag = nullptr, .val = 'a' },
+        { .name = "modification",   .has_arg = no_argument,       .flag = nullptr, .val = 'm' },
+        { .name = "nocreate",       .has_arg = no_argument,       .flag = nullptr, .val = 'c' },
+        { .name = "no-dereference", .has_arg = no_argument,       .flag = nullptr, .val = 'n' },
+        { .name = "date",           .has_arg = required_argument, .flag = nullptr, .val = 'd' },
+        { .name = "reference",      .has_arg = required_argument, .flag = nullptr, .val = 'r' },
+        { .name = nullptr,          .has_arg = no_argument,       .flag = nullptr, .val = 0}
     };
+    
+    const size_t path_max = get_path_max();
+    char ref_file[path_max];
 
     int opt;
-    char ref_file[PATHMAX];
     while ((opt = getopt_long(argc, argv, "Vhancmr:d:", long_opts, nullptr)) != -1) {
         switch(opt) {
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'h':
                 show_help();
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'a':
-                opts.access = 1;
                 /* mutually exclusive */
-                if (opts.modification) {
-                    opts.modification = 0;
-                }
+                opts.access = true;
+                opts.modification = false;
                 break;
             case 'm':
-                opts.modification = 1;
                 /* mutually exclusive */
-                if (opts.access) {
-                    opts.access = 0;
-                }
+                opts.modification = true;
+                opts.access = false;
                 break;
             case 'c':
-                opts.nocreate = 1;
+                opts.nocreate = true;
                 break;
             case 'n':
-                opts.no_dereference = 1;
+                opts.no_dereference = true;
                 break;
             case 'r':
-                opts.reference = 1;
+                opts.reference = true;
                 snprintf(ref_file, sizeof(ref_file), "%s", optarg);
                 break;
             default:
                 show_help();
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
         }
     }
 
-    /* Populate the reference time struct */
+    /* Populate the reference time struct. */
     to_time(ref_file);
     /* Are we dereferencing symlinks? */
-    const int dr_flag = opts.no_dereference == 1 ? AT_SYMLINK_NOFOLLOW : 0;
+    const int dr_flag = opts.no_dereference ? AT_SYMLINK_NOFOLLOW : 0;
 
     while (optind < argc) {
         const int f_access = access(argv[optind], F_OK);
         if (f_access == 0) {   /* file exists */
             if (utimensat(AT_FDCWD, argv[optind], times, dr_flag) != 0) {
-                fprintf(stderr, "utimes failed on '%s': %s\n", argv[optind], strerror(errno));
+                fprintf(stderr, "%s: utimes() failed on '%s': %s\n",
+                    APP_NAME, argv[optind], strerror(errno));
+                continue;
             }
-        } else { /* file does not exist */
+        } else { /* File does not exist. */
             if (opts.nocreate == 1) {
-                /* breaking out of the iteration early misses the 'main' optind++ */
+                /* Breaking out of the iteration early misses the 'main' optind++ */
                 optind++;
                 continue;
             }
-            /* Create the file, then close it */
+            /* Create the file, then close it. */
             const int fd = open(argv[optind], O_CREAT, 0666);
             if (fd == -1) {
-                fprintf(stderr, "open failed on '%s': %s\n", argv[optind], strerror(errno));
+                fprintf(stderr, "%s: open() failed on '%s': %s\n",
+                    APP_NAME, argv[optind], strerror(errno));
+                continue;
             }
             close(fd);
             if (utimensat(AT_FDCWD, argv[optind], times, dr_flag) != 0) {
-                fprintf(stderr, "utimensat failed: %s\n", strerror(errno));
+                fprintf(stderr, "%s: utimensat failed on '%s': %s\n",
+                    APP_NAME, argv[optind], strerror(errno));
+                continue;
             }
         }
         optind++;

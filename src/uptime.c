@@ -2,7 +2,7 @@
  *   uptime.c - Tell how long the system has been running                  *
  *                                                                         *
  *   Copyright (C) 2014 - 2025 Darren Kirby                                *
- *   bulliver@gmail.com                                                    *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,10 +20,12 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "common.h"
+#include <getopt.h>
 #include <stddef.h>
 #include <utmpx.h>
 #include <time.h>
+
+#include "common.h"
 
 #ifdef  __linux__
 #include <sys/sysinfo.h>
@@ -37,14 +39,16 @@
 #include <vm/vm_param.h>
 #endif
 
-const char *APPNAME = "uptime";
+
+static const char *APP_NAME = "uptime";
 
 #define ONE_DAY     86400
 #define ONE_HOUR    3600
 #define ONE_MINUTE  60
 #define LOADS_SCALE 65536.0
 
-int get_num_users(void) {
+static int get_num_users()
+{
     struct utmpx *utmp_struct;
     int num_user = 0;
     setutxent();
@@ -57,19 +61,21 @@ int get_num_users(void) {
     return num_user;
 }
 
-/* Print the current time */
-void get_time(void) {
+/* Print the current time. */
+static void print_time()
+{
     time_t the_time;
     (void) time(&the_time);
     const struct tm *tm_ptr = localtime(&the_time);
-    printf(" %02d:%02d:%02d", tm_ptr->tm_hour, tm_ptr->tm_min, tm_ptr->tm_sec);
+    printf("%02d:%02d:%02d", tm_ptr->tm_hour, tm_ptr->tm_min, tm_ptr->tm_sec);
 }
 
-static int print_uptime(void) {
+static int print_uptime()
+{
     int error = 0;
     int num_user;
-    long int days, hours, minutes;
-    long int uptime_in_days, uptime_in_hours, uptime_in_seconds;
+    long days, hours, minutes;
+    long uptime_in_days, uptime_in_hours, uptime_in_seconds;
 
     float av1, av2, av3;
 #ifdef __linux__
@@ -84,12 +90,12 @@ static int print_uptime(void) {
     av2 = s_info.loads[1] / LOADS_SCALE;
     av3 = s_info.loads[2] / LOADS_SCALE;
 #else
-    /* Get uptime OS X / *BSD */
+    /* Get uptime macOS / *BSD */
     struct timeval boot_time;
     size_t len = sizeof(boot_time);
     int mib[2] = { CTL_KERN, KERN_BOOTTIME };
 
-    if( sysctl(mib, 2, &boot_time, &len, NULL, 0) < 0 ) {
+    if (sysctl(mib, 2, &boot_time, &len, nullptr, 0) < 0 ) {
         printf("Error getting uptime");
         error = -1;
     }
@@ -102,21 +108,21 @@ static int print_uptime(void) {
 #ifdef __FreeBSD__
     double loadavg[3];
     if (getloadavg(loadavg, nitems(loadavg)) == -1) {
-        printf("Error getting load average");
+        fprintf(stderr, "%s: error getting load average\n", APP_NAME);
         error = -1;
     }
     av1 = loadavg[0];
     av2 = loadavg[1];
     av3 = loadavg[2];
 
-    /* Get load average OS X */
+    /* Get load average macOS */
 #else
     struct loadavg loads;
     size_t load_len = sizeof(loads);
     int mib2[2] = { CTL_VM, VM_LOADAVG };
 
     if (sysctl(mib2, 2, &loads, &load_len, NULL, 0) < 0) {
-        printf("Error getting load average");
+        fprintf(stderr, "%s: error getting load average\n", APP_NAME);
         error = -1;
     }
 
@@ -135,46 +141,47 @@ static int print_uptime(void) {
 
     num_user = get_num_users();
 
-    printf("  up %ld day%s %02ld:%02ld,  %i user%s,  load average: %2.2f, %2.2f, %2.2f\n", days,
-        (days != 1) ? "s" : "", hours, minutes, num_user, (num_user != 1) ? "s" : "", av1, av2, av3);
+    printf("  up %ld day%s %02ld:%02ld,  %d user%s,  load average: %2.2f, %2.2f, %2.2f\n", days,
+        days != 1 ? "s" : "", hours, minutes, num_user, num_user != 1 ? "s" : "", av1, av2, av3);
 
     return error;
 }
 
-static void showHelp(void) {
+static void showHelp()
+{
     printf("Usage: %s [-V, --version] [-h, --help]\n\n\
     -V, --version\t display version\n\
     -h, --help\t\t display this help\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
-int main(const int argc, char *argv[]) {
-    int opt;
-
+int main(const int argc, char *argv[])
+{
     const struct option long_opts[] = {
-        {"help", 0, nullptr, 'h'},
-        {"version", 0, nullptr, 'V'},
-        {nullptr,0,nullptr,0}
+        { .name = "help",    .has_arg = no_argument, .flag = nullptr, .val = 'h' },
+        { .name = "version", .has_arg = no_argument, .flag = nullptr, .val = 'V' },
+        { .name = nullptr,   .has_arg = no_argument, .flag = nullptr, .val = 0 }
     };
 
-    while ((opt = getopt_long(argc, argv, "Vh", long_opts, NULL)) != -1) {
+    int opt;
+    while ((opt = getopt_long(argc, argv, "Vh", long_opts, nullptr)) != -1) {
         switch(opt) {
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'h':
                 showHelp();
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             default:
                 showHelp();
                 exit(EXIT_FAILURE);
         }
     }
 
-    get_time();
+    print_time();
     if (print_uptime() == 0)
         return EXIT_SUCCESS;
     return EXIT_FAILURE;

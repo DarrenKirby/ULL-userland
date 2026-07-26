@@ -1,8 +1,8 @@
 /***************************************************************************
  *   who - show logged-in users                                            *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,9 +20,11 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "common.h"
+#include <getopt.h>
 #include <utmpx.h>
 #include <time.h>
+
+#include "common.h"
 
 #if defined(__APPLE__) && defined(__MACH__) || defined(__FreeBSD__)
 #include <sys/sysctl.h>
@@ -31,13 +33,11 @@
 #include <sys/sysinfo.h>
 #endif // __linux__
 
-const char *APPNAME = "who";
 
-struct opt_struct {
-    unsigned int quick;
-} opts;
+static const char *APP_NAME = "who";
 
-static void show_help(void) {
+static void show_help()
+{
     printf("Usage: %s [OPTION]...\n\n\
 Show all logged in users\n\
 Options:\n\
@@ -45,16 +45,18 @@ Options:\n\
     -a, --all\t\t print boot time and users\n\
     -h, --help\t\t display this help\n\
     -V, --version\t display version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
-void print_boot_time(void) {
+static void print_boot_time()
+{
     struct tm *tm_ptr;
 #ifdef __linux__
     struct sysinfo s_info;
     int error = sysinfo(&s_info);
     if(error != 0) {
-        fprintf(stderr, "sysinfo failed: %s\n", strerror(errno));
+        fprintf(stderr, "%s: sysinfo() failed: %s\n", APP_NAME, strerror(errno));
+        exit(EXIT_FAILURE)
     }
     time_t boot_secs = s_info.uptime;
     time_t current_time = time(NULL);
@@ -71,8 +73,9 @@ void print_boot_time(void) {
 
     size_t len = sizeof(boot_time);
     int mib[2] = { CTL_KERN, KERN_BOOTTIME };
-    if( sysctl(mib, 2, &boot_time, &len, NULL, 0) < 0 ) {
-        printf("Error getting uptime");
+    if (sysctl(mib, 2, &boot_time, &len, NULL, 0) < 0 ) {
+        printf("%s: sysctl() failed: %s", APP_NAME, strerror(errno));
+        exit (EXIT_FAILURE);
     }
 
     const time_t boot_sec = boot_time.tv_sec;
@@ -86,7 +89,8 @@ void print_boot_time(void) {
 }
 
 
-void print_users(void) {
+static void print_users()
+{
     struct utmpx *utmp_struct;
     time_t the_time;
 
@@ -105,42 +109,38 @@ void print_users(void) {
     endutxent();
 }
 
-
-int main(const int argc, char *argv[]) {
-    int opt;
-
+int main(const int argc, char *argv[])
+{
     const struct option long_opts[] = {
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {"all", 0, NULL, 'a'},
-        {"boot", 0, NULL, 'b'},
-        {"quick", 0, NULL, 'q'},
-        {NULL,0,NULL,0}
+        { .name = "help",    .has_arg = no_argument, .flag = nullptr, .val = 'h' },
+        { .name = "version", .has_arg = no_argument, .flag = nullptr, .val = 'V' },
+        { .name = "all",     .has_arg = no_argument, .flag = nullptr, .val = 'a' },
+        { .name = "boot",    .has_arg = no_argument, .flag = nullptr, .val = 'b' },
+        { .name = "quick",   .has_arg = no_argument, .flag = nullptr, .val = 'q' },
+        { .name = nullptr,   .has_arg = no_argument, .flag = nullptr, .val = 0 }
     };
 
-    while ((opt = getopt_long(argc, argv, "Vhbaq", long_opts, NULL)) != -1) {
+    int opt;
+    while ((opt = getopt_long(argc, argv, "Vhbaq", long_opts, nullptr)) != -1) {
         switch(opt) {
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'h':
                 show_help();
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'b':
                 print_boot_time();
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'a':
                 print_boot_time();
                 break;
-            case 'q':
-                opts.quick = 1;
-                break;
             default:
                 show_help();
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
         }
     }
 

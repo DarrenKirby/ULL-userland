@@ -1,8 +1,8 @@
 /***************************************************************************
  *   vdir.c - print directory contents                                     *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -28,6 +28,7 @@
 
 #include "common.h"
 
+
 static const char *APP_NAME = "vdir";
 
 static struct {
@@ -37,12 +38,13 @@ static struct {
     bool dereference:1;
     bool colour:1;
     bool classify:1;
-} opts = { .human = false,
-            .all = false,
-            .inode = false,
-            .dereference = false,
-            .colour = false,
-            .classify = false };
+} opts = {
+    .human = false,
+    .all = false,
+    .inode = false,
+    .dereference = false,
+    .colour = false,
+    .classify = false };
 
 static void show_help()
 {

@@ -20,21 +20,29 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "common.h"
+#include <getopt.h>
 #include <sys/fcntl.h>
+
+#include "common.h"
 
 #define MAX_LINE_LENGTH 2048
 
-const char *APPNAME =  "head";
 
-struct opt_struct {
-    unsigned int quiet:1;
-    unsigned int verbose:1;
-    unsigned int bytes:1;
-    unsigned int lines:1;
-} opts;
+static const char *APP_NAME = "tail";
 
-static void show_help(void) {
+static struct {
+    bool quiet:1;
+    bool verbose:1;
+    bool bytes:1;
+    bool lines:1;
+} opts = {
+    .quiet = false,
+    .verbose = false,
+    .bytes = false,
+    .lines = true };
+
+static void show_help()
+{
     printf("Usage: %s [OPTION]... FILE [FILE...]\n\n\
 Print last N lines or bytes of file\n\n\
 Options:\n\
@@ -44,10 +52,11 @@ Options:\n\
     -q, --quiet\t\t never print file header(s)\n\
     -h, --help\t\t display this help\n\
     -V, --version\t display version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <bulliver@gmail.com>\n", APP_NAME);
 }
 
-int tail_bytes(char *filename, long int n_bytes) {
+static int tail_bytes(char *filename, const uint32_t n_bytes)
+{
     if (opts.verbose) {
         printf("==> %s%s%s <==\n", ANSI_BLUE_B, filename, ANSI_RESET);
     }
@@ -86,7 +95,8 @@ int tail_bytes(char *filename, long int n_bytes) {
     return EXIT_SUCCESS;
 }
 
-int tail_lines(char *filename, long int n_lines) {
+static int tail_lines(char *filename, const int32_t n_lines)
+{
     if (opts.verbose) {
         printf("==> %s%s%s <==\n", ANSI_BLUE_B, filename, ANSI_RESET);
     }
@@ -128,8 +138,6 @@ int tail_lines(char *filename, long int n_lines) {
 }
 
 int main(const int argc, char *argv[]) {
-    int opt;
-
     const struct option long_opts[] = {
         {"help", 0, nullptr, 'h'},
         {"version", 0, nullptr, 'V'},
@@ -140,51 +148,48 @@ int main(const int argc, char *argv[]) {
         {nullptr,0,nullptr,0}
     };
 
-    /* defaults */
-    long int n_units = 10;
-    opts.lines = 1;
-    opts.bytes = 0;
-    opts.quiet = 0;
-    opts.verbose = 0;
+    /* Default lines to tail. */
+    uint32_t n_units = 10;
 
+    int opt;
     while ((opt = getopt_long(argc, argv, "Vhn:b:qv", long_opts, nullptr)) != -1) {
       switch (opt) {
       case 'V':
-        printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+        printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
         printf("%s compiled on %s at %s\n",
                strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                __DATE__, __TIME__);
-        exit(EXIT_SUCCESS);
+        return EXIT_SUCCESS;
       case 'h':
         show_help();
-        exit(EXIT_SUCCESS);
+        return EXIT_SUCCESS;
       case 'v':
-        opts.verbose = 1;
-        opts.quiet = 0;
+        opts.verbose = true;
+        opts.quiet = false;
         break;
       case 'q':
-        opts.quiet = 1;
-        opts.verbose = 0;
+        opts.quiet = true;
+        opts.verbose = false;
         break;
       case 'n':
-        opts.lines = 1;
-        opts.bytes = 0;
-        n_units = strtol(optarg, nullptr, 10);
+        opts.lines = true;
+        opts.bytes = false;
+        n_units = (uint32_t)parse_numeric_arg(optarg, 1, UINT32_MAX, "tail");
         break;
       case 'b':
-        opts.lines = 0;
-        opts.bytes = 1;
-        n_units = strtol(optarg, nullptr, 10);
+        opts.lines = false;
+        opts.bytes = true;
+        n_units = (uint32_t)parse_numeric_arg(optarg, 1, UINT32_MAX, "tail");
         break;
       default:
         show_help();
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
       }
     }
 
     const int n_file_args = argc - optind;
     if (n_file_args < 1) {
-        printf("No file specified\n");
+        fprintf(stderr, "%s: no file specified\n", APP_NAME);
         show_help();
         return EXIT_FAILURE;
     }

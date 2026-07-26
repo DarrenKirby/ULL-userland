@@ -1,8 +1,8 @@
 /***************************************************************************
  *   wc.c - print newline, word, and byte counts                           *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,9 +20,12 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <getopt.h>
+
 #include "common.h"
 
-const char *APPNAME = "wc";
+
+static const char *APP_NAME = "wc";
 
 /* Our count struct is used both for storing boolean
    values regarding _if_ we want to count something,
@@ -34,7 +37,8 @@ struct count {
     unsigned int longest;
 };
 
-void showHelp(void) {
+static void showHelp()
+{
     printf("Usage: %s [OPTION]... [FILE]...\n\n\
     Print newline, word, and byte counts for each FILE, and a total line if more than\n\
     one FILE is specified.  With no FILE, read standard input.\n\n\
@@ -46,20 +50,20 @@ Options:\n\
     -L, --max-line-length print the length of the longest line\n\
     -h, --help\t\t  display this help and exit\n\
     -V, --version\t  output version information and exit\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
-/* The only way to get counts for STDIN is to
-   count them all at once */
-struct count count_all(char *filename) {
+static struct count count_all(char *filename)
+{
     FILE *fp;
 
     if ((fp = fopen(filename, "r")) == NULL ) {
-        fprintf(stderr, "Error opening file %s\n", filename);
+        fprintf(stderr, "%s: error opening %s: %s\n",
+            APP_NAME, filename, strerror(errno));
+        exit(EXIT_FAILURE);
     }
 
-    /* struct to return with all counts */
-    struct count t_counts = {0,0,0,0};
+    struct count t_counts = { .chars = 0, .words = 0, .lines = 0, .longest = 0 };
 
     int c;
     int state = 0;
@@ -67,18 +71,21 @@ struct count count_all(char *filename) {
 
 
     while ((c = getc(fp)) != EOF) {
-        current_line_count++;                   /* Longest line counter */
-        t_counts.chars++;                       /* Everything is a char */
+        current_line_count++;  /* Longest line char counter. */
+        t_counts.chars++;      /* Everything is a char. */
 
-        if (c == '\n') {                        /* A newline */
+        if (c == '\n') {
             ++t_counts.lines;
-            if (current_line_count > t_counts.longest) {
-                t_counts.longest = current_line_count - 1; /* subtract the '\n' itself */
+            /* We do not count the newline, so we remove
+             * it from the comparison and assignment. */
+            if (current_line_count - 1 > t_counts.longest) {
+                t_counts.longest = current_line_count - 1;
             }
-            current_line_count = 0;             /* Reset our counter */
+            current_line_count = 0;
         }
 
-        if (c == ' ' || c == '\n' || c == '\t') /* A word boundary */
+        /* A word boundary. */
+        if (c == ' ' || c == '\n' || c == '\t')
             state = 0;
         else if (state == 0) {
             state = 1;
@@ -89,85 +96,89 @@ struct count count_all(char *filename) {
     return t_counts;
 }
 
-int main(int argc, char *argv[]) {
-    int opt;
-
-    struct count count_opts = {0,0,0,0};
-
-    struct option longopts[] = {
-        {"help", 0, NULL, 'h'},
-        {"bytes", 0, NULL, 'c'},
-        {"chars", 0, NULL, 'm'},
-        {"lines", 0, NULL, 'l'},
-        {"words", 0, NULL, 'w'},
-        {"version", 0, NULL, 'V'},
-        {"max-line-length", 0, NULL, 'L'},
-        {0,0,0,0}
+int main(const int argc, char *argv[])
+{
+   const struct option longopts[] = {
+        { .name = "help",            .has_arg = no_argument, .flag = nullptr, .val = 'h' },
+        { .name = "bytes",           .has_arg = no_argument, .flag = nullptr, .val = 'c' },
+        { .name = "chars",           .has_arg = no_argument, .flag = nullptr, .val = 'm' },
+        { .name = "lines",           .has_arg = no_argument, .flag = nullptr, .val = 'l' },
+        { .name = "words",           .has_arg = no_argument, .flag = nullptr, .val = 'w' },
+        { .name = "version",         .has_arg = no_argument, .flag = nullptr, .val = 'V' },
+        { .name = "max-line-length", .has_arg = no_argument, .flag = nullptr, .val = 'L' },
+        { .name = nullptr,           .has_arg = no_argument, .flag = nullptr, .val = 0 }
     };
 
+    int opt;
+    struct count opts = { .chars = 0, .words = 0, .lines = 0, .longest = 0 };
     while ((opt = getopt_long(argc, argv, "hcmlLwV", longopts, NULL)) != -1) {
         switch(opt) {
             case 'L':
-                count_opts.longest = 1;
+                opts.longest = 1;
                 break;
-            case 'c':  /* Bytes same as chars */
+            case 'c':  /* Bytes same as chars until Unicode support is added. */
             case 'm':
-                count_opts.chars = 1;
+                opts.chars = 1;
                 break;
             case 'l':
-                count_opts.lines = 1;
+                opts.lines = 1;
                 break;
             case 'w':
-                count_opts.words = 1;
+                opts.words = 1;
                 break;
             case 'h':
                 showHelp();
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             default:
                 showHelp();
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
         }
     }
 
     /* If there are no options we count all but the longest line */
-    if (count_opts.chars == 0 && count_opts.lines == 0 && count_opts.words == 0 && count_opts.longest == 0)
-        count_opts.chars = count_opts.lines = count_opts.words = 1;
+    if (opts.chars == 0 && opts.lines == 0 && opts.words == 0 && opts.longest == 0)
+        opts.chars = opts.lines = opts.words = 1;
 
     struct count t_counts;
-    struct count t_cumulative;
-    int multiple_args = 0;
-    if (argc == optind) {                     /* We're dealing with STDIN */
-        t_counts = count_all("/dev/fd/0");    /* Not POSIX, but APUE says this works on *BSD, OS X. Linux and Solaris*/
-        if (count_opts.lines == 1)
+    struct count t_cumulative = { .chars = 0, .words = 0, .lines = 0, .longest = 0 };;
+    bool multiple_args = false;
+
+    if (argc == optind) {
+        /* We're dealing with STDIN. Using /de/fd/0
+         * is not POSIX, but APUE says this works on
+         * *BSD, OS X. Linux and Solaris. */
+        t_counts = count_all("/dev/fd/0");
+        if (opts.lines)
             printf("%i ", t_counts.lines);
-        if (count_opts.words == 1)
+        if (opts.words)
             printf("%i ", t_counts.words);
-        if (count_opts.chars == 1)
+        if (opts.chars)
             printf("%i ", t_counts.chars);
-        if (count_opts.longest == 1)
+        if (opts.longest)
             printf("%i ", t_counts.longest);
         printf("\n");
 
-    } else {                                  /* Cycle through file arguments */
-        if (argc > (optind + 1)) {            /* more than one file arg  */
-            t_cumulative = (struct count) {0,0,0,0};
-            multiple_args = 1;
+    } else {
+        /* Cycle through file arguments. */
+        if (argc > optind + 1) {
+            multiple_args = true;
         }
+
         while (optind < argc) {
             t_counts = count_all(argv[optind]);
-            if (count_opts.lines == 1)
+            if (opts.lines)
                 printf("%5i ", t_counts.lines);
-            if (count_opts.words == 1)
+            if (opts.words)
                 printf("%5i ", t_counts.words);
-            if (count_opts.chars == 1)
+            if (opts.chars)
                 printf("%5i ", t_counts.chars);
-            if (count_opts.longest == 1)
+            if (opts.longest)
                 printf("%5i ", t_counts.longest);
             printf("%s\n", argv[optind]);
             optind++;
@@ -175,18 +186,21 @@ int main(int argc, char *argv[]) {
             t_cumulative.lines   += t_counts.lines;
             t_cumulative.words   += t_counts.words;
             t_cumulative.chars   += t_counts.chars;
+
             if (t_counts.longest > t_cumulative.longest)
                 t_cumulative.longest = t_counts.longest;
         }
     }
+
+    /* If there were multiple files, print the totals line. */
     if (multiple_args) {
-        if (count_opts.lines == 1)
+        if (opts.lines)
             printf("%5i ", t_cumulative.lines);
-        if (count_opts.words == 1)
+        if (opts.words)
             printf("%5i ", t_cumulative.words);
-        if (count_opts.chars == 1)
+        if (opts.chars)
             printf("%5i ", t_cumulative.chars);
-        if (count_opts.longest == 1)
+        if (opts.longest)
             printf("%5i ", t_cumulative.longest);
         printf("total\n");
     }

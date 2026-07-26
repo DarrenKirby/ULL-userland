@@ -20,59 +20,65 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <getopt.h>
+
 #include "common.h"
 
-const char *APPNAME = "yes";
 
-void show_help(void) {
+static const char *APP_NAME = "yes";
+
+static void show_help()
+{
     printf("Usage: %s [String]...\n\
    or: %s [OPTION]\n\n \
     Repeatedly output a line with all specified STRING(s), or 'y'.\n \
     -h, --help\t\tdisplay this help\n \
     -V, --version\tdisplay version information\n\n \
-    Report bugs to <bulliver@gmail.com>\n", APPNAME, APPNAME);
+    Report bugs to <darren@dragonbyte.ca>\n", APP_NAME, APP_NAME);
 }
 
-int main(int argc, char *argv[]) {
-    int opt;
-
-    struct option longopts[] = {
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {0,0,0,0}
+int main(const int argc, char *argv[])
+{
+    const struct option longopts[] = {
+        { .name = "help",    .has_arg = no_argument, .flag = nullptr, .val = 'h' },
+        { .name = "version", .has_arg = no_argument, .flag = nullptr, .val = 'V' },
+        { .name = nullptr,   .has_arg = no_argument, .flag = nullptr, .val = 0 }
     };
-
-    while ((opt = getopt_long(argc, argv, "Vh", longopts, NULL)) != -1) {
+    
+    int opt;
+    while ((opt = getopt_long(argc, argv, "Vh", longopts, nullptr)) != -1) {
         switch(opt) {
             case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
+                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
                 break;
             case 'h':
                 show_help();
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
                 break;
             default:
                 show_help();
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
                 break;
         }
     }
+
     if (argc == 1) {
-        while (1 == 1)
+        while (true)
             printf("%s\n", "y");
-    } else {
-        char buffer[1024];
-        char *to = buffer;
-        for (; optind < argc; optind++) {
-            to = stpncpy(to, argv[optind], 1024);
-            to = stpcpy(to, " ");
-        }
-        while (1 == 1)
-            printf("%s\n", buffer);
     }
+
+    char buffer[1024];
+    char *to = buffer;
+    for (; optind < argc; optind++) {
+        to = stpncpy(to, argv[optind], 1024);
+        to = stpcpy(to, " ");
+    }
+
+    while (true) printf("%s\n", buffer);
+
     return EXIT_SUCCESS;
 }
