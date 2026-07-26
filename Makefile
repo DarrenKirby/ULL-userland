@@ -1,4 +1,4 @@
-CC ?= cc
+CC ?= gcc-16
 
 CFLAGS       = -Wall -Wextra -Werror -Wdeprecated-declarations -O2 -std=gnu2x
 CFLAGS_DEBUG = -Wall -Wextra -Werror -g -O0 -std=gnu2x -fsanitize=address -fno-omit-frame-pointer
@@ -9,10 +9,10 @@ PKG_CONFIG ?= pkg-config
 SRCDIR := src
 BINDIR := bin
 
-PROGRAMS := arch basename cal cat cd chgrp chown cp df dirname env false free head link ln logname ls mount mkdir mv nl nproc od printenv pwd rm rmdir sleep stat sync tail tee touch true uname unlink uptime vdir wc who whoami yes
+PROGRAMS := arch basename base32 cal cat chgrp chown cp df dirname env false fold free head link ln logname ls mount mkdir mv nl nproc od printenv pwd rm rmdir sleep stat sync tail tee touch true uname unlink uptime vdir wc who whoami yes
 
 package := ull-userland
-version := 0.4.1
+version := 0.4.3
 tarname := $(package)
 distdir := $(tarname)-$(version)
 
@@ -41,7 +41,7 @@ $(distdir): FORCE
 	mkdir -p $(distdir)/bin
 	mkdir -p $(distdir)/doc
 	cp Makefile $(distdir)
-	cp AUTHORS COPYING INSTALL README TODO $(distdir) || true
+	cp AUTHORS COPYING INSTALL README.md TODO.md $(distdir) || true
 	cp src/*.h $(distdir)/src
 	cp src/*.c $(distdir)/src
 
