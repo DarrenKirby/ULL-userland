@@ -269,6 +269,10 @@ int main(const int argc, char *argv[])
         { .name = nullptr,          .has_arg = no_argument,       .flag = nullptr, .val = 0 }
     };
 
+    /* Min and max vals for parse_numeric_arg. */
+    const int *min = &(int){0};
+    const int *max = &(int){255};
+
     int opt;
     while ((opt = getopt_long(argc, argv, "Vhdiw:", long_opts, NULL)) != -1) {
         switch(opt) {
@@ -288,7 +292,7 @@ int main(const int argc, char *argv[])
                 opts.ignore = true;
                 break;
             case 'w':
-                opts.wrap = parse_numeric_arg(optarg, 0, 255, APP_NAME);
+                opts.wrap = parse_numeric_arg(optarg, min, max, APP_NAME);
                 break;
             default:
                 show_help();

@@ -134,6 +134,10 @@ int main(const int argc, char *argv[])
         { .name = nullptr,   .has_arg = no_argument,       .flag = nullptr, .val = 0 }
     };
 
+    /* Min and max vals for parse_numeric_arg. */
+    const int *min = &(int){1};
+    const int *max = &(int){255};
+
     int opt;
     while ((opt = getopt_long(argc, argv, "Vhw:cb", long_opts, nullptr)) != -1) {
         switch(opt) {
@@ -155,7 +159,7 @@ int main(const int argc, char *argv[])
                 opts.chars = false;
                 break;
             case 'w':
-                opts.width = (uint8_t)parse_numeric_arg(optarg, 1, 255, APP_NAME);
+                opts.width = (uint8_t)parse_numeric_arg(optarg, min, max, APP_NAME);
                 break;
             default:
                 show_help();
