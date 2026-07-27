@@ -180,8 +180,8 @@ int main(const int argc, char *argv[])
         }
     }
 
-    const size_t PATH_MAX = get_path_max();
-    char path_to_ls[PATH_MAX];
+    const size_t path_max = get_path_max();
+    char path_to_ls[path_max];
 
     if (argv[optind] != NULL) {
         strlcpy(path_to_ls, argv[optind], sizeof(path_to_ls));
@@ -210,7 +210,7 @@ int main(const int argc, char *argv[])
 
     rewinddir(dp);
 
-    char filenames[n_files][PATH_MAX];
+    char filenames[n_files][path_max];
     int n = 0;
 
     while ((list = readdir(dp)) != NULL) {
@@ -224,10 +224,10 @@ int main(const int argc, char *argv[])
     }
     closedir(dp);
 
-    char cwd[PATH_MAX];
+    char cwd[path_max];
     char *cwd_p = cwd;
 
-    if (getcwd(cwd_p, PATH_MAX) == NULL) {
+    if (getcwd(cwd_p, path_max) == NULL) {
         fprintf(stderr, "%s: getcwd() failed: %s\n", APP_NAME, strerror(errno));
         return EXIT_FAILURE;
     }
