@@ -35,7 +35,7 @@ on macOS and FreeBSD. See notes below...
 | arch       | completed   |  ✅   |  ✅   |   ❌    |
 | b2sum      | not started |  ❌   |  ❌   |   ❌    |
 | base32     | completed   |  ✅   |  ✅   |   ✅    |
-| base64     | not started |  ❌   |  ❌   |   ❌    |
+| base64     | not started |  ✅   |  ✅   |   ✅    |
 | basename   | completed   |  ✅   |  ✅   |   ✅    |
 | basenc     | not started |  ❌   |  ❌   |   ❌    |
 | cal        | in progress |  ✅   |  ✅   |   ✅    | Not all options complete                   |
