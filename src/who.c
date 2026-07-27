@@ -56,7 +56,7 @@ static void print_boot_time()
     int error = sysinfo(&s_info);
     if(error != 0) {
         fprintf(stderr, "%s: sysinfo() failed: %s\n", APP_NAME, strerror(errno));
-        exit(EXIT_FAILURE)
+        exit(EXIT_FAILURE);
     }
     time_t boot_secs = s_info.uptime;
     time_t current_time = time(NULL);
