@@ -110,7 +110,7 @@ extern inline void format(const long long int bytes)
     printf("%6s ", size_string);
 }
 
-extern inline long parse_numeric_arg(char *arg, const int min, const int max, const char *name) {
+extern inline long parse_numeric_arg(char *arg, const int *min, const int *max, const char *name) {
     char *end_ptr;
     errno = 0;
 
@@ -122,15 +122,15 @@ extern inline long parse_numeric_arg(char *arg, const int min, const int max, co
     }
 
     if (min) {
-        if (conv < min) {
-            fprintf(stderr, "%s: arg %s below minimum of %d\n", name, arg, min);
+        if (conv < *min) {
+            fprintf(stderr, "%s: arg %s below minimum of %d\n", name, arg, *min);
             exit(EXIT_FAILURE);
         }
     }
 
     if (max) {
-        if (conv > max) {
-            fprintf(stderr, "%s: arg %s above maximum of %d\n", name, arg, max);
+        if (conv > *max) {
+            fprintf(stderr, "%s: arg %s above maximum of %d\n", name, arg, *max);
             exit(EXIT_FAILURE);
         }
     }
@@ -154,53 +154,53 @@ inline int dump_args(int argc, char *argv[])
 }
 
 /* trims leading and tailing whitespace from strings */
-extern inline char *trim_whitespace(char *str)
+extern inline char* trim_whitespace(char *str)
 {
     size_t len = 0;
-    char *frontp = str;
-    char *endp = nullptr;
+    const char *front_p = str;
+    char *end_p = nullptr;
 
-    if( str == NULL ) { return nullptr; }
-    if( str[0] == '\0' ) { return str; }
+    if (!str) { return nullptr; }
+    if (str[0] == '\0') { return str; }
 
     len = strlen(str);
-    endp = str + len;
+    end_p = str + len;
 
     /* Move the front and back pointers to address the first non-whitespace
      * characters from each end. */
-    while (isspace(*frontp)) { ++frontp; }
-    if (endp != frontp) {
-        while (isspace(*(--endp)) && endp != frontp) {}
+    while (isspace(*front_p)) { ++front_p; }
+    if (end_p != front_p) {
+        while (isspace(*(--end_p)) && end_p != front_p) {}
     }
 
-    if (str + len - 1 != endp) {
-        *(endp + 1) = '\0';
-    } else if (frontp != str &&  endp == frontp) {
+    if (str + len - 1 != end_p) {
+        *(end_p + 1) = '\0';
+    } else if (front_p != str && end_p == front_p) {
         *str = '\0';
     }
 
     /* Shift the string so that it starts at str so that if it's dynamically
      * allocated, we can still free it on the returned pointer.  Note the reuse
-     * of endp to mean the front of the string buffer now. */
-    endp = str;
-    if (frontp != str) {
-        while (*frontp) { *endp++ = *frontp++; }
-        *endp = '\0';
+     * of end_p to mean the front of the string buffer now. */
+    end_p = str;
+    if (front_p != str) {
+        while (*front_p) { *end_p++ = *front_p++; }
+        *end_p = '\0';
     }
     return str;
 }
 
 #define FP_SPECIAL 1
 /* Include set-user-ID, set-group-ID, and sticky
-bit information in returned string */
+bit information in returned string. */
 
 #define PERM_STR_SIZE sizeof("rwxrwxrwx")
 
 /* Return 'ls -l' style string for file permissions mask, This is from
- * 'The Linux Programming Interface' */
-extern inline char *file_perm_str(const mode_t perm, const int flags)
+ * 'The Linux Programming Interface'. */
+extern inline char* file_perm_str(const mode_t perm, const int flags)
 {
-    char *str = malloc(PERM_STR_SIZE + 1); //[PERM_STR_SIZE];
+    char *str = malloc(PERM_STR_SIZE + 1);
     if (!str) {
         fprintf(stderr, "malloc failed\n");
         exit(EXIT_FAILURE);
@@ -221,48 +221,47 @@ extern inline char *file_perm_str(const mode_t perm, const int flags)
     return str;
 }
 
-/* Returns octal permissions of a file/directory */
-extern inline int file_perm_oct(const mode_t perm)
-{
+/* Returns octal permissions of a file/directory. */
+extern inline int file_perm_oct(const mode_t perm) {
     int oct_perm = 00;
-    (perm & S_ISUID) ? (oct_perm += 04000) : (oct_perm += 00);
-    (perm & S_ISGID) ? (oct_perm += 02000) : (oct_perm += 00);
-    (perm & S_ISVTX) ? (oct_perm += 01000) : (oct_perm += 00);
-    (perm & S_IRUSR) ? (oct_perm += 0400)  : (oct_perm += 00);
-    (perm & S_IWUSR) ? (oct_perm += 0200)  : (oct_perm += 00);
-    (perm & S_IXUSR) ? (oct_perm += 0100)  : (oct_perm += 00);
-    (perm & S_IRGRP) ? (oct_perm += 040)   : (oct_perm += 00);
-    (perm & S_IWGRP) ? (oct_perm += 020)   : (oct_perm += 00);
-    (perm & S_IXGRP) ? (oct_perm += 010)   : (oct_perm += 00);
-    (perm & S_IROTH) ? (oct_perm += 04)    : (oct_perm += 00);
-    (perm & S_IWOTH) ? (oct_perm += 02)    : (oct_perm += 00);
-    (perm & S_IXOTH) ? (oct_perm += 01)    : (oct_perm += 00);
+    if (perm & S_ISUID) oct_perm += 04000;
+    if (perm & S_ISGID) oct_perm += 02000;
+    if (perm & S_ISVTX) oct_perm += 01000;
+    if (perm & S_IRUSR) oct_perm += 0400;
+    if (perm & S_IWUSR) oct_perm += 0200;
+    if (perm & S_IXUSR) oct_perm += 0100;
+    if (perm & S_IRGRP) oct_perm += 040;
+    if (perm & S_IWGRP) oct_perm += 020;
+    if (perm & S_IXGRP) oct_perm += 010;
+    if (perm & S_IROTH) oct_perm += 04;
+    if (perm & S_IWOTH) oct_perm += 02;
+    if (perm & S_IXOTH) oct_perm += 01;
     return oct_perm;
 }
 
-extern inline char *filetype(const mode_t st_mode, const int flag)
+extern inline char* filetype(const mode_t st_mode, const bool long_form)
 {
     switch (st_mode & S_IFMT) {
     case S_IFBLK:
-        return (flag == 1) ? (char *)"block device" : (char *)"b";
+        return long_form ? "block device" : "b";
     case S_IFCHR:
-        return (flag == 1) ? (char *)"character device" : (char *)"c";
+        return long_form ? "character device" : "c";
     case S_IFDIR:
-        return (flag == 1) ? (char *)"directory" : (char *)"d";
+        return long_form ? "directory" : "d";
     case S_IFIFO:
-        return (flag == 1) ? (char *)"FIFO/pipe" : (char *)"p";
+        return long_form ? "FIFO/pipe" : "p";
     case S_IFLNK:
-        return (flag == 1) ? (char *)"symlink" : (char *)"l";
+        return long_form ? "symlink" : "l";
     case S_IFREG:
-        return (flag == 1) ? (char *)"regular file" : (char *)"-";
+        return long_form ? "regular file" : "-";
     case S_IFSOCK:
-        return (flag == 1) ? (char *)"socket" : (char *)"s";
+        return long_form ? "socket" : "s";
     default:
-        return (flag == 1) ? (char *)"unknown" : (char *)"?";
+        return long_form ? "unknown" : "?";
     }
 }
 
-extern inline char *get_username(const uid_t uid)
+extern inline char* get_username(const uid_t uid)
 {
     errno = 0;
     const struct passwd *pwd = getpwuid(uid);
@@ -277,15 +276,15 @@ extern inline char *get_username(const uid_t uid)
     return pwd->pw_name;
 }
 
-extern inline char *get_groupname(const gid_t gid)
+extern inline char* get_groupname(const gid_t gid)
 {
     errno = 0;
     const struct group *grp = getgrgid(gid);
     if (grp == NULL) {
         if (errno == 0) {
-            return (char *)"unknown groupname";
+            return (char *)"unknown group name";
         }
-        fprintf(stderr, "groupname lookup failed");
+        fprintf(stderr, "group name lookup failed");
         exit(EXIT_FAILURE);
     }
     return grp->gr_name;
