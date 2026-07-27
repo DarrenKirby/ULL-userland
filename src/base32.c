@@ -74,7 +74,7 @@ Options:\n\
     -V, --version\t display version information\n\
     -d, --decode\t decode base32 encoded data\n\
     -i, --ignore-garbage\t ignore non-base32 characters\n\
-    -r, --wrap=N\t wrap output at N characters\n\
+    -r, --wrap=N\t wrap output at N characters. Use '0' for no wrapping\n\
 Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
@@ -154,6 +154,14 @@ static void decode(char *name)
             val = 0;
         }
     }
+
+    if (chars_read > 0) {
+        fprintf(stderr, "%s: warning: truncated message encountered!\n", APP_NAME);
+    }
+
+    if (fp != stdin) {
+        fclose(fp);
+    }
 }
 
 static void encode(char *name)
@@ -222,21 +230,32 @@ static void encode(char *name)
             }
         }
 
-        /* Print exactly opts.wrap chars to the console.
-         * If there are extra chars from the previous
-         * read then we copy them to the start of the
-         * buffer, pad with '\0' and iterate again. */
-        if (out_idx > opts.wrap) {
-            const uint8_t ext = out_idx - opts.wrap;
-            printf("%.*s\n", opts.wrap, out_buf);
-            if (ext > 0) {
-                memmove(out_buf, out_buf + opts.wrap, ext);
-                memset(out_buf + ext, 0, opts.wrap + 8 - ext);
+        /* Do not print newlines. */
+        if (opts.wrap == 0) {
+            printf("%.*s", out_idx, out_buf);
+            out_idx = 0;
+        } else {
+            /* Print exactly opts.wrap chars and a newline.
+             * If there are extra chars from the previous
+             * read then we copy them to the start of the
+             * buffer, pad with '\0' and iterate again. */
+            while (out_idx > opts.wrap) {
+                const uint8_t ext = out_idx - opts.wrap;
+                printf("%.*s\n", opts.wrap, out_buf);
+                if (ext > 0) {
+                    memmove(out_buf, out_buf + opts.wrap, ext);
+                    memset(out_buf + ext, 0, opts.wrap + 8 - ext);
+                }
+                out_idx = ext;
             }
-            out_idx = ext;
         }
     }
     printf("%.*s\n", out_idx, out_buf);
+
+    if (fp != stdin) {
+        fclose(fp);
+    }
+    free(out_buf);
 }
 
 int main(const int argc, char *argv[])
@@ -269,7 +288,7 @@ int main(const int argc, char *argv[])
                 opts.ignore = true;
                 break;
             case 'w':
-                opts.wrap = parse_numeric_arg(optarg, 1, 255, APP_NAME);
+                opts.wrap = parse_numeric_arg(optarg, 0, 255, APP_NAME);
                 break;
             default:
                 show_help();
