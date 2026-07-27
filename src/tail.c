@@ -1,8 +1,8 @@
 /***************************************************************************
  *   tail.c - print last n lines or bytes of file                          *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 #include <getopt.h>
+#include <stdint.h>
 #include <sys/fcntl.h>
 
 #include "common.h"
@@ -52,7 +53,7 @@ Options:\n\
     -q, --quiet\t\t never print file header(s)\n\
     -h, --help\t\t display this help\n\
     -V, --version\t display version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APP_NAME);
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
 static int tail_bytes(char *filename, const uint32_t n_bytes)
@@ -62,22 +63,24 @@ static int tail_bytes(char *filename, const uint32_t n_bytes)
     }
 
     FILE *fd = fopen(filename, "r");
-    if (fd == NULL) {
-        fprintf(stderr, "Unable to open '%s': %s\n", filename, strerror(errno));
+    if (!fd) {
+        fprintf(stderr, "%s: unable to open '%s': %s\n",
+            APP_NAME, filename, strerror(errno));
         return EXIT_FAILURE;
     }
 
-    /* get filesize in case it is less than bytes requested */
+    /* Get file size in case it is less than bytes requested. */
     fseek(fd, 0, SEEK_END);
     const long int fs_bytes = ftell(fd);
 
     if (fs_bytes < n_bytes) {
-        /* if it is less, just rewind the FP */
+        /* If it is less, just rewind the FP. */
         rewind(fd);
     } else {
-        /* otherwise, position read head to n_bytes from the end */
-        if (fseek(fd, -n_bytes, SEEK_END) != 0) {
-            fprintf(stderr, "Unable to seek to end of '%s': %s\n", filename, strerror(errno));
+        /* Otherwise, position read head to n_bytes from the end. */
+        if (fseek(fd, fs_bytes - n_bytes, SEEK_SET) != 0) {
+            fprintf(stderr, "%s: unable to seek to end of '%s': %s\n",
+                APP_NAME, filename, strerror(errno));
             return EXIT_FAILURE;
         }
     }
@@ -90,7 +93,6 @@ static int tail_bytes(char *filename, const uint32_t n_bytes)
         printf("%c", ch);
     }
 
-    printf("\n");
     fclose(fd);
     return EXIT_SUCCESS;
 }
@@ -117,7 +119,7 @@ static int tail_lines(char *filename, const int32_t n_lines)
     rewind(fd);
     char buffer[MAX_LINE_LENGTH];
 
-    /* If total lines is less than requested lines - print entire file */
+    /* If total lines is less than requested lines - print entire file. */
     if (lines <= n_lines) {
         while (fgets(buffer, sizeof(buffer), fd) != NULL) {
             printf("%s", buffer);
@@ -139,17 +141,20 @@ static int tail_lines(char *filename, const int32_t n_lines)
 
 int main(const int argc, char *argv[]) {
     const struct option long_opts[] = {
-        {"help", 0, nullptr, 'h'},
-        {"version", 0, nullptr, 'V'},
-        {"lines", required_argument, nullptr, 'n'},
-        {"bytes", required_argument, nullptr, 'b'},
-        {"quiet", 0, nullptr, 'q'},
-        {"verbose", 0, nullptr, 'v'},
-        {nullptr,0,nullptr,0}
+        { .name = "help",    .has_arg = no_argument,       .flag = nullptr, .val = 'h' },
+        { .name = "version", .has_arg = no_argument,       .flag = nullptr, .val = 'V' },
+        { .name = "lines",   .has_arg = required_argument, .flag = nullptr, .val = 'n' },
+        { .name = "bytes",   .has_arg = required_argument, .flag = nullptr, .val = 'b' },
+        { .name = "quiet",   .has_arg = no_argument,       .flag = nullptr, .val = 'q' },
+        { .name = "verbose", .has_arg = no_argument,       .flag = nullptr, .val = 'v' },
+        { .name = nullptr,   .has_arg = no_argument,       .flag = nullptr, .val = 0 }
     };
 
     /* Default lines to tail. */
     uint32_t n_units = 10;
+    /* Min and max vals for parse_numeric_arg. */
+    const int *min = &(int){1};
+    const int *max = &(int){INT32_MAX};
 
     int opt;
     while ((opt = getopt_long(argc, argv, "Vhn:b:qv", long_opts, nullptr)) != -1) {
@@ -174,12 +179,12 @@ int main(const int argc, char *argv[]) {
       case 'n':
         opts.lines = true;
         opts.bytes = false;
-        n_units = (uint32_t)parse_numeric_arg(optarg, 1, UINT32_MAX, "tail");
+        n_units = (uint32_t)parse_numeric_arg(optarg, min, max, "tail");
         break;
       case 'b':
         opts.lines = false;
         opts.bytes = true;
-        n_units = (uint32_t)parse_numeric_arg(optarg, 1, UINT32_MAX, "tail");
+        n_units = (uint32_t)parse_numeric_arg(optarg, min, max, "tail");
         break;
       default:
         show_help();
@@ -194,7 +199,7 @@ int main(const int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    /* toggle the header for multiple files if not --quiet */
+    /* Toggle the header for multiple files if not --quiet. */
     if (n_file_args >= 2) {
         if (!opts.quiet) {
             opts.verbose = 1;
