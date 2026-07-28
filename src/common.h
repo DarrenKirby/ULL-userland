@@ -37,7 +37,7 @@
 
 /* Version information */
 #define APP_SUITE   "ULL-userland"
-#define APP_VERSION "0.4.3"
+#define APP_VERSION "0.4.4"
 
 /* For OS X */
 #if defined(__APPLE__) && defined(__MACH__)
