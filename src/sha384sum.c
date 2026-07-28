@@ -1,5 +1,5 @@
 /***************************************************************************
- *   sha256sum.c - compute and check sha256 message digest                 *
+ *   sha384sum.c - compute and check sha384 message digest                 *
  *                                                                         *
  *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
  *   darren@dragonbyte.ca                                                  *
@@ -21,14 +21,15 @@
  ***************************************************************************/
 
 #include <getopt.h>
+#include <inttypes.h>
 
 #include "sha2.h"
 #include "common.h"
 
-uint32_t *words;
+uint64_t *l_words;
 uint8_t  *in_buf;
 
-static const char *APP_NAME = "sha256sum";
+static const char *APP_NAME = "sha384sum";
 
 static struct {
     bool check;
@@ -37,15 +38,15 @@ static struct {
     .check = false,
     .bsd_style = false };
 
-/* The eight 32-bit unsigned registers. */
-uint32_t reg_h0 = 0x6a09e667;
-uint32_t reg_h1 = 0xbb67ae85;
-uint32_t reg_h2 = 0x3c6ef372;
-uint32_t reg_h3 = 0xa54ff53a;
-uint32_t reg_h4 = 0x510e527f;
-uint32_t reg_h5 = 0x9b05688c;
-uint32_t reg_h6 = 0x1f83d9ab;
-uint32_t reg_h7 = 0x5be0cd19;
+/* The eight 64-bit unsigned registers. */
+uint64_t reg64_h0 = 0xcbbb9d5dc1059ed8;
+uint64_t reg64_h1 = 0x629a292a367cd507;
+uint64_t reg64_h2 = 0x9159015a3070dd17;
+uint64_t reg64_h3 = 0x152fecd8f70e5939;
+uint64_t reg64_h4 = 0x67332667ffc00b31;
+uint64_t reg64_h5 = 0x8eb44a8768581511;
+uint64_t reg64_h6 = 0xdb0c2e0d64f98fa7;
+uint64_t reg64_h7 = 0x47b5481dbefa4fa4;
 
 static void show_help()
 {
@@ -90,9 +91,9 @@ int main(const int argc, char *argv[]) {
     }
 
     /* Allocate a read buffer and a word buffer. */
-    in_buf = malloc(sizeof(uint8_t)  * 64);
-    words  = malloc(sizeof(uint32_t) * 64);
-    if (!in_buf || !words) {
+    in_buf  = malloc(sizeof(uint8_t)  * 128);
+    l_words = malloc(sizeof(uint64_t) * 64);
+    if (!in_buf || !l_words) {
         /* This is fatal no matter what. */
         fprintf(stderr, "%s: failed to allocate memory!\n", APP_NAME);
         return EXIT_FAILURE;
@@ -125,10 +126,10 @@ int main(const int argc, char *argv[]) {
             }
         }
 
-        /* As long as we can read 64 byte chunks, process them. */
+        /* As long as we can read 128 byte chunks, process them. */
         size_t bytes_read;
-        while ((bytes_read = fread(in_buf, 1, 64, fh)) == 64) {
-            process_chunk_32(in_buf);
+        while ((bytes_read = fread(in_buf, 1, 128, fh)) == 128) {
+            process_chunk_64(in_buf);
             message_size += bytes_read;
         }
 
@@ -136,36 +137,43 @@ int main(const int argc, char *argv[]) {
         message_size = (message_size + bytes_read) * 8;
 
         /* No more full chunks. Pad and process the last chunk. */
-        if (bytes_read >= 56) {
+        if (bytes_read >= 112) {
             /* Edge case where partial read is too large
              * to fit the padding and requires 2 chunks. */
             in_buf[bytes_read++] = 0x80;
-            memset(in_buf + bytes_read, 0, 64 - bytes_read);
-            process_chunk_32(in_buf);
+            memset(in_buf + bytes_read, 0, 128 - bytes_read);
+            process_chunk_64(in_buf);
 
-            memset(in_buf, 0, 56);
+            memset(in_buf, 0, 112);
         }
         else {
             in_buf[bytes_read++] = 0x80;
-            memset(in_buf + bytes_read, 0, 56 - bytes_read);
+            memset(in_buf + bytes_read, 0, 112 - bytes_read);
         }
 
-        /* Encode the 64-bit file size, big-endian. */
-        in_buf[56] = (uint8_t)(message_size >> 56) & 0xFF;
-        in_buf[57] = (uint8_t)(message_size >> 48) & 0xFF;
-        in_buf[58] = (uint8_t)(message_size >> 40) & 0xFF;
-        in_buf[59] = (uint8_t)(message_size >> 32) & 0xFF;
-        in_buf[60] = (uint8_t)(message_size >> 24) & 0xFF;
-        in_buf[61] = (uint8_t)(message_size >> 16) & 0xFF;
-        in_buf[62] = (uint8_t)(message_size >> 8)  & 0xFF;
-        in_buf[63] = (uint8_t)message_size         & 0xFF;
+        /* Encode the 128-bit file size, big-endian. */
+
+        /* Zero out the upper 64 bits (bytes 112 to 119) */
+        memset(in_buf + 112, 0, 8);
+
+        /* Encode the 64-bit message_size into the lower 64 bits (bytes 120 to 127) */
+        in_buf[120] = (uint8_t)(message_size >> 56) & 0xFF;
+        in_buf[121] = (uint8_t)(message_size >> 48) & 0xFF;
+        in_buf[122] = (uint8_t)(message_size >> 40) & 0xFF;
+        in_buf[123] = (uint8_t)(message_size >> 32) & 0xFF;
+        in_buf[124] = (uint8_t)(message_size >> 24) & 0xFF;
+        in_buf[125] = (uint8_t)(message_size >> 16) & 0xFF;
+        in_buf[126] = (uint8_t)(message_size >> 8)  & 0xFF;
+        in_buf[127] = (uint8_t)message_size         & 0xFF;
 
         /* Process the last chunk. */
-        process_chunk_32(in_buf);
+        process_chunk_64(in_buf);
 
         /* Print the digest. */
-        printf("%08x%08x%08x%08x%08x%08x%08x%08x", reg_h0, reg_h1, reg_h2, reg_h3,
-                                                   reg_h4, reg_h5, reg_h6, reg_h7);
+        printf("%016" PRIx64 "%016" PRIx64 "%016" PRIx64 "%016" PRIx64
+               "%016" PRIx64 "%016" PRIx64,
+                reg64_h0, reg64_h1, reg64_h2, reg64_h3,
+                reg64_h4, reg64_h5);
         printf("  %s\n", read_stdin ? "-" : argv[optind]);
 
         if (read_stdin) goto exit;
@@ -173,14 +181,14 @@ int main(const int argc, char *argv[]) {
         optind++;
 
         /* Reset the registers. */
-        reg_h0 = 0x6a09e667;
-        reg_h1 = 0xbb67ae85;
-        reg_h2 = 0x3c6ef372;
-        reg_h3 = 0xa54ff53a;
-        reg_h4 = 0x510e527f;
-        reg_h5 = 0x9b05688c;
-        reg_h6 = 0x1f83d9ab;
-        reg_h7 = 0x5be0cd19;
+         reg64_h0 = 0xcbbb9d5dc1059ed8;
+         reg64_h1 = 0x629a292a367cd507;
+         reg64_h2 = 0x9159015a3070dd17;
+         reg64_h3 = 0x152fecd8f70e5939;
+         reg64_h4 = 0x67332667ffc00b31;
+         reg64_h5 = 0x8eb44a8768581511;
+         reg64_h6 = 0xdb0c2e0d64f98fa7;
+         reg64_h7 = 0x47b5481dbefa4fa4;
 
     } while (optind < argc);
 
