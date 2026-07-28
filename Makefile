@@ -9,7 +9,7 @@ PKG_CONFIG ?= pkg-config
 SRCDIR := src
 BINDIR := bin
 
-PROGRAMS := arch basename base32 base64 cal cat chgrp chown cp df dirname env false fold free head link ln logname ls mount mkdir mv nl nproc od printenv pwd rm rmdir sleep stat sync tail tee touch true uname unlink uptime vdir wc who whoami yes
+PROGRAMS := arch basename base32 base64 cal cat chgrp chown cp df dirname env false fold free head link ln logname ls md5sum mount mkdir mv nl nproc od printenv pwd rm rmdir sleep stat sync tail tee touch true uname unlink uptime vdir wc who whoami yes
 
 package := ull-userland
 version := 0.4.3
