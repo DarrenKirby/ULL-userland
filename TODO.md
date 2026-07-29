@@ -80,7 +80,7 @@ on macOS and FreeBSD. See notes below...
 | ln         | in progress |  ✅   |  ✅   |   ✅    |
 | logname    | completed   |  ✅   |  ✅   |   ❌    |
 | ls         | in progress |  ✅   |  ✅   |   ✅    |
-| md5sum     | not started |  ❌   |  ❌   |   ❌    |
+| md5sum     | in progress |  ✅   |  ✅   |   ✅    |
 | mkdir      | completed   |  ✅   |  ✅   |   ✅    |
 | mkfifo     | not started |  ❌   |  ❌   |   ❌    |
 | mknod      | not started |  ❌   |  ❌   |   ❌    |
@@ -110,10 +110,10 @@ on macOS and FreeBSD. See notes below...
 | route      | not started |  ❌   |  ❌   |   ❌    |
 | seq        | not started |  ❌   |  ❌   |   ❌    |
 | sha1sum    | not started |  ❌   |  ❌   |   ❌    |
-| sha224sum  | not started |  ❌   |  ❌   |   ❌    |
-| sha256sum  | not started |  ❌   |  ❌   |   ❌    |
-| sha384sum  | not started |  ❌   |  ❌   |   ❌    |
-| sha512sum  | not started |  ❌   |  ❌   |   ❌    |
+| sha224sum  | in progress |  ✅   |  ✅   |   ✅    |
+| sha256sum  | in progress |  ✅   |  ✅   |   ✅    |
+| sha384sum  | in progress |  ✅   |  ✅   |   ✅    |
+| sha512sum  | in progress |  ✅   |  ✅   |   ✅    |
 | shred      | not started |  ❌   |  ❌   |   ❌    |
 | shuf       | not started |  ❌   |  ❌   |   ❌    |
 | sleep      | completed   |  ✅   |  ✅   |   ✅    |
