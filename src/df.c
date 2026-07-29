@@ -21,12 +21,16 @@
  ***************************************************************************/
 
 #include <getopt.h>
+#if defined(__APPLE__) && defined(__MACH__)
+    #define _DARWIN_FEATURE_64_BIT_INODE 1
+    #define APPLE_FS 26
+#endif
 #if defined(__APPLE__) && defined(__MACH__) || defined(__FreeBSD__)
-#include <sys/param.h>
-#include <sys/ucred.h>
-#include <sys/mount.h>
+    #include <sys/param.h>
+    #include <sys/ucred.h>
+    #include <sys/mount.h>
 #else
-#include "mount.h"
+    #include "mount.h"
 #endif
 
 #include "common.h"
@@ -35,174 +39,198 @@
 static const char *APP_NAME = "df";
 
 static struct  {
-    unsigned int b : 1; /* block size (k, m, g, t, p, e, z, y (*1024) or K, M, G..etc (*1000)) */
-    unsigned int r : 1; /* human readable (*1024) */
-    unsigned int H : 1; /* human readable si (*1000) */
-    unsigned int i : 1; /* inodes */
-    unsigned int T : 1; /* FS type */
-    unsigned int t : 1; /* total */
-    unsigned int a : 1; /* include dummy file systems */
-} opts = {.b = 0,.r = 0,.H = 0,.i = 0,.T = 0,.t = 0,.a = 0};;
+    bool total;
+    bool inodes;
+    bool fs_type;
+    bool inc_dummy;
+    bool sync;
+    uint8_t format;
+} opts = {
+    .total = false,
+    .inodes = false,
+    .fs_type = false,
+    .inc_dummy = false,
+    .sync = false,
+    .format = 0 };
 
-int fmt = 0;
-char get_option_char;
-
-static void show_help() {
+static void show_help()
+{
     printf("Usage: %s [OPTION]...\n\n\
 Options:\n\
     -h, --help\t\tdisplay this help\n\
-    -V, --version\tdisplay version information\n\n\
+    -V, --version\tdisplay version information\n\
+    -i, --inodes\tdisplay information for inodes\n\
+    -s, --sync\t\tsync all I/O before retrieving FS info\n\
+    -T, --fs-type\tdisplay file type name\n\
+    -d, --include-dummy\tdisplay info for dummy file systems\n\
+    -[k|m|g] --[kilobytes|megabytes|gigabytes]\n\
+    \t\t\tdisplay in unit rather than blocks\n\
 Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
-static long int calculate_percent(long int total, long int free) {
-    long int result;
-    long int used = (total - free);
-    result = ((double)used / (double)total) * 100;
+static uint64_t calculate_percent(const uint64_t total, const uint64_t free)
+{
+    const uint64_t used = total - free;
+    const uint64_t result = (double) used / (double) total * 100;
     return result;
 }
 
-int main(int argc, char *argv[]) {
-    int opt;
-
+int main(const int argc, char *argv[])
+{
     const struct option longopts[] = {
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {"block-size", required_argument, NULL, 'b'},
-        {"human-readable", 0, NULL, 'r'},
-        {"human-readable-si", 0, NULL, 'H'},
-        {"inodes", 0, NULL, 'i'},
-        {"kilobytes", 0, NULL, 'k'},
-        {"megabytes", 0, NULL, 'm'},
-        {"gigabytes", 0, NULL, 'g'},
-        {"sync", 0, NULL, 's'},
-        {"fs-type", 0, NULL, 'T'},
-        {"total", 0, NULL, 't'},
-        {"all", 0, NULL, 'a'},
-        {0,0,0,0}
+        { .name = "help",          .has_arg = no_argument, .flag = nullptr, .val = 'h' },
+        { .name = "version",       .has_arg = no_argument, .flag = nullptr, .val = 'V' },
+        { .name = "inodes",        .has_arg = no_argument, .flag = nullptr, .val = 'i' },
+        { .name = "kilobytes",     .has_arg = no_argument, .flag = nullptr, .val = 'k' },
+        { .name = "megabytes",     .has_arg = no_argument, .flag = nullptr, .val = 'm' },
+        { .name = "gigabytes",     .has_arg = no_argument, .flag = nullptr, .val = 'g' },
+        { .name = "sync",          .has_arg = no_argument, .flag = nullptr, .val = 's' },
+        { .name = "fs-type",       .has_arg = no_argument, .flag = nullptr, .val = 'T' },
+        { .name = "total",         .has_arg = no_argument, .flag = nullptr, .val = 't' },
+        { .name = "include-dummy", .has_arg = no_argument, .flag = nullptr, .val = 'd' },
+        { .name = nullptr,         .has_arg = no_argument, .flag = nullptr, .val = 0 }
     };
 
-    while ((opt = getopt_long(argc, argv, "Vhb:rHikmgsTta", longopts, NULL)) != -1) {
+    int opt;
+    while ((opt = getopt_long(argc, argv, "VhikmgsTtd", longopts, NULL)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
                 break;
             case 'h':
                 show_help();
-                exit(EXIT_SUCCESS);
-                break;
-            case 'b':
-                get_option_char = optarg[0];
-                switch(get_option_char) {
-                    case 'k': fmt = 1; break;
-                    case 'm': fmt = 2; break;
-                    case 'g': fmt = 3; break;
-                    case 't': fmt = 4; break;
-                    case 'p': fmt = 5; break;
-                    case 'e': fmt = 6; break;
-                    case 'z': fmt = 7; break;
-                    case 'y': fmt = 8; break;
-                    case 'K': fmt = 9; break;
-                    case 'M': fmt = 10; break;
-                    case 'G': fmt = 11; break;
-                    case 'T': fmt = 12; break;
-                    case 'P': fmt = 13; break;
-                    case 'E': fmt = 14; break;
-                    case 'Z': fmt = 15; break;
-                    case 'Y': fmt = 16; break;
-                    default: ;
-                }
-                break;
-            case 'r':
-                opts.r = 1;
-                break;
-            case 'H':
-                opts.H = 1;
+                return EXIT_SUCCESS;
                 break;
             case 'i':
-                opts.i = 1;
+                opts.inodes = true;
                 break;
             case 'k':
-                fmt = 1;
+                opts.format = 1;
                 break;
             case 'm':
-                fmt = 2;
+                opts.format = 2;
                 break;
             case 'g':
-                fmt = 3;
+                opts.format = 3;
                 break;
             case 's':
-                sync();
+                opts.sync=true;
                 break;
             case 'T':
-                opts.T = 1;
+                opts.fs_type = true;
                 break;
             case 't':
-                opts.t = 1;
+                opts.total = true;
                 break;
-            case 'a':
-                opts.a = 1;
+            case 'd':
+                opts.inc_dummy = true;
                 break;
-            case ':':
-                 /* getopt_long prints own error message */
-                exit(EXIT_FAILURE);
-                break;
-            case '?':
-                 /* getopt_long prints own error message */
-                exit(EXIT_FAILURE);
             default:
                 show_help();
-                exit(EXIT_FAILURE);
+                EXIT_FAILURE;
                 break;
         }
     }
 
     int n_mounts = 0;
-#if defined (__linux__)
-    struct statfs_ext *mounted_filesystems = malloc(sizeof(struct statfs_ext));
-    if (argc == optind) /* display all mounted file systems */
-        n_mounts = getfsstat_ext(&mounted_filesystems, FS_ALL, 0);
 
-    printf("Found %i mounted file systems\n", n_mounts);
-    //printf("sizeof foo: %lu\n", sizeof(mounted_filesystems));
-
-#else
-    struct statfs *mounted_filesystems = malloc(sizeof(struct statfs));
-    if (argc == optind) /* display all mounted file systems */
-        n_mounts = getfsstat(mounted_filesystems, 8096, MNT_NOWAIT);
-
-    //printf("Found %i mounted file systems\n", n_mounts);
-    //printf("sizeof statfs struct: %lu\n", sizeof(mounted_filesystems));
-
-#endif
-    printf("%*s %*s %*s %*s %*s    %s\n", 16, "Filesystem",
-           12, "1K-blocks",
-           12, "Used",
-           12, "Available",
-           6, "Use%",
-           "Mounted on");
-    //printf("Filesystem\t1K-blocks\tUsed\t\tAvailable\tUse%%\tMounted on\n");
-    for (int i = 0; i < n_mounts; i++) {
-#if defined(__linux__) || defined(__FreeBSD__)
-        printf("%*s %*lu %*lu %*lu %*lu%%   %s\n", 16, mounted_filesystems[i].f_mntfromname,
-#else
-        printf("%*s %*llu %*llu %*llu %*lu%%   %s\n", 16, mounted_filesystems[i].f_mntfromname,
-#endif
-               12, mounted_filesystems[i].f_blocks,
-               12, mounted_filesystems[i].f_blocks - mounted_filesystems[i].f_bfree,
-               12, mounted_filesystems[i].f_bfree,
-               6, calculate_percent(mounted_filesystems[i].f_blocks, mounted_filesystems[i].f_bfree),
-               mounted_filesystems[i].f_mntonname);
+    if (argc == optind) {
+        /* display all mounted file systems */
+        n_mounts = getfsstat(nullptr, 0, MNT_NOWAIT);
     }
-    //printf("%s\n", foo[1].f_fstypename);
-    //printf("%s\n", foo[2].f_fstypename);
-    //printf("%s\n", foo[3].f_fstypename);
-    //print_fs_fields(foo);
+    struct statfs *mfs = malloc(sizeof(struct statfs) * n_mounts);
+    if (!mfs) {
+        fprintf(stderr, "%s: malloc failed!\n", APP_NAME);
+        return EXIT_FAILURE;
+    }
 
+    if (opts.sync) {
+        sync();
+    }
+
+    if (getfsstat(mfs, sizeof(struct statfs) * n_mounts, MNT_DWAIT) == -1) {
+        fprintf(stderr, "%s: getfsstat() failed: %s\n", APP_NAME, strerror(errno));
+        return EXIT_FAILURE;
+    }
+
+    /* Print the header. */
+    printf("%-16s ", "Filesystem");
+    if (opts.fs_type) {
+        printf("%-7s ", "FS type");
+    }
+    if (!opts.format) {
+        printf("%-*s ", 12, "1K-blocks");
+    } else {
+        printf("%-*s ", !opts.format || opts.format == 1 ? 12 : opts.format == 2 ? 8 : 6, "Size");
+    }
+    printf("%-*s ", !opts.format || opts.format == 1  ? 12 : opts.format == 2 ? 8 : 6, "Used");
+    printf("%-*s ", !opts.format || opts.format == 1  ? 12 : opts.format == 2 ? 8 : 6, "Free");
+    printf("%s ", "Use%");
+
+    if (opts.inodes) {
+        printf("%-12s ", "Inodes");
+        printf("%-8s", "IUsed");
+        printf("%s ", "IUse%");
+    }
+
+    printf("  Mount point\n");
+
+    /* Print the data. */
+    for (int i = 0; i < n_mounts; i++) {
+        if (!opts.inc_dummy && mfs[i].f_type != APPLE_FS) {
+            continue;
+        }
+
+        printf("%-16s ", mfs[i].f_mntfromname);
+
+        if (opts.fs_type) {
+            printf("%-7s ", mfs[i].f_fstypename);
+        }
+
+        const uint64_t blk_1k = mfs[i].f_blocks * 4;
+        const uint64_t blk_1k_free = mfs[i].f_bfree * 4;
+        const uint64_t blk_1k_used = (mfs[i].f_blocks * 4 - blk_1k_free);
+
+        const uint64_t size_bytes = mfs[i].f_blocks * mfs[i].f_bsize;
+        const uint64_t free_bytes = mfs[i].f_bfree  * mfs[i].f_bsize;
+        const uint64_t used_bytes = size_bytes - free_bytes;
+
+        switch (opts.format) {
+            case 1:
+                printf("%-12llu ", size_bytes / 1024);
+                printf("%-12llu ", used_bytes / 1024);
+                printf("%-12llu ", free_bytes / 1024);
+                break;
+            case 2:
+                printf("%-8llu ", size_bytes / 1024 / 1024);
+                printf("%-8llu ", used_bytes / 1024 / 1024);
+                printf("%-8llu ", free_bytes / 1024 / 1024);
+                break;
+            case 3:
+                printf("%-6llu ", size_bytes / 1024 / 1024 / 1024);
+                printf("%-6llu ", used_bytes / 1024 / 1024 / 1024);
+                printf("%-6llu ", free_bytes / 1024 / 1024 / 1024);
+                break;
+            default:
+                printf("%-12llu ", blk_1k);
+                printf("%-12llu ", blk_1k_used);
+                printf("%-12llu ", blk_1k_free);
+        }
+
+        printf("%3llu%% ", mfs[i].f_blocks == 0 ? 0 : calculate_percent(mfs[i].f_blocks, mfs[i].f_bfree));
+
+        if (opts.inodes) {
+            printf("%-12llu ", mfs[i].f_files);
+            printf("%-8llu", mfs[i].f_files - mfs[i].f_ffree);
+            printf("%3llu%% ", mfs[i].f_blocks == 0 ? 0 : calculate_percent(mfs[i].f_files, mfs[i].f_ffree));
+        }
+
+        printf("  %s\n", mfs[i].f_mntonname);
+    }
 
     return EXIT_SUCCESS;
 }
