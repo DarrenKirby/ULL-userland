@@ -23,17 +23,8 @@
 #include <getopt.h>
 #include <stdint.h>
 #include <inttypes.h>
-#if defined(__APPLE__) && defined(__MACH__)
-    #define _DARWIN_FEATURE_64_BIT_INODE 1
-    #define APPLE_FS 26
-#endif
-#if defined(__APPLE__) && defined(__MACH__) || defined(__FreeBSD__)
-    #include <sys/param.h>
-    #include <sys/mount.h>
-#else
-    #include "mount.h"
-#endif
 
+#include "mount.h"
 #include "common.h"
 
 
@@ -142,13 +133,12 @@ int main(const int argc, char *argv[])
     }
 
     int n_mounts = 0;
-    struct statfs *mfs;
-#if defined(__APPLE__) && defined(__MACH__)
-    if (argc == optind) {
-        /* Display all mounted file systems */
-        n_mounts = getfsstat(nullptr, 0, MNT_NOWAIT);
+    vfs_stat_t *mfs;
 
-        mfs = malloc(sizeof(struct statfs) * n_mounts);
+    if (argc == optind) {
+        n_mounts = vfs_getfsstat(nullptr, 0);
+
+        mfs = malloc(sizeof(vfs_stat_t) * n_mounts);
         if (!mfs) {
             fprintf(stderr, "%s: malloc failed!\n", APP_NAME);
             return EXIT_FAILURE;
@@ -158,7 +148,8 @@ int main(const int argc, char *argv[])
             sync();
         }
 
-        if (getfsstat(mfs, sizeof(struct statfs) * n_mounts, MNT_DWAIT) == -1) {
+        n_mounts = vfs_getfsstat(mfs, sizeof(vfs_stat_t) * n_mounts);
+        if (n_mounts == EXIT_FAILURE) {
             fprintf(stderr, "%s: getfsstat() failed: %s\n", APP_NAME, strerror(errno));
             return EXIT_FAILURE;
         }
@@ -167,28 +158,28 @@ int main(const int argc, char *argv[])
         const int args = argc - optind;
 
         /* Assuming n_mounts is reset to 0 before this block */
-        mfs = malloc(sizeof(struct statfs) * args);
+        mfs = malloc(sizeof(vfs_stat_t) * args);
         if (!mfs) {
             fprintf(stderr, "%s: malloc failed!\n", APP_NAME);
             return EXIT_FAILURE;
         }
 
         while (optind < argc) {
-            struct statfs tmp;
+            vfs_stat_t tmp;
 
-            if (statfs(argv[optind], &tmp) == -1) {
-                /* Print the specific file that failed, but continue the loop */
+            /* Calls native statfs on Mac, and your custom statfs_ext on Linux */
+            if (vfs_statfs(argv[optind], &tmp) == -1) {
                 fprintf(stderr, "%s: %s: %s\n", APP_NAME, argv[optind], strerror(errno));
                 optind++;
                 continue;
             }
             optind++;
 
-            /* Deduplicate against ALL previously stored filesystems using f_fsid */
+            /* Deduplicate using the populated string fields */
             int is_dupe = 0;
             for (int i = 0; i < n_mounts; i++) {
-                if (mfs[i].f_fsid.val[0] == tmp.f_fsid.val[0] &&
-                    mfs[i].f_fsid.val[1] == tmp.f_fsid.val[1]) {
+                if (strcmp(mfs[i].f_mntfromname, tmp.f_mntfromname) == 0 &&
+                    strcmp(mfs[i].f_mntonname, tmp.f_mntonname) == 0) {
                     is_dupe = 1;
                     break;
                     }
@@ -198,35 +189,10 @@ int main(const int argc, char *argv[])
                 continue;
             }
 
-            memcpy(&mfs[n_mounts], &tmp, sizeof(struct statfs));
+            memcpy(&mfs[n_mounts], &tmp, sizeof(vfs_stat_t));
             n_mounts++;
         }
     }
-
-
-#else
-    if (argc == optind) {
-        n_mounts = getfsstat_ext(nullptr, 0);
-    }
-
-    printf("n_mounts = %d\n", n_mounts);
-
-    struct statfs_ext *mfs = malloc(sizeof(struct statfs_ext) * n_mounts);
-    if (!mfs) {
-        fprintf(stderr, "%s: malloc failed!\n", APP_NAME);
-        return EXIT_FAILURE;
-    }
-
-    if (opts.sync) {
-        sync();
-    }
-
-    n_mounts = getfsstat_ext(mfs, sizeof(struct statfs_ext) * n_mounts);
-    if (n_mounts == EXIT_FAILURE) {
-        fprintf(stderr, "%s: getfsstat() failed: %s\n", APP_NAME, strerror(errno));
-        return EXIT_FAILURE;
-    }
-#endif
     /* Determine column widths and math divisors upfront */
     int w = 12;
     uint64_t div = 1;
