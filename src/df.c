@@ -181,79 +181,74 @@ int main(const int argc, char *argv[])
         return EXIT_FAILURE;
     }
 #endif
-    /* Print the header. */
+    /* 1. Determine column widths and math divisors upfront */
+    int w = 12;
+    uint64_t div = 1;
+    const char *size_label = "1K-blocks";
+
+    if (opts.format > 0) {
+        size_label = "Size";
+        if (opts.format == 1) {
+            w = 12;
+            div = 1024;
+        } else if (opts.format == 2) {
+            w = 8;
+            div = 1024 * 1024;
+        } else if (opts.format == 3) {
+            w = 6;
+            div = 1024 * 1024 * 1024;
+        }
+    }
+
+    /* 2. Print the Header using the dynamic width 'w' */
     printf("%-16s ", "Filesystem");
     if (opts.fs_type) {
         printf("%-7s ", "FS type");
     }
-    if (!opts.format) {
-        printf("%-*s ", 12, "1K-blocks");
-    } else {
-        printf("%-*s ", !opts.format || opts.format == 1 ? 12 : opts.format == 2 ? 8 : 6, "Size");
-    }
-    printf("%-*s ", !opts.format || opts.format == 1  ? 12 : opts.format == 2 ? 8 : 6, "Used");
-    printf("%-*s ", !opts.format || opts.format == 1  ? 12 : opts.format == 2 ? 8 : 6, "Free");
-    printf("%s ", "Use%");
 
-    if (opts.inodes) {
-        printf("%-12s ", "Inodes");
-        printf("%-8s", "IUsed");
-        printf("%s ", "IUse%");
-    }
+    /* We use %-*s to pass the width variable 'w', followed by ONE space */
+    printf("%-*s %-*s %-*s %4s   Mount point\n",
+           w, size_label,
+           w, "Used",
+           w, "Free",
+           "Use%");
 
-    printf("  Mount point\n");
-
-    /* Print the data. */
+    /* 3. Print the Data */
     for (int i = 0; i < n_mounts; i++) {
         if (!opts.inc_dummy && mfs[i].f_blocks == 0) {
             continue;
         }
 
-        printf("%-16s ", mfs[i].f_mntfromname);
+        uint64_t p_size, p_used, p_free;
 
+        /* Calculate display values based on format */
+        if (opts.format == 0) {
+            p_size = mfs[i].f_blocks * 4;
+            p_free = mfs[i].f_bfree * 4;
+            p_used = p_size - p_free;
+        } else {
+            uint64_t size_bytes = mfs[i].f_blocks * mfs[i].f_bsize;
+            uint64_t free_bytes = mfs[i].f_bfree  * mfs[i].f_bsize;
+            p_size = size_bytes / div;
+            p_free = free_bytes / div;
+            p_used = (size_bytes - free_bytes) / div;
+        }
+
+        uint64_t pct = mfs[i].f_blocks == 0 ? 0 : calculate_percent(mfs[i].f_blocks, mfs[i].f_bfree);
+
+        /* Print row headers */
+        printf("%-16s ", mfs[i].f_mntfromname);
         if (opts.fs_type) {
             printf("%-7s ", mfs[i].f_fstypename);
         }
 
-        const uint64_t blk_1k = mfs[i].f_blocks * 4;
-        const uint64_t blk_1k_free = mfs[i].f_bfree * 4;
-        const uint64_t blk_1k_used = (mfs[i].f_blocks * 4 - blk_1k_free);
-
-        const uint64_t size_bytes = mfs[i].f_blocks * mfs[i].f_bsize;
-        const uint64_t free_bytes = mfs[i].f_bfree  * mfs[i].f_bsize;
-        const uint64_t used_bytes = size_bytes - free_bytes;
-
-        switch (opts.format) {
-            case 1:
-                printf("%-12" PRId64 " ", size_bytes / 1024);
-                printf("%-12" PRId64 "  ", used_bytes / 1024);
-                printf("%-12" PRId64 "  ", free_bytes / 1024);
-                break;
-            case 2:
-                printf("%-8" PRId64 "  ", size_bytes / 1024 / 1024);
-                printf("%-8" PRId64 "  ", used_bytes / 1024 / 1024);
-                printf("%-8" PRId64 "  ", free_bytes / 1024 / 1024);
-                break;
-            case 3:
-                printf("%-6" PRId64 "  ", size_bytes / 1024 / 1024 / 1024);
-                printf("%-6" PRId64 "  ", used_bytes / 1024 / 1024 / 1024);
-                printf("%-6" PRId64 "  ", free_bytes / 1024 / 1024 / 1024);
-                break;
-            default:
-                printf("%-12" PRId64 "  ", blk_1k);
-                printf("%-12" PRId64 "  ", blk_1k_used);
-                printf("%-12" PRId64 "  ", blk_1k_free);
-        }
-
-        printf("%3" PRId64 " %% ", mfs[i].f_blocks == 0 ? 0 : calculate_percent(mfs[i].f_blocks, mfs[i].f_bfree));
-
-        if (opts.inodes) {
-            printf("%-12" PRId64 "  ", mfs[i].f_files);
-            printf("%-8" PRId64 " ", mfs[i].f_files - mfs[i].f_ffree);
-            printf("%3" PRId64 " %% ", mfs[i].f_blocks == 0 ? 0 : calculate_percent(mfs[i].f_files, mfs[i].f_ffree));
-        }
-
-        printf("  %s\n", mfs[i].f_mntonname);
+        /* Print sizes using the exact same 'w' dynamic width and ONE space */
+        printf("%-*" PRId64 " %-*" PRId64 " %-*" PRId64 " %3" PRId64 "%%   %s\n",
+               w, p_size,
+               w, p_used,
+               w, p_free,
+               pct,
+               mfs[i].f_mntonname);
     }
 
     return EXIT_SUCCESS;
