@@ -24,6 +24,7 @@
 #define MOUNT_H
 
 #include <stdio.h>
+#include <sys/mount.h>
 #ifdef __linux__
 #include <sys/statfs.h>      /* for statfs struct */
 #include <linux/limits.h>    /* for PATH_MAX */
@@ -40,6 +41,8 @@
 
 #define FS_TYPE_LEN      90
 #define MNT_FLAGS_LEN    256
+
+#define PATH_MAX 1024
 
 
 struct mounted_fs_entry {
@@ -115,7 +118,7 @@ struct statfs_ext {
 #define FS_ALL 0xdeadbee
 
 /* used internally by statfs_ext() and getfsstat_ext() */
-int __merge_statfs_structs(struct statfs *buf, struct statfs_ext *buf_full) {
+inline int __merge_statfs_structs(struct statfs *buf, struct statfs_ext *buf_full) {
     buf_full->f_type    = buf->f_type;
     buf_full->f_bsize   = buf->f_bsize;
     buf_full->f_blocks  = buf->f_blocks;
@@ -136,7 +139,7 @@ int __merge_statfs_structs(struct statfs *buf, struct statfs_ext *buf_full) {
 
 
 /* used internally by statfs_ext() and getfsstat_ext() */
-int __read_proc_mounts(struct mounted_fs_entry *mnt_fs_buf, const char *path) {
+inline int __read_proc_mounts(struct mounted_fs_entry *mnt_fs_buf, const char *path) {
     FILE *fp;
     if ((fp = fopen("/proc/mounts", "r")) == NULL) {
         errno = EIO;
@@ -194,7 +197,7 @@ int __read_proc_mounts(struct mounted_fs_entry *mnt_fs_buf, const char *path) {
 }
 
 
-int getmntpt(const char *path, char *mount_point) {
+inline int getmntpt(const char *path, char *mount_point) {
     struct stat cur_stat;
     struct stat last_stat;
 
@@ -251,7 +254,7 @@ int getmntpt(const char *path, char *mount_point) {
 }
 
 
-int statfs_ext(const char *path, struct statfs_ext *struct_buf) {
+inline int statfs_ext(const char *path, struct statfs_ext *struct_buf) {
     /* check size of path arg */
     if (strlen(path) > PATH_MAX) {
         errno = ENAMETOOLONG;
@@ -297,7 +300,7 @@ int statfs_ext(const char *path, struct statfs_ext *struct_buf) {
     return SUCCESS;
 }
 
-int getfsstat_ext(struct statfs_ext **struct_array_buf, long int bufsize, [[maybe_unused]] int flags) {
+inline int getfsstat_ext(struct statfs_ext **struct_array_buf, long int bufsize, [[maybe_unused]] int flags) {
 
     FILE *fp;
     if ((fp = fopen("/proc/mounts", "r")) == NULL) {
@@ -456,7 +459,7 @@ int getfsstat_ext(struct statfs_ext **struct_array_buf, long int bufsize, [[mayb
 //     char f_mntfromname[PATH_MAX+1];    /* mounted file sytem */
 // };
 //
-int merge_statfs_structs(struct statfs *buf, struct statfs_ext **buf_full) {
+inline int merge_statfs_structs(struct statfs *buf, struct statfs_ext **buf_full) {
     int i;
     (*buf_full)->f_type    = buf->f_type;
     (*buf_full)->f_bsize   = buf->f_bsize;
