@@ -47,7 +47,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[])
     }
 
 #ifdef __linux__
-    n_mounts = getfsstat_linux(nullptr);
+    n_mounts = getfsstat_ext(nullptr, 0);
 #else
     n_mounts = getfsstat(NULL, 0, MNT_NOWAIT);
     n_mounts = getfsstat(mounted_fs, sizeof(struct statfs)*n_mounts, MNT_NOWAIT);

@@ -124,30 +124,30 @@ static int read_proc_mounts(struct mounted_fs_entry *mnt_fs_buf, const char *pat
         if (!tok) continue;
         strncpy(mnt_fs_buf->fs_mntops, tok, MNT_FLAGS_LEN - 1);
 
-        // We can use sscanf for the two integers at the end
         tok = strtok(nullptr, " ");
-        if (!tok) {
-            sscanf(tok, "%i", &mnt_fs_buf->fs_freq);
+        if (tok) {
+            /* strtol returns a long, so cast it down to int. */
+            mnt_fs_buf->fs_freq = (int)strtol(tok, nullptr, 10);
         }
 
         tok = strtok(nullptr, " ");
-        if (!tok) {
-            sscanf(tok, "%i", &mnt_fs_buf->fs_passno);
+        if (tok) {
+            mnt_fs_buf->fs_passno = (int)strtol(tok, nullptr, 10);
         }
 
-        // Check if the mount point matches the desired path
+        /* Check if the mount point matches the desired path. */
         if (strcmp(mnt_fs_buf->fs_file, path) == 0) {
             fclose(fp);
-            return EXIT_SUCCESS;  // We found the matching entry
+            return EXIT_SUCCESS;  /* We found the matching entry. */
         }
     }
 
     fclose(fp);
-    return RETURN_ERR;  // No matching mount point found
+    return RETURN_ERR;  /* No matching mount point found. */
 }
 
 
-static int getmntpt(const char *path, char *mount_point) {
+static int getmntpt(char *path, char *mount_point) {
     struct stat cur_stat;
     struct stat last_stat;
 
@@ -168,6 +168,8 @@ static int getmntpt(const char *path, char *mount_point) {
 
     if (S_ISDIR (cur_stat.st_mode)) {
         last_stat = cur_stat;
+        if (chdir(path) < 0)
+            return RETURN_ERR;
         if (chdir("..") < 0)
             return RETURN_ERR;
         if (getcwd(cur_cwd_p, PATH_MAX) == NULL) {
@@ -175,15 +177,34 @@ static int getmntpt(const char *path, char *mount_point) {
             return RETURN_ERR;
         }
     } else { /* path is a file */
-        const size_t path_len = strlen(path) + 1;
-        const size_t suffix_len = strlen(strrchr(path, 47)); /* 47 = '/' */
-        const size_t dir_len = path_len - suffix_len;
-        memcpy(dirname_p, path, dir_len);
+        const char *slash = strrchr(path, '/');
 
-        if (chdir(dirname_p) < 0)
-            return RETURN_ERR;
-        if (lstat(".", &last_stat) < 0)
-            return RETURN_ERR;
+        if (slash == NULL) {
+            /* File is in the current working directory. No chdir needed. */
+            if (lstat(".", &last_stat) < 0)
+                return RETURN_ERR;
+        } else {
+            const size_t dir_len = slash - path;
+
+            if (dir_len >= PATH_MAX) {
+                errno = ENAMETOOLONG;
+                return RETURN_ERR;
+            }
+
+            if (dir_len == 0) {
+                /* File is in the root directory, e.g., "/vmlinuz" */
+                strcpy(dirname_p, "/");
+            } else {
+                /* Copy the directory portion and explicitly null-terminate. */
+                memcpy(dirname_p, path, dir_len);
+                dirname_p[dir_len] = '\0';
+            }
+
+            if (chdir(dirname_p) < 0)
+                return RETURN_ERR;
+            if (lstat(".", &last_stat) < 0)
+                return RETURN_ERR;
+        }
     }
 
     for (;;) {
@@ -203,7 +224,7 @@ static int getmntpt(const char *path, char *mount_point) {
     return EXIT_SUCCESS;
 }
 
-static int statfs_ext(const char *path, struct statfs_ext *struct_buf) {
+static int statfs_ext(char *path, struct statfs_ext *struct_buf) {
     /* check size of path arg */
     if (strlen(path) > PATH_MAX) {
         errno = ENAMETOOLONG;
@@ -242,14 +263,6 @@ static int statfs_ext(const char *path, struct statfs_ext *struct_buf) {
     snprintf(struct_buf->f_mntonname, PATH_MAX, "%s", mnt_fs_struct.fs_file);
     snprintf(struct_buf->f_mntfromname, PATH_MAX, "%s", mnt_fs_struct.fs_spec);
 
-    // strncpy(struct_buf->f_fstypename, mnt_fs_struct.fs_vsftype, FS_TYPE_LEN - 1);
-    // strncpy(struct_buf->f_mntonname, mnt_fs_struct.fs_file, PATH_MAX - 1);
-    // strncpy(struct_buf->f_mntfromname, mnt_fs_struct.fs_spec, PATH_MAX - 1);
-    //
-    // struct_buf->f_fstypename[FS_TYPE_LEN - 1] = '\0';
-    // struct_buf->f_mntonname[PATH_MAX - 1] = '\0';
-    // struct_buf->f_mntfromname[PATH_MAX - 1] = '\0';
-
     return EXIT_SUCCESS;
 }
 
@@ -263,8 +276,9 @@ static int getfsstat_ext(struct statfs_ext *struct_array_buf, const size_t bufsi
 
     int n_mounts = 0;
     while (!feof(fp)) {
-        /* count lines to determine */
-        const int ch = fgetc(fp);         /* size of struct array     */
+        /* Count lines to determine
+         * size of struct array. */
+        const int ch = fgetc(fp);
         if (ch == '\n')
             n_mounts++;
     }
@@ -275,8 +289,8 @@ static int getfsstat_ext(struct statfs_ext *struct_array_buf, const size_t bufsi
         return RETURN_ERR;
     }
 
-    /* If the buffer size is FS_NUM, the user
-     * only wants the number of mounts */
+    /* If the buffer arg is NULL,
+     * just return number of mounts. */
     if (!struct_array_buf) {
         fclose(fp);
         return n_mounts;
@@ -293,12 +307,22 @@ static int getfsstat_ext(struct statfs_ext *struct_array_buf, const size_t bufsi
             break;
         }
 
-        int parsed_fields = sscanf(line_buf, "%s %s %s %s %d %d\n",
-                                   mounted_fs_struct[i].fs_spec, mounted_fs_struct[i].fs_file,
-                                   mounted_fs_struct[i].fs_vsftype, mounted_fs_struct[i].fs_mntops,
-                                   &mounted_fs_struct[i].fs_freq, &mounted_fs_struct[i].fs_passno);
+        char freq_str[16] = {0};
+        char passno_str[16] = {0};
 
-        if (parsed_fields < 6) {
+        /* Use field widths based on the struct definitions (Length - 1 for the null byte) */
+        const int parsed_fields = sscanf(line_buf, "%4095s %4095s %89s %255s %15s %15s",
+                                   mounted_fs_struct[i].fs_spec,
+                                   mounted_fs_struct[i].fs_file,
+                                   mounted_fs_struct[i].fs_vsftype,
+                                   mounted_fs_struct[i].fs_mntops,
+                                   freq_str,
+                                   passno_str);
+
+        if (parsed_fields == 6) {
+            mounted_fs_struct[i].fs_freq = (int)strtol(freq_str, nullptr, 10);
+            mounted_fs_struct[i].fs_passno = (int)strtol(passno_str, nullptr, 10);
+        } else {
             fprintf(stderr, "Error parsing line: %s\n", line_buf);
         }
     }
@@ -322,13 +346,12 @@ static int getfsstat_ext(struct statfs_ext *struct_array_buf, const size_t bufsi
 
         filled_structs++;
         /* Copy the known good strings from our local struct */
-        strncpy(tmp_buf.f_fstypename, mounted_fs_struct[i].fs_vsftype, FS_TYPE_LEN - 1);
-        strncpy(tmp_buf.f_mntonname, mounted_fs_struct[i].fs_file, PATH_MAX - 1);
-        strncpy(tmp_buf.f_mntfromname, mounted_fs_struct[i].fs_spec, PATH_MAX - 1);
+        snprintf(tmp_buf.f_fstypename, FS_TYPE_LEN, "%s", mounted_fs_struct[i].fs_vsftype);
+        snprintf(tmp_buf.f_mntonname, PATH_MAX, "%s", mounted_fs_struct[i].fs_file);
+        snprintf(tmp_buf.f_mntfromname, PATH_MAX, "%s", mounted_fs_struct[i].fs_spec);
 
         memcpy(&struct_array_buf[i], &tmp_buf, sizeof(struct statfs_ext));
     }
-
 
     /* number of statfs_ext structs we actually filled. */
     return filled_structs;
@@ -337,11 +360,11 @@ static int getfsstat_ext(struct statfs_ext *struct_array_buf, const size_t bufsi
 /* Linux route: use custom struct and function */
 typedef struct statfs_ext vfs_stat_t;
 
-static int vfs_statfs(const char *path, vfs_stat_t *buf) {
+static inline int vfs_statfs(char *path, vfs_stat_t *buf) {
     return statfs_ext(path, buf);
 }
 
-static int vfs_getfsstat(vfs_stat_t *buf, const size_t bufsize) {
+static inline int vfs_getfsstat(vfs_stat_t *buf, const size_t bufsize) {
     return getfsstat_ext(buf, bufsize);
 }
 
