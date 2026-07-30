@@ -21,6 +21,8 @@
  ***************************************************************************/
 
 #include <getopt.h>
+#include <stdint.h>
+#include <inttypes.h>
 #if defined(__APPLE__) && defined(__MACH__)
     #define _DARWIN_FEATURE_64_BIT_INODE 1
     #define APPLE_FS 26
@@ -70,8 +72,12 @@ Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 
 static uint64_t calculate_percent(const uint64_t total, const uint64_t free)
 {
+    if (total == 0) {
+        return 0;
+    }
+
     const uint64_t used = total - free;
-    const uint64_t result = (double) used / (double) total * 100;
+    const uint64_t result = (used * 100 + (total - 1)) / total;
     return result;
 }
 
@@ -92,7 +98,7 @@ int main(const int argc, char *argv[])
     };
 
     int opt;
-    while ((opt = getopt_long(argc, argv, "VhikmgsTtd", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "VhikmgsTtd", longopts, nullptr)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
@@ -118,7 +124,7 @@ int main(const int argc, char *argv[])
                 opts.format = 3;
                 break;
             case 's':
-                opts.sync=true;
+                opts.sync = true;
                 break;
             case 'T':
                 opts.fs_type = true;
@@ -137,7 +143,7 @@ int main(const int argc, char *argv[])
     }
 
     int n_mounts = 0;
-
+#if defined(__APPLE__) && defined(__MACH__)
     if (argc == optind) {
         /* display all mounted file systems */
         n_mounts = getfsstat(nullptr, 0, MNT_NOWAIT);
@@ -156,7 +162,25 @@ int main(const int argc, char *argv[])
         fprintf(stderr, "%s: getfsstat() failed: %s\n", APP_NAME, strerror(errno));
         return EXIT_FAILURE;
     }
+#else
+    if (argc == optind) {
+        n_mounts = getfsstat_ext(nullptr, 0);
+    }
 
+    printf("n_mounts = %d\n", n_mounts);
+
+    struct statfs_ext *mfs = malloc(sizeof(struct statfs_ext) * n_mounts);
+    if (!mfs) {
+        fprintf(stderr, "%s: malloc failed!\n", APP_NAME);
+        return EXIT_FAILURE;
+    }
+
+    n_mounts = getfsstat_ext(mfs, sizeof(struct statfs_ext) * n_mounts);
+    if (n_mounts == EXIT_FAILURE) {
+        fprintf(stderr, "%s: getfsstat() failed: %s\n", APP_NAME, strerror(errno));
+        return EXIT_FAILURE;
+    }
+#endif
     /* Print the header. */
     printf("%-16s ", "Filesystem");
     if (opts.fs_type) {
@@ -181,7 +205,7 @@ int main(const int argc, char *argv[])
 
     /* Print the data. */
     for (int i = 0; i < n_mounts; i++) {
-        if (!opts.inc_dummy && mfs[i].f_type != APPLE_FS) {
+        if (!opts.inc_dummy && mfs[i].f_blocks == 0) {
             continue;
         }
 
@@ -201,32 +225,32 @@ int main(const int argc, char *argv[])
 
         switch (opts.format) {
             case 1:
-                printf("%-12llu ", size_bytes / 1024);
-                printf("%-12llu ", used_bytes / 1024);
-                printf("%-12llu ", free_bytes / 1024);
+                printf("%-12" PRId64 " ", size_bytes / 1024);
+                printf("%-12" PRId64 "  ", used_bytes / 1024);
+                printf("%-12" PRId64 "  ", free_bytes / 1024);
                 break;
             case 2:
-                printf("%-8llu ", size_bytes / 1024 / 1024);
-                printf("%-8llu ", used_bytes / 1024 / 1024);
-                printf("%-8llu ", free_bytes / 1024 / 1024);
+                printf("%-8" PRId64 "  ", size_bytes / 1024 / 1024);
+                printf("%-8" PRId64 "  ", used_bytes / 1024 / 1024);
+                printf("%-8" PRId64 "  ", free_bytes / 1024 / 1024);
                 break;
             case 3:
-                printf("%-6llu ", size_bytes / 1024 / 1024 / 1024);
-                printf("%-6llu ", used_bytes / 1024 / 1024 / 1024);
-                printf("%-6llu ", free_bytes / 1024 / 1024 / 1024);
+                printf("%-6" PRId64 "  ", size_bytes / 1024 / 1024 / 1024);
+                printf("%-6" PRId64 "  ", used_bytes / 1024 / 1024 / 1024);
+                printf("%-6" PRId64 "  ", free_bytes / 1024 / 1024 / 1024);
                 break;
             default:
-                printf("%-12llu ", blk_1k);
-                printf("%-12llu ", blk_1k_used);
-                printf("%-12llu ", blk_1k_free);
+                printf("%-12" PRId64 "  ", blk_1k);
+                printf("%-12" PRId64 "  ", blk_1k_used);
+                printf("%-12" PRId64 "  ", blk_1k_free);
         }
 
-        printf("%3llu%% ", mfs[i].f_blocks == 0 ? 0 : calculate_percent(mfs[i].f_blocks, mfs[i].f_bfree));
+        printf("%3" PRId64 " %% ", mfs[i].f_blocks == 0 ? 0 : calculate_percent(mfs[i].f_blocks, mfs[i].f_bfree));
 
         if (opts.inodes) {
-            printf("%-12llu ", mfs[i].f_files);
-            printf("%-8llu", mfs[i].f_files - mfs[i].f_ffree);
-            printf("%3llu%% ", mfs[i].f_blocks == 0 ? 0 : calculate_percent(mfs[i].f_files, mfs[i].f_ffree));
+            printf("%-12" PRId64 "  ", mfs[i].f_files);
+            printf("%-8" PRId64 " ", mfs[i].f_files - mfs[i].f_ffree);
+            printf("%3" PRId64 " %% ", mfs[i].f_blocks == 0 ? 0 : calculate_percent(mfs[i].f_files, mfs[i].f_ffree));
         }
 
         printf("  %s\n", mfs[i].f_mntonname);
