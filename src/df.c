@@ -29,7 +29,6 @@
 #endif
 #if defined(__APPLE__) && defined(__MACH__) || defined(__FreeBSD__)
     #include <sys/param.h>
-    #include <sys/ucred.h>
     #include <sys/mount.h>
 #else
     #include "mount.h"
@@ -64,7 +63,7 @@ Options:\n\
     -i, --inodes\tdisplay information for inodes\n\
     -s, --sync\t\tsync all I/O before retrieving FS info\n\
     -T, --fs-type\tdisplay file type name\n\
-    -d, --include-dummy\tdisplay info for dummy file systems\n\
+    -a, --all\t\tdisplay info for dummy file systems\n\
     -[k|m|g] --[kilobytes|megabytes|gigabytes]\n\
     \t\t\tdisplay in unit rather than blocks\n\
 Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
@@ -84,17 +83,17 @@ static uint64_t calculate_percent(const uint64_t total, const uint64_t free)
 int main(const int argc, char *argv[])
 {
     const struct option longopts[] = {
-        { .name = "help",          .has_arg = no_argument, .flag = nullptr, .val = 'h' },
-        { .name = "version",       .has_arg = no_argument, .flag = nullptr, .val = 'V' },
-        { .name = "inodes",        .has_arg = no_argument, .flag = nullptr, .val = 'i' },
-        { .name = "kilobytes",     .has_arg = no_argument, .flag = nullptr, .val = 'k' },
-        { .name = "megabytes",     .has_arg = no_argument, .flag = nullptr, .val = 'm' },
-        { .name = "gigabytes",     .has_arg = no_argument, .flag = nullptr, .val = 'g' },
-        { .name = "sync",          .has_arg = no_argument, .flag = nullptr, .val = 's' },
-        { .name = "fs-type",       .has_arg = no_argument, .flag = nullptr, .val = 'T' },
-        { .name = "total",         .has_arg = no_argument, .flag = nullptr, .val = 't' },
-        { .name = "include-dummy", .has_arg = no_argument, .flag = nullptr, .val = 'd' },
-        { .name = nullptr,         .has_arg = no_argument, .flag = nullptr, .val = 0 }
+        { .name = "help",      .has_arg = no_argument, .flag = nullptr, .val = 'h' },
+        { .name = "version",   .has_arg = no_argument, .flag = nullptr, .val = 'V' },
+        { .name = "inodes",    .has_arg = no_argument, .flag = nullptr, .val = 'i' },
+        { .name = "kilobytes", .has_arg = no_argument, .flag = nullptr, .val = 'k' },
+        { .name = "megabytes", .has_arg = no_argument, .flag = nullptr, .val = 'm' },
+        { .name = "gigabytes", .has_arg = no_argument, .flag = nullptr, .val = 'g' },
+        { .name = "sync",      .has_arg = no_argument, .flag = nullptr, .val = 's' },
+        { .name = "fs-type",   .has_arg = no_argument, .flag = nullptr, .val = 'T' },
+        { .name = "total",     .has_arg = no_argument, .flag = nullptr, .val = 't' },
+        { .name = "all",       .has_arg = no_argument, .flag = nullptr, .val = 'a' },
+        { .name = nullptr,     .has_arg = no_argument, .flag = nullptr, .val = 0 }
     };
 
     int opt;
@@ -145,7 +144,7 @@ int main(const int argc, char *argv[])
     int n_mounts = 0;
 #if defined(__APPLE__) && defined(__MACH__)
     if (argc == optind) {
-        /* display all mounted file systems */
+        /* Display all mounted file systems */
         n_mounts = getfsstat(nullptr, 0, MNT_NOWAIT);
     }
     struct statfs *mfs = malloc(sizeof(struct statfs) * n_mounts);
@@ -175,45 +174,51 @@ int main(const int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
+    if (opts.sync) {
+        sync();
+    }
+
     n_mounts = getfsstat_ext(mfs, sizeof(struct statfs_ext) * n_mounts);
     if (n_mounts == EXIT_FAILURE) {
         fprintf(stderr, "%s: getfsstat() failed: %s\n", APP_NAME, strerror(errno));
         return EXIT_FAILURE;
     }
 #endif
-    /* 1. Determine column widths and math divisors upfront */
+    /* Determine column widths and math divisors upfront */
     int w = 12;
     uint64_t div = 1;
     const char *size_label = "1K-blocks";
 
     if (opts.format > 0) {
-        size_label = "Size";
         if (opts.format == 1) {
+            size_label = "Size KB";
             w = 12;
             div = 1024;
         } else if (opts.format == 2) {
+            size_label = "Size MB";
             w = 8;
             div = 1024 * 1024;
         } else if (opts.format == 3) {
+            size_label = "SizeGB";
             w = 6;
             div = 1024 * 1024 * 1024;
         }
     }
 
-    /* 2. Print the Header using the dynamic width 'w' */
+    /* Print the Header using the dynamic width 'w' */
     printf("%-16s ", "Filesystem");
     if (opts.fs_type) {
         printf("%-7s ", "FS type");
     }
 
-    /* We use %-*s to pass the width variable 'w', followed by ONE space */
+    /* Use %-*s to pass the width variable 'w', followed by ONE space. */
     printf("%-*s %-*s %-*s %4s   Mount point\n",
            w, size_label,
            w, "Used",
            w, "Free",
            "Use%");
 
-    /* 3. Print the Data */
+    /* Print the Data */
     for (int i = 0; i < n_mounts; i++) {
         if (!opts.inc_dummy && mfs[i].f_blocks == 0) {
             continue;
@@ -221,28 +226,31 @@ int main(const int argc, char *argv[])
 
         uint64_t p_size, p_used, p_free;
 
-        /* Calculate display values based on format */
+        /* Calculate raw bytes first. */
+        const uint64_t size_bytes = mfs[i].f_blocks * mfs[i].f_bsize;
+        const uint64_t free_bytes = mfs[i].f_bfree  * mfs[i].f_bsize;
+        const uint64_t used_bytes = size_bytes - free_bytes;
+
+        /* Calculate display values based on format. */
         if (opts.format == 0) {
-            p_size = mfs[i].f_blocks * 4;
-            p_free = mfs[i].f_bfree * 4;
-            p_used = p_size - p_free;
+            p_size = size_bytes / 1024;
+            p_free = free_bytes / 1024;
+            p_used = used_bytes / 1024;
         } else {
-            uint64_t size_bytes = mfs[i].f_blocks * mfs[i].f_bsize;
-            uint64_t free_bytes = mfs[i].f_bfree  * mfs[i].f_bsize;
             p_size = size_bytes / div;
             p_free = free_bytes / div;
-            p_used = (size_bytes - free_bytes) / div;
+            p_used = used_bytes / div;
         }
 
-        uint64_t pct = mfs[i].f_blocks == 0 ? 0 : calculate_percent(mfs[i].f_blocks, mfs[i].f_bfree);
+        const uint64_t pct = mfs[i].f_blocks == 0 ? 0 : calculate_percent(mfs[i].f_blocks, mfs[i].f_bfree);
 
-        /* Print row headers */
+        /* Print row headers. */
         printf("%-16s ", mfs[i].f_mntfromname);
         if (opts.fs_type) {
             printf("%-7s ", mfs[i].f_fstypename);
         }
 
-        /* Print sizes using the exact same 'w' dynamic width and ONE space */
+        /* Print sizes using the exact same 'w' dynamic width and ONE space. */
         printf("%-*" PRId64 " %-*" PRId64 " %-*" PRId64 " %3" PRId64 "%%   %s\n",
                w, p_size,
                w, p_used,
