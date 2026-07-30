@@ -39,7 +39,7 @@
 #define MNT_FLAGS_LEN    256
 #define RETURN_ERR (-1)
 
-
+#ifdef __linux__
 struct mounted_fs_entry {
     char fs_spec[PATH_MAX];           /* device or special file system path */
     char fs_file[PATH_MAX];           /* mount point */
@@ -334,8 +334,7 @@ static int getfsstat_ext(struct statfs_ext *struct_array_buf, const size_t bufsi
     return filled_structs;
 }
 
-#ifdef __linux__
-/* Linux route: use your custom struct and function */
+/* Linux route: use custom struct and function */
 typedef struct statfs_ext vfs_stat_t;
 
 static int vfs_statfs(const char *path, vfs_stat_t *buf) {
@@ -355,11 +354,11 @@ static int vfs_getfsstat(vfs_stat_t *buf, const size_t bufsize) {
 
 typedef struct statfs vfs_stat_t;
 
-static inline int vfs_statfs(const char *path, vfs_stat_t *buf) {
+static int vfs_statfs(const char *path, vfs_stat_t *buf) {
     return statfs(path, buf);
 }
 
-static inline int vfs_getfsstat(vfs_stat_t *buf, const size_t bufsize) {
+static int vfs_getfsstat(vfs_stat_t *buf, const size_t bufsize) {
     return getfsstat(buf, bufsize, MNT_DWAIT);
 }
 #endif
