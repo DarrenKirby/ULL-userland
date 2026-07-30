@@ -142,25 +142,68 @@ int main(const int argc, char *argv[])
     }
 
     int n_mounts = 0;
+    struct statfs *mfs;
 #if defined(__APPLE__) && defined(__MACH__)
     if (argc == optind) {
         /* Display all mounted file systems */
         n_mounts = getfsstat(nullptr, 0, MNT_NOWAIT);
-    }
-    struct statfs *mfs = malloc(sizeof(struct statfs) * n_mounts);
-    if (!mfs) {
-        fprintf(stderr, "%s: malloc failed!\n", APP_NAME);
-        return EXIT_FAILURE;
+
+        mfs = malloc(sizeof(struct statfs) * n_mounts);
+        if (!mfs) {
+            fprintf(stderr, "%s: malloc failed!\n", APP_NAME);
+            return EXIT_FAILURE;
+        }
+
+        if (opts.sync) {
+            sync();
+        }
+
+        if (getfsstat(mfs, sizeof(struct statfs) * n_mounts, MNT_DWAIT) == -1) {
+            fprintf(stderr, "%s: getfsstat() failed: %s\n", APP_NAME, strerror(errno));
+            return EXIT_FAILURE;
+        }
+    } else {
+        /* Args passed... */
+        const int args = argc - optind;
+
+        /* Assuming n_mounts is reset to 0 before this block */
+        mfs = malloc(sizeof(struct statfs) * args);
+        if (!mfs) {
+            fprintf(stderr, "%s: malloc failed!\n", APP_NAME);
+            return EXIT_FAILURE;
+        }
+
+        while (optind < argc) {
+            struct statfs tmp;
+
+            if (statfs(argv[optind], &tmp) == -1) {
+                /* Print the specific file that failed, but continue the loop */
+                fprintf(stderr, "%s: %s: %s\n", APP_NAME, argv[optind], strerror(errno));
+                optind++;
+                continue;
+            }
+            optind++;
+
+            /* Deduplicate against ALL previously stored filesystems using f_fsid */
+            int is_dupe = 0;
+            for (int i = 0; i < n_mounts; i++) {
+                if (mfs[i].f_fsid.val[0] == tmp.f_fsid.val[0] &&
+                    mfs[i].f_fsid.val[1] == tmp.f_fsid.val[1]) {
+                    is_dupe = 1;
+                    break;
+                    }
+            }
+
+            if (is_dupe) {
+                continue;
+            }
+
+            memcpy(&mfs[n_mounts], &tmp, sizeof(struct statfs));
+            n_mounts++;
+        }
     }
 
-    if (opts.sync) {
-        sync();
-    }
 
-    if (getfsstat(mfs, sizeof(struct statfs) * n_mounts, MNT_DWAIT) == -1) {
-        fprintf(stderr, "%s: getfsstat() failed: %s\n", APP_NAME, strerror(errno));
-        return EXIT_FAILURE;
-    }
 #else
     if (argc == optind) {
         n_mounts = getfsstat_ext(nullptr, 0);
@@ -259,5 +302,6 @@ int main(const int argc, char *argv[])
                mfs[i].f_mntonname);
     }
 
+    free(mfs);
     return EXIT_SUCCESS;
 }
