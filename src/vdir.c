@@ -266,7 +266,7 @@ int main(const int argc, char *argv[])
         printf("%s %s ", get_username(buf.st_uid), get_groupname(buf.st_gid));
         (opts.human == 0) ?
             (void)printf("%6lld ", (long long) buf.st_size) :       /* bytes */
-            format(buf.st_size) ;                  /* ie: 16k */
+            format_ls(buf.st_size) ;                  /* ie: 16k */
 
         const struct tm *fil = localtime(&buf.st_mtime);
         if (current_year != (fil->tm_year + 1900)) {
