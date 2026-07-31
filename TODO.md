@@ -52,10 +52,10 @@ on macOS and FreeBSD. See notes below...
 | cut        | not started |  ❌   |  ❌   |   ❌    |
 | date       | not started |  ❌   |  ❌   |   ❌    |
 | dd         | not started |  ❌   |  ❌   |   ❌    |
-| df         | in progress |  ❌   |  ✅   |   ✅    | 
+| df         | in progress |  ✅   |  ✅   |   ✅    | 
 | dir        | not started |  ❌   |  ❌   |   ❌    |
 | dircolors  | not started |  ❌   |  ❌   |   ❌    |
-| dirname    | in progress |  ✅   |  ✅   |   ✅    |
+| dirname    | completed   |  ✅   |  ✅   |   ✅    |
 | dmesg      | not started |  ❌   |  ❌   |   ❌    |
 | domainname | not started |  ❌   |  ❌   |   ❌    |
 | du         | not started |  ❌   |  ❌   |   ❌    |
