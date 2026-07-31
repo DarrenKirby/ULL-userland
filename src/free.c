@@ -42,9 +42,9 @@ static uint64_t fmt(const uint64_t n)
 {
 #ifdef __linux__
     if (opts.base == 'b') {
-        return n / 1024;
-    } else if (opts.base == 'm') {
         return n * 1024;
+    } else if (opts.base == 'm') {
+        return n / 1024;
     } else {
         return n;
     }
@@ -129,12 +129,12 @@ static int get_free(void) {
             fmt(minfo.memtotal), fmt(memused), fmt(minfo.memfree),
             fmt(minfo.shmem), fmt(minfo.buffers), fmt(minfo.cached));
 
-    if (opts.BC == 1) {
+    if (opts.bc == 1) {
         printf("-/+ buffers/cache: %10lu %10lu\n", fmt(used_minus_buffer), fmt(free_plus_buffer));
     }
     printf("Swap: %12lu %10lu %10lu\n", fmt(minfo.swaptotal), fmt(used_swap), fmt(minfo.swapfree));
 
-    if (opts.T == 1) {
+    if (opts.total == 1) {
         printf("Total: %11lu %10lu %10lu\n", fmt(minfo.memtotal + minfo.swaptotal), fmt(memused + used_swap),
                                              fmt(minfo.memfree + minfo.swapfree));
     }
