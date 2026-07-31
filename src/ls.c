@@ -53,7 +53,7 @@ static void show_help()
 List and show info for files and directories\n\n\
 Options:\n\
     -l, --long\t\toutput long format listing\n\
-    -H, --human\t\tdisplay filesize in kilobytes and megabytes if appropriate (implies --long)\n\
+    -H, --human\t\tdisplay file size in kilobytes and megabytes if appropriate (implies --long)\n\
     -a, --all\t\tinclude dotfiles and implied `.' and `..' entries\n\
     -1, --one\t\tlist files one per line\n\
     -i, --inode\t\tdisplay inode numbers (implies --long)\n\
@@ -64,9 +64,7 @@ Options:\n\
 Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
-/*
- * Return a color for a filetype
- */
+/* Return a color for a filetype. */
 static const char* file_color(const mode_t mode)
 {
     if (S_ISDIR(mode)) {
@@ -87,7 +85,7 @@ static const char* file_color(const mode_t mode)
     return ANSI_RESET;
 }
 
-/* Comparison function for strings */
+/* Comparison function for strings. */
 static int compare_strings(const void *a, const void *b)
 {
     return strcmp(a, b);
@@ -97,16 +95,16 @@ int main(const int argc, char *argv[])
 {
     uint16_t screen_width = 0;
     const struct option long_opts[] = {
-        {.name = "help",        .has_arg = no_argument, .flag = nullptr, .val = 'h'},
-        {.name = "version",     .has_arg = no_argument, .flag = nullptr, .val = 'V'},
-        {.name = "all",         .has_arg = no_argument, .flag = nullptr, .val = 'a'},
-        {.name = "human",       .has_arg = 0, .flag = nullptr, .val = 'H'},
-        {.name = "long",        .has_arg = 0, .flag = nullptr, .val = 'l'},
-        {.name = "one",         .has_arg = 0, .flag = nullptr, .val = '1'},
-        {.name = "inode",       .has_arg = 0, .flag = nullptr, .val = 'i'},
-        {.name = "dereference", .has_arg = 0, .flag = nullptr, .val = 'd'},
-        {.name = "width",       .has_arg = required_argument, .flag = nullptr, .val = 'w'},
-        {.name = nullptr,       .has_arg = 0, .flag = nullptr, .val = 0}
+        { .name = "help",        .has_arg = no_argument,       .flag = nullptr, .val = 'h' },
+        { .name = "version",     .has_arg = no_argument,       .flag = nullptr, .val = 'V' },
+        { .name = "all",         .has_arg = no_argument,       .flag = nullptr, .val = 'a' },
+        { .name = "human",       .has_arg = no_argument,       .flag = nullptr, .val = 'H' },
+        { .name = "long",        .has_arg = no_argument,       .flag = nullptr, .val = 'l' },
+        { .name = "one",         .has_arg = no_argument,       .flag = nullptr, .val = '1' },
+        { .name = "inode",       .has_arg = no_argument,       .flag = nullptr, .val = 'i' },
+        { .name = "dereference", .has_arg = no_argument,       .flag = nullptr, .val = 'd' },
+        { .name = "width",       .has_arg = required_argument, .flag = nullptr, .val = 'w' },
+        { .name = nullptr,       .has_arg = no_argument,       .flag = nullptr, .val = 0 }
     };
 
     int opt;
@@ -185,16 +183,12 @@ int main(const int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    int32_t n_files = 0;           /* number of files to print */
-    uint32_t n_per_line = 0;       /* number of files per line */
-    uint32_t longest_so_far = 0;   /* longest filename seen so far */
-    uint32_t n;                    /* return value of strlen() calls */
+    int32_t n_files = 0;           /* Number of files to print. */
+    uint32_t longest_so_far = 0;   /* Longest filename seen so far. */
+    uint32_t n;                    /* Return value of strlen() calls. */
 
     while ((list = readdir(dp)) != NULL) {
-        /*
-         * first time around
-         * get max file length
-         */
+        /* First time around, get max file length. */
         if (!opts.all) {
             if (list->d_name[0] == '.') {
                 continue;
@@ -206,8 +200,6 @@ int main(const int argc, char *argv[])
             longest_so_far = n;
         }
     }
-
-    n_per_line = screen_width / (longest_so_far + 2); /* number of filenames per column */
     rewinddir(dp);
 
     char filenames[n_files][path_max];
@@ -225,10 +217,10 @@ int main(const int argc, char *argv[])
     }
     closedir(dp);
 
-    /* sort the filenames alphabetically */
+    /* Sort the filenames alphabetically. */
     qsort(filenames, n_files, sizeof(filenames[0]), compare_strings);
 
-    /* cd to path_to_ls */
+    /* `cd` to path_to_ls. */
     char cwd[path_max];
     char *cwd_p;
     cwd_p = cwd;
@@ -245,10 +237,7 @@ int main(const int argc, char *argv[])
 
     int f;
     if (opts.one && (!opts.ls_long)) {
-        /*
-         * We are displaying short format, one file per line
-         */
-
+        /* We are displaying short format, one file per line. */
         for (f = 0; f < n_files; f++) {
             struct stat buf;
             if (lstat(filenames[f], &buf) == -1) {
@@ -259,9 +248,7 @@ int main(const int argc, char *argv[])
         }
 
     } else if (opts.ls_long) {
-        /*
-         * We are displaying long format, one file per line
-         */
+        /*  We are displaying long format, one file per line. */
         struct stat buf;
         struct tm *now;
         struct tm *fil;
@@ -291,13 +278,8 @@ int main(const int argc, char *argv[])
             printf("%s ", file_perm_str(buf.st_mode, 1));
             printf("%2ld ", (long) buf.st_nlink);
             printf("%s %s ", get_username(buf.st_uid), get_groupname(buf.st_gid));
-            (!opts.human) ?
-#ifdef __linux__
-                (void)printf("%6ld ", buf.st_size) :     /* bytes */
-#else
-                (void)printf("%6lld ", buf.st_size) :     /* bytes */
-#endif
-                format(buf.st_size) ;                     /* ie: 16k */
+            !opts.human ? (void)printf("%6" PRId64 " ", buf.st_size) :
+                format(buf.st_size);    /* ie: 16k */
 
             fil = localtime(&buf.st_mtime);
             if (current_year != (fil->tm_year + 1900)) {
@@ -313,34 +295,83 @@ int main(const int argc, char *argv[])
         }
 
     } else {
-        /*
-         * We are displaying short format, as many files as we can fit per line
-         */
-        int i = 1;
+        /* Short-format. As many as can fit per line. */
+        constexpr int padding = 2;
 
-        for (f = 0; f < n_files; f++) {
-            struct stat buf;
-            if (lstat(filenames[f], &buf) == -1) {
-                fprintf(stderr, "%s: lstat() failed on %s: %s", APP_NAME, filenames[f], strerror(errno));
-                return EXIT_FAILURE;
-            }
-
-            printf("%s%-*s%s", file_color(buf.st_mode), (int)longest_so_far + 1, filenames[f], ANSI_RESET);
-            if (i % n_per_line == 0) {
-                printf("\n");
-            }
-            i++;
+        /* The absolute maximum number of columns is if every file was 1 char long */
+        int max_cols = screen_width / (1 + padding);
+        if (max_cols > n_files) {
+            max_cols = n_files;
+        }
+        if (max_cols < 1) {
+            max_cols = 1;
         }
 
-        if ((i - 1) % n_per_line != 0) {
+        int valid_cols = 1;
+        int rows = n_files;
+        int col_widths[max_cols];
+
+        /* Brute-force guess the columns from maximum down to 1. */
+        for (int c = max_cols; c > 1; c--) {
+            int r = (n_files + c - 1) / c;
+            int total_width = 0;
+
+            /* Calculate the max width required for each specific column. */
+            for (int i = 0; i < c; i++) {
+                col_widths[i] = 0;
+
+                for (int j = 0; j < r; j++) {
+                    int index = (i * r) + j;
+                    if (index < n_files) {
+                        int len = strlen(filenames[index]);
+                        if (len > col_widths[i]) {
+                            col_widths[i] = len;
+                        }
+                    }
+                }
+
+                total_width += col_widths[i];
+                if (i < c - 1) {
+                    total_width += padding;
+                }
+            }
+
+            /* If this configuration fits the terminal, we have a winner. */
+            if (total_width <= screen_width) {
+                valid_cols = c;
+                rows = r;
+                break;
+            }
+        }
+
+        /* If we dropped all the way to 1 column, set its width to the longest file. */
+        if (valid_cols == 1) {
+            col_widths[0] = longest_so_far;
+        }
+
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < valid_cols; c++) {
+                int index = c * rows + r;
+
+                if (index < n_files) {
+                    struct stat buf;
+                    if (lstat(filenames[index], &buf) == -1) {
+                        fprintf(stderr, "%s: lstat() failed on %s: %s", APP_NAME,
+                            filenames[index], strerror(errno));
+                        return EXIT_FAILURE;
+                    }
+
+                    /* If it's the last column, don't pad the right side. */
+                    if (c == valid_cols - 1) {
+                        printf("%s%s%s", file_color(buf.st_mode), filenames[index], ANSI_RESET);
+                    } else {
+                        printf("%s%-*s%s", file_color(buf.st_mode), col_widths[c] + padding,
+                            filenames[index], ANSI_RESET);
+                    }
+                }
+            }
             printf("\n");
         }
-    }
-
-    /* Not sure if this is even necessary */
-    if (chdir(cwd) == -1) {
-        fprintf(stderr, "%s: %s", cwd, cwd_p);
-        exit(EXIT_FAILURE); /* no biggie, already printed the output... */
     }
 
     return EXIT_SUCCESS;
