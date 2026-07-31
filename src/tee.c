@@ -30,7 +30,7 @@
 
 static const char *APP_NAME =  "tee";
 
-static void show_help(void) {
+static void show_help() {
     printf("Usage: %s [OPTION]...[FILE...]\n\n\
 Options:\n\
     -a, --append\tappend to file arguments if they exist\n\
@@ -50,7 +50,7 @@ int main(const int argc, char *argv[])
 
     int opt;
     int append = false;
-    while ((opt = getopt_long(argc, argv, "Vha", longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "Vha", longopts, nullptr)) != -1) {
         switch(opt) {
         case 'V':
             printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
@@ -103,7 +103,11 @@ int main(const int argc, char *argv[])
     char buffer[BUFFER_SIZE];
     ssize_t bytesRead;
     while ((bytesRead = read(STDIN_FILENO, buffer, sizeof(buffer))) > 0) {
-        write(STDOUT_FILENO, buffer, bytesRead);
+        ssize_t result = write(STDOUT_FILENO, buffer, bytesRead);
+        if (result == -1) {
+            perror("write");
+            return EXIT_FAILURE;
+        }
         for (int i = 0; i < n_ofiles; i++) {
             if (write(outfiles[i], buffer, bytesRead) != bytesRead) {
                 fprintf(stderr, "%s: write() failed: %s\n", APP_NAME, strerror(errno));
