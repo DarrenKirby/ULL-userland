@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 #include <getopt.h>
+#include <stdint.h>
 
 #include "common.h"
 
@@ -29,15 +30,15 @@ static const char *APP_NAME = "free";
 
 static struct {
     char base;     /* -b, -k, or -m */
-    bool P;        /* polling? */
-    bool T;        /* print total? */
-    bool BC;       /* display -/+ buffer/cache? */
+    bool poll;     /* polling? */
+    bool total;    /* print total? */
+    bool bc;       /* display -/+ buffer/cache? */
 } opts = {
-    .P = false,
-    .T = false,
-    .BC = true };
+    .poll = false,
+    .total = false,
+    .bc = true };
 
-static unsigned long int fmt(const unsigned long n)
+static uint64_t fmt(const uint64_t n)
 {
 #ifdef __linux__
     if (opts.base == 'b') {
@@ -58,32 +59,32 @@ static unsigned long int fmt(const unsigned long n)
 #endif
 }
 
-#if defined (__linux__)
+#ifdef __linux__
 static int get_free(void) {
     struct meminfo {
-        unsigned long int memtotal;
-        unsigned long int memfree;
-        unsigned long int memavialable;
-        unsigned long int buffers;
-        unsigned long int cached;
-        unsigned long int swapcached;
-        unsigned long int active;
-        unsigned long int inactive;
-        unsigned long int a_active;
-        unsigned long int a_inactive;
-        unsigned long int f_active;
-        unsigned long int f_unactive;
-        unsigned long int unevictable;
-        unsigned long int mlocked;
-        unsigned long int swaptotal;
-        unsigned long int swapfree;
-        unsigned long int dirty;
-        unsigned long int writeback;
-        unsigned long int anonpages;
-        unsigned long int mapped;
-        unsigned long int shmem;
-        unsigned long int slab;
-        unsigned long int sreclaimable;
+        uint64_t memtotal;
+        uint64_t memfree;
+        uint64_t memavialable;
+        uint64_t buffers;
+        uint64_t cached;
+        uint64_t swapcached;
+        uint64_t active;
+        uint64_t inactive;
+        uint64_t a_active;
+        uint64_t a_inactive;
+        uint64_t f_active;
+        uint64_t f_unactive;
+        uint64_t unevictable;
+        uint64_t mlocked;
+        uint64_t swaptotal;
+        uint64_t swapfree;
+        uint64_t dirty;
+        uint64_t writeback;
+        uint64_t anonpages;
+        uint64_t mapped;
+        uint64_t shmem;
+        uint64_t slab;
+        uint64_t sreclaimable;
     };
 
     int i;
@@ -97,7 +98,7 @@ static int get_free(void) {
     memi = fopen("/proc/meminfo", "r"); /* hideously non-portable */
 
     if (!memi) {
-        printf("open failed\n");
+        fprintf(stderr, "%s: failed to open /proc/meminfo: %s\n", APP_NAME, strerror(errno));
         return EXIT_FAILURE;
     }
 
@@ -113,10 +114,10 @@ static int get_free(void) {
                                value[16], value[17], value[18], value[19],
                                value[20], value[21], value[22]};
 
-    long int memused;
-    long int used_minus_buffer;
-    long int free_plus_buffer;
-    int used_swap;
+    uint64_t memused;
+    uint64_t used_minus_buffer;
+    uint64_t free_plus_buffer;
+    uint64_t used_swap;
 
     memused = minfo.memtotal - minfo.memfree;
     used_minus_buffer = memused - (minfo.buffers + minfo.cached);
@@ -137,7 +138,7 @@ static int get_free(void) {
         printf("Total: %11lu %10lu %10lu\n", fmt(minfo.memtotal + minfo.swaptotal), fmt(memused + used_swap),
                                              fmt(minfo.memfree + minfo.swapfree));
     }
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 #elif defined (__APPLE__) && defined (__MACH__) || defined(__FreeBSD__)
@@ -307,13 +308,13 @@ static int get_free(void)
 {
     get_mem();
     printf("\t%10s\t%10s\t%10s\n", "Total", "Used", "Free");
-    printf("Mem:\t%10ld\t%10ld\t%10ld\n", fmt(m_info.mem_total),fmt(m_info.mem_used),fmt(m_info.mem_free));
+    printf("Mem:\t%10llu\t%10llu\t%10llu\n", fmt(m_info.mem_total),fmt(m_info.mem_used),fmt(m_info.mem_free));
 #ifdef __FreeBSD__
     if (opts.BC == 1) {
-        printf("+/- buffers/cache:\t%10ld\t   %ld\n", fmt(m_info.mem_used_bc), fmt(m_info.mem_free_bc));
+        printf("+/- buffers/cache:\t%10llu\t   %llu\n", fmt(m_info.mem_used_bc), fmt(m_info.mem_free_bc));
     }
 #endif
-    printf("Swap:\t%10ld\t%10ld\t%10ld\n", fmt(m_info.swap_total),fmt(m_info.swap_used),fmt(m_info.swap_free));
+    printf("Swap:\t%10llu\t%10llu\t%10llu\n", fmt(m_info.swap_total),fmt(m_info.swap_used),fmt(m_info.swap_free));
     return 0;
 }
 #endif
@@ -341,53 +342,57 @@ int main(const int argc, char *argv[])
 #endif
     int poll_interval = 0;
 
-    const struct option long_opts[] = {
-        {.name = "help",    .has_arg = 0, .flag = nullptr, .val = 'h'},
-        {.name = "version", .has_arg = 0, .flag = nullptr, .val = 'V'},
-        {.name = nullptr,   .has_arg = 0, .flag = nullptr, .val = 0}
+    static const struct option long_opts[] = {
+        { .name = "help",    .has_arg = no_argument, .flag = nullptr, .val = 'h' },
+        { .name = "version", .has_arg = no_argument, .flag = nullptr, .val = 'V' },
+        { .name = nullptr,   .has_arg = no_argument, .flag = nullptr, .val = 0 }
     };
+    
+    /* Min and max vals for parse_numeric_arg. */
+    const int *min = &(int){1};
+    const int *max = &(int){INT32_MAX};
 
     int opt;
     /* show +/- buffers/cache by default */
-    opts.BC = 1;
+    opts.bc = 1;
     while ((opt = getopt_long(argc, argv, "bkmths:oV", long_opts, NULL)) != -1) {
         switch(opt) {
-            case 'k':
-                opts.base = 'k';
-                break;
-            case 'b':
-                opts.base = 'b';
-                break;
-            case 'm':
-                opts.base = 'm';
-                break;
-            case 's':
-                opts.P = 1;
-                poll_interval = atoi(optarg);
-                break;
-            case 'V':
-                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
-                printf("%s compiled on %s at %s\n",
-                       strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
-                       __DATE__, __TIME__);
-                return EXIT_SUCCESS;
-            case 't':
-                opts.T = true;
-                break;
-            case 'o':
-                opts.BC = false;
-                break;
-            case 'h':
-                showHelp();
-                return EXIT_SUCCESS;
-            default:
-                showHelp();
-                return EXIT_FAILURE;
+        case 'k':
+            opts.base = 'k';
+            break;
+        case 'b':
+            opts.base = 'b';
+            break;
+        case 'm':
+            opts.base = 'm';
+            break;
+        case 's':
+            opts.poll = 1;
+            poll_interval = parse_numeric_arg(optarg, min, max, APP_NAME);
+            break;
+        case 'V':
+            printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
+            printf("%s compiled on %s at %s\n",
+                   strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
+                   __DATE__, __TIME__);
+            return EXIT_SUCCESS;
+        case 't':
+            opts.total = true;
+            break;
+        case 'o':
+            opts.bc = false;
+            break;
+        case 'h':
+            showHelp();
+            return EXIT_SUCCESS;
+        default:
+            showHelp();
+            return EXIT_FAILURE;
         }
     }
 
     /* Polling */
-    if (opts.P) {
+    if (opts.poll) {
         while (1) {
             get_free();
             printf("\n");
