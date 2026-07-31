@@ -83,7 +83,7 @@ extern inline size_t get_filename_max()
 
 /* Formats 'human readable' output.
  * Used by ls and vdir. */
-extern inline void format(const long long int bytes)
+extern inline void format_ls(const long long int bytes)
 {
     char size_string[22];
     double result;

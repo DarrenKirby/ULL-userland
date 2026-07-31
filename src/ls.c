@@ -279,7 +279,7 @@ int main(const int argc, char *argv[])
             printf("%2ld ", (long) buf.st_nlink);
             printf("%s %s ", get_username(buf.st_uid), get_groupname(buf.st_gid));
             !opts.human ? (void)printf("%6" PRId64 " ", buf.st_size) :
-                format(buf.st_size);    /* ie: 16k */
+                format_ls(buf.st_size);    /* ie: 16k */
 
             fil = localtime(&buf.st_mtime);
             if (current_year != (fil->tm_year + 1900)) {
