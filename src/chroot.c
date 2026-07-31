@@ -1,8 +1,8 @@
 /***************************************************************************
  *   chroot - run command or interactive shell with special root directory *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 by Darren Kirby                             *
- *   bulliver@gmail.com                                                    *
+ *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
+ *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,48 +20,51 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <getopt.h>
+
 #include "common.h"
 
-const char *APPNAME = "chroot";
+static const char *APP_NAME = "chroot";
 
-struct optstruct {
-} opts;
+// struct optstruct {
+// } opts;
 
-static void show_help(void) {
+static void show_help() {
     printf("Usage: %s [OPTION]... [NEWROOT] [COMMAND]\n\n\
 run command or interactive shell with special root directory\n\n\
 Options:\n\
     -h, --help\t\tdisplay this help\n\
     -V, --version\tdisplay version information\n\n\
-Report bugs to <bulliver@gmail.com>\n", APPNAME);
+Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
-int main(const int argc, char *argv[]) {
+int main(const int argc, char *argv[])
+{
     int opt;
 
     const struct option long_opts[] = {
-        {"help", 0, NULL, 'h'},
-        {"version", 0, NULL, 'V'},
-        {0,0,0,0}
+        { .name = "help",    .has_arg = no_argument, .flag = nullptr, .val = 'h'},
+        { .name = "version", .has_arg = no_argument, .flag = nullptr, .val = 'V'},
+        { .name = nullptr,   .has_arg = no_argument, .flag = nullptr, .val = 0}
     };
 
-    while ((opt = getopt_long(argc, argv, "Vh", long_opts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "Vh", long_opts, nullptr)) != -1) {
         switch(opt) {
-            case 'V':
-                printf("%s (%s) version %s\n", APPNAME, APPSUITE, APPVERSION);
-                printf("%s compiled on %s at %s\n",
-                       strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
-                       __DATE__, __TIME__);
-                exit(EXIT_SUCCESS);
-                break;
-            case 'h':
-                show_help();
-                exit(EXIT_SUCCESS);
-                break;
-            default:
-                show_help();
-                exit(EXIT_FAILURE);
-                break;
+        case 'V':
+            printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
+            printf("%s compiled on %s at %s\n",
+                   strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
+                   __DATE__, __TIME__);
+            return EXIT_SUCCESS;
+            break;
+        case 'h':
+            show_help();
+            return EXIT_SUCCESS;
+            break;
+        default:
+            show_help();
+            return EXIT_FAILURE;
+            break;
         }
     }
     return EXIT_SUCCESS;
