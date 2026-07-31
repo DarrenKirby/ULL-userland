@@ -28,12 +28,11 @@
 #include <sys/vfs.h>      /* for statfs struct */
 #include <linux/limits.h>    /* for PATH_MAX */
 #endif
-#include <errno.h>           /* for perror() */
-#include <stdlib.h>          /* for EXIT_FAILURE */
-#include <string.h>          /* for strncpy */
-#include <unistd.h>          /* for access() */
-#include <sys/stat.h>        /* for stat   */
-#include <sys/types.h>       /*  "    "    */
+#include <errno.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #define FS_TYPE_LEN      90
 #define MNT_FLAGS_LEN    256
@@ -41,12 +40,12 @@
 
 #ifdef __linux__
 struct mounted_fs_entry {
-    char fs_spec[PATH_MAX];           /* device or special file system path */
-    char fs_file[PATH_MAX];           /* mount point */
-    char fs_vsftype[FS_TYPE_LEN];     /* file system type */
-    char fs_mntops[MNT_FLAGS_LEN];    /* mount flags */
-    int  fs_freq;                     /* dump */
-    int  fs_passno;                   /* pass */
+    char fs_spec[PATH_MAX];           /* Device or special file system path. */
+    char fs_file[PATH_MAX];           /* Mount point. */
+    char fs_vsftype[FS_TYPE_LEN];     /* File system type. */
+    char fs_mntops[MNT_FLAGS_LEN];    /* Mount flags. */
+    int  fs_freq;                     /* Dump. */
+    int  fs_passno;                   /* Pass. */
 };
 
 struct statfs_ext {
@@ -62,13 +61,13 @@ struct statfs_ext {
     uint32_t     f_frsize;           /* fragment size (since Linux 2.6) */
     uint32_t     f_spare[5];
 
-    /* these extra fields add path info as in the *BSD versions of statfs() */
-    char f_fstypename[FS_TYPE_LEN];  /* fs type name */
-    char f_mntonname[PATH_MAX];      /* directory on which mounted */
-    char f_mntfromname[PATH_MAX];    /* mounted file sytem */
+    /* These extra fields add path info as in the *BSD versions of statfs(). */
+    char f_fstypename[FS_TYPE_LEN];  /* FS type name. */
+    char f_mntonname[PATH_MAX];      /* Directory on which mounted. */
+    char f_mntfromname[PATH_MAX];    /* Mounted file system. */
 };
 
-/* used internally by statfs_ext() and getfsstat_ext() */
+/* Used internally by statfs_ext() and getfsstat_ext(). */
 static int merge_statfs_structs(const struct statfs *buf, struct statfs_ext *buf_full) {
     buf_full->f_type    = buf->f_type;
     buf_full->f_bsize   = buf->f_bsize;
@@ -353,23 +352,23 @@ static int getfsstat_ext(struct statfs_ext *struct_array_buf, const size_t bufsi
         memcpy(&struct_array_buf[i], &tmp_buf, sizeof(struct statfs_ext));
     }
 
-    /* number of statfs_ext structs we actually filled. */
+    /* Number of statfs_ext structs we actually filled. */
     return filled_structs;
 }
 
-/* Linux route: use custom struct and function */
+/* Linux route: use custom struct and function. */
 typedef struct statfs_ext vfs_stat_t;
 
-static inline int vfs_statfs(char *path, vfs_stat_t *buf) {
+[[maybe_unused]] static inline int vfs_statfs(char *path, vfs_stat_t *buf) {
     return statfs_ext(path, buf);
 }
 
-static inline int vfs_getfsstat(vfs_stat_t *buf, const size_t bufsize) {
+[[maybe_unused]] static inline int vfs_getfsstat(vfs_stat_t *buf, const size_t bufsize) {
     return getfsstat_ext(buf, bufsize);
 }
 
 #else
-/* macOS/FreeBSD route: use the native OS struct and syscall */
+/* macOS/FreeBSD route: use the native OS struct and syscall. */
 #define _DARWIN_FEATURE_64_BIT_INODE 1
 
 #include <sys/param.h>
@@ -377,11 +376,11 @@ static inline int vfs_getfsstat(vfs_stat_t *buf, const size_t bufsize) {
 
 typedef struct statfs vfs_stat_t;
 
-static int vfs_statfs(const char *path, vfs_stat_t *buf) {
+[[maybe_unused]] static inline int vfs_statfs(const char *path, vfs_stat_t *buf) {
     return statfs(path, buf);
 }
 
-static int vfs_getfsstat(vfs_stat_t *buf, const size_t bufsize) {
+[[maybe_unused]] static inline int vfs_getfsstat(vfs_stat_t *buf, const size_t bufsize) {
     return getfsstat(buf, bufsize, MNT_DWAIT);
 }
 #endif
