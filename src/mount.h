@@ -28,6 +28,7 @@
 #include <sys/vfs.h>      /* for statfs struct */
 #include <linux/limits.h>    /* for PATH_MAX */
 #endif
+#include <string.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
