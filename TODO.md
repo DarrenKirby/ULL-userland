@@ -92,7 +92,7 @@ on macOS and FreeBSD. See notes below...
 | nohup      | not started |  ❌   |  ❌   |   ❌    |
 | nproc      | completed   |  ✅   |  ✅   |   ❌    |
 | numfmt     | not started |  ❌   |  ❌   |   ❌    |
-| od         | in progress |  ❌   |  ❌   |   ❌    |
+| od         | completed   |  ✅   |  ✅   |   ✅    |
 | paste      | not started |  ❌   |  ❌   |   ❌    |
 | pathchk    | not started |  ❌   |  ❌   |   ❌    |
 | pinky      | not started |  ❌   |  ❌   |   ❌    |
