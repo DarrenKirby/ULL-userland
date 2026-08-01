@@ -320,7 +320,7 @@ int main(const int argc, char *argv[])
     }
 
     if (opts.fields & fstype) {
-        printf("%-7s ", "FS type");
+        printf("%-10s ", "FS type");
     }
 
     if (opts.fields & itotal) {
@@ -391,7 +391,7 @@ int main(const int argc, char *argv[])
         }
 
         if (opts.fields & fstype) {
-            printf("%-7s ", mfs[i].f_fstypename);
+            printf("%-10s ", mfs[i].f_fstypename);
         }
 
         if (opts.fields & itotal) {
