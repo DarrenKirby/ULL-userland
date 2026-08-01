@@ -59,7 +59,7 @@ $(distdir): FORCE
 
 # Housekeeping
 clean:
-	-rm -rf $(BIN_DIR)
+	-rm -rf $(BIN_DIR)/*
 
 strip:
 	strip $(BIN_DIR)/*
