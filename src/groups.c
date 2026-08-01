@@ -21,10 +21,21 @@
  ***************************************************************************/
 
 #include <getopt.h>
-#include <sys/syslimits.h>
 #include <grp.h>
 
 #include "common.h"
+
+/* Linux getgrouplist wants a gid_t,
+ * stupid macOS wants an int. */
+#ifdef __linux__
+typedef gid_t gid;
+#else
+typedef int gid;
+#endif
+
+#ifndef NGROUPS_MAX
+#define NGROUPS_MAX 32
+#endif
 
 
 static const char *APP_NAME = "groups";
@@ -76,7 +87,7 @@ int main(const int argc, char *argv[])
         free(groups);
     } else {
         /* Iterate over arguments. */
-        int *groups = malloc(sizeof(int) * NGROUPS_MAX);
+        gid *groups = malloc(sizeof(int) * NGROUPS_MAX);
         while (optind < argc) {
             const struct passwd *pwd = getpwnam(argv[optind]);
 
@@ -87,7 +98,7 @@ int main(const int argc, char *argv[])
             }
 
             int n_groups = NGROUPS_MAX;
-            if (getgrouplist(argv[optind], pwd->pw_gid, groups, &n_groups) != 0) {
+            if (getgrouplist(argv[optind], pwd->pw_gid, groups, &n_groups) == -1) {
                 fprintf(stderr, "%s: Too many groups to fit in array! Groups list truncated!\n", APP_NAME);
             }
 
