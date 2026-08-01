@@ -32,123 +32,122 @@ on macOS and FreeBSD. See notes below...
 
 | Name       | Status      | Linux | macOS | FreeBSD | Notes                                      |
 |------------|-------------|:-----:|:-----:|:-------:|--------------------------------------------|
-| arch       | completed   |  ✅   |  ✅   |   ❌    |
-| b2sum      | not started |  ❌   |  ❌   |   ❌    |
-| base32     | completed   |  ✅   |  ✅   |   ✅    |
-| base64     | not started |  ✅   |  ✅   |   ✅    |
-| basename   | completed   |  ✅   |  ✅   |   ✅    |
-| basenc     | not started |  ❌   |  ❌   |   ❌    |
+| arch       | completed   |  ✅   |  ✅   |   ❌    |                                            |
+| b2sum      | not started |  ❌   |  ❌   |   ❌    |                                            |
+| base32     | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| base64     | not started |  ✅   |  ✅   |   ✅    |                                            |
+| basename   | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| basenc     | not started |  ❌   |  ❌   |   ❌    |                                            |
 | cal        | in progress |  ✅   |  ✅   |   ✅    | Not all options complete                   |
-| cat        | completed   |  ✅   |  ✅   |   ✅    |
-| chcon      | not started |  ❌   |  ❌   |   ❌    |
-| chgrp      | completed   |  ✅   |  ✅   |   ✅    |
-| chmod      | not started |  ❌   |  ❌   |   ❌    |
-| chown      | completed   |  ✅   |  ✅   |   ✅    |
-| chroot     | in progress |  ❌   |  ❌   |   ❌    |
-| cksum      | not started |  ❌   |  ❌   |   ❌    |
-| comm       | not started |  ❌   |  ❌   |   ❌    |
-| cp         | in progress |  ✅   |  ✅   |   ❌    |
-| csplit     | not started |  ❌   |  ❌   |   ❌    |
-| cut        | not started |  ❌   |  ❌   |   ❌    |
-| date       | not started |  ❌   |  ❌   |   ❌    |
-| dd         | not started |  ❌   |  ❌   |   ❌    |
-| df         | in progress |  ✅   |  ✅   |   ✅    | 
-| dir        | not started |  ❌   |  ❌   |   ❌    |
-| dircolors  | not started |  ❌   |  ❌   |   ❌    |
-| dirname    | completed   |  ✅   |  ✅   |   ✅    |
-| dmesg      | not started |  ❌   |  ❌   |   ❌    |
-| domainname | not started |  ❌   |  ❌   |   ❌    |
-| du         | not started |  ❌   |  ❌   |   ❌    |
-| echo       | not started |  ❌   |  ❌   |   ❌    |
+| cat        | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| chcon      | not started |  ❌   |  ❌   |   ❌    |                                            |
+| chgrp      | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| chmod      | not started |  ❌   |  ❌   |   ❌    |                                            |
+| chown      | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| chroot     | in progress |  ❌   |  ❌   |   ❌    |                                            |
+| cksum      | not started |  ❌   |  ❌   |   ❌    |                                            |
+| comm       | not started |  ❌   |  ❌   |   ❌    |                                            |
+| cp         | in progress |  ✅   |  ✅   |   ❌    |                                            |
+| csplit     | not started |  ❌   |  ❌   |   ❌    |                                            |
+| cut        | not started |  ❌   |  ❌   |   ❌    |                                            |
+| date       | not started |  ❌   |  ❌   |   ❌    |                                            |
+| dd         | not started |  ❌   |  ❌   |   ❌    |                                            |
+| df         | in progress |  ✅   |  ✅   |   ✅    |                                            |
+| dir        | not started |  ❌   |  ❌   |   ❌    |                                            |
+| dircolors  | not started |  ❌   |  ❌   |   ❌    |                                            |
+| dirname    | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| dmesg      | not started |  ❌   |  ❌   |   ❌    |                                            |
+| domainname | not started |  ❌   |  ❌   |   ❌    |                                            |
+| du         | not started |  ❌   |  ❌   |   ❌    |                                            |
+| echo       | not started |  ❌   |  ❌   |   ❌    |                                            |
 | env        | in progress |  ❌   |  ❌   |   ✅    | Printing complete; setting, not so much    |
-| expand     | not started |  ❌   |  ❌   |   ❌    |
-| expr       | not started |  ❌   |  ❌   |   ❌    |
-| factor     | not started |  ❌   |  ❌   |   ❌    |
-| false      | completed   |  ✅   |  ✅   |   ✅    |
-| fmt        | not started |  ❌   |  ❌   |   ❌    |
+| expand     | not started |  ❌   |  ❌   |   ❌    |                                            |
+| expr       | not started |  ❌   |  ❌   |   ❌    |                                            |
+| factor     | not started |  ❌   |  ❌   |   ❌    |                                            |
+| false      | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| fmt        | not started |  ❌   |  ❌   |   ❌    |                                            |
 | fold       | in progress |  ✅   |  ✅   |   ❌    | Working, but will break on multi-col chars |
-| free       | in progress |  ✅   |  ✅   |   ❌    |
-| groups     | not started |  ❌   |  ❌   |   ❌    |
-| head       | completed   |  ✅   |  ✅   |   ✅    |
-| hostid     | not started |  ❌   |  ❌   |   ❌    |
-| hostname   | not started |  ❌   |  ❌   |   ❌    |
-| id         | not started |  ❌   |  ❌   |   ❌    |
-| install    | not started |  ❌   |  ❌   |   ❌    |
-| join       | not started |  ❌   |  ❌   |   ❌    |
-| kill       | not started |  ❌   |  ❌   |   ❌    |
-| link       | in progress |  ✅   |  ✅   |   ✅    |
-| ln         | in progress |  ✅   |  ✅   |   ✅    |
-| logname    | completed   |  ✅   |  ✅   |   ❌    |
-| ls         | in progress |  ✅   |  ✅   |   ✅    |
-| md5sum     | in progress |  ✅   |  ✅   |   ✅    |
-| mkdir      | completed   |  ✅   |  ✅   |   ✅    |
-| mkfifo     | not started |  ❌   |  ❌   |   ❌    |
-| mknod      | not started |  ❌   |  ❌   |   ❌    |
-| mktemp     | not started |  ❌   |  ❌   |   ❌    |
-| mount      | in progress |  ❌   |  ✅   |   ✅    |
-| mv         | completed   |  ✅   |  ✅   |   ✅    |
-| nice       | not started |  ❌   |  ❌   |   ❌    |
-| nl         | in progress |  ✅   |  ✅   |   ✅    |
-| nohup      | not started |  ❌   |  ❌   |   ❌    |
-| nproc      | completed   |  ✅   |  ✅   |   ❌    |
-| numfmt     | not started |  ❌   |  ❌   |   ❌    |
-| od         | completed   |  ✅   |  ✅   |   ✅    |
-| paste      | not started |  ❌   |  ❌   |   ❌    |
-| pathchk    | not started |  ❌   |  ❌   |   ❌    |
-| pinky      | not started |  ❌   |  ❌   |   ❌    |
-| pr         | not started |  ❌   |  ❌   |   ❌    |
-| ps         | not started |  ❌   |  ❌   |   ❌    |
-| printenv   | completed   |  ✅   |  ✅   |   ✅    |
-| printf     | not started |  ❌   |  ❌   |   ❌    |
-| ptx        | not started |  ❌   |  ❌   |   ❌    |
-| pwd        | completed   |  ✅   |  ✅   |   ✅    |
-| readlink   | not started |  ❌   |  ❌   |   ❌    |
-| realpath   | not started |  ❌   |  ❌   |   ❌    |
-| renice     | not started |  ❌   |  ❌   |   ❌    |
-| rm         | completed   |  ✅   |  ✅   |   ✅    |
-| rmdir      | completed   |  ✅   |  ✅   |   ✅    |
-| route      | not started |  ❌   |  ❌   |   ❌    |
-| seq        | not started |  ❌   |  ❌   |   ❌    |
-| sha1sum    | not started |  ❌   |  ❌   |   ❌    |
-| sha224sum  | in progress |  ✅   |  ✅   |   ✅    |
-| sha256sum  | in progress |  ✅   |  ✅   |   ✅    |
-| sha384sum  | in progress |  ✅   |  ✅   |   ✅    |
-| sha512sum  | in progress |  ✅   |  ✅   |   ✅    |
-| shred      | not started |  ❌   |  ❌   |   ❌    |
-| shuf       | not started |  ❌   |  ❌   |   ❌    |
-| sleep      | completed   |  ✅   |  ✅   |   ✅    |
-| sort       | not started |  ❌   |  ❌   |   ❌    |
-| split      | not started |  ❌   |  ❌   |   ❌    |
-| stat       | completed   |  ✅   |  ✅   |   ✅    |
-| stty       | not started |  ❌   |  ❌   |   ❌    |
-| sum        | not started |  ❌   |  ❌   |   ❌    |
-| sync       | completed   |  ✅   |  ✅   |   ✅    |
-| tac        | not started |  ❌   |  ❌   |   ❌    |
-| tail       | completed   |  ✅   |  ✅   |   ✅    |
-| tee        | completed   |  ✅   |  ✅   |   ✅    |
-| test       | not started |  ❌   |  ❌   |   ❌    |
-| time       | not started |  ❌   |  ❌   |   ❌    |
-| timeout    | not started |  ❌   |  ❌   |   ❌    |
-| touch      | in progress |  ✅   |  ✅   |   ✅    |
-| tr         | not started |  ❌   |  ❌   |   ❌    |
-| true       | completed   |  ✅   |  ✅   |   ✅    |
-| truncate   | not started |  ❌   |  ❌   |   ❌    |
-| tsort      | not started |  ❌   |  ❌   |   ❌    |
-| tty        | not started |  ❌   |  ❌   |   ❌    |
-| umount     | not started |  ❌   |  ❌   |   ❌    |
-| uname      | completed   |  ✅   |  ✅   |   ✅    |
-| unexpand   | not started |  ❌   |  ❌   |   ❌    |
-| uniq       | not started |  ❌   |  ❌   |   ❌    |
-| unlink     | in progress |  ✅   |  ✅   |   ✅    |
-| uptime     | completed   |  ✅   |  ✅   |   ✅    |
-| users      | not started |  ❌   |  ❌   |   ❌    |
-| vdir       | in progress |  ✅   |  ✅   |   ✅    |
-| wc         | completed   |  ✅   |  ✅   |   ✅    |
-| which      | not started |  ❌   |  ❌   |   ❌    |
-| who        | completed   |  ✅   |  ✅   |   ✅    |
-| whoami     | completed   |  ✅   |  ✅   |   ✅    |
-| yes        | completed   |  ✅   |  ✅   |   ✅    |
-
+| free       | in progress |  ✅   |  ✅   |   ❌    |                                            |
+| groups     | completed   |  ✅   |  ✅   |   ❌    |                                            |
+| head       | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| hostid     | not started |  ❌   |  ❌   |   ❌    |                                            |
+| hostname   | completed   |  ✅   |  ✅   |   ❌    | Untested on FreeBSD                        |
+| id         | not started |  ❌   |  ❌   |   ❌    |                                            |
+| install    | not started |  ❌   |  ❌   |   ❌    |                                            |
+| join       | not started |  ❌   |  ❌   |   ❌    |                                            |
+| kill       | not started |  ❌   |  ❌   |   ❌    |                                            |
+| link       | in progress |  ✅   |  ✅   |   ✅    |                                            |
+| ln         | in progress |  ✅   |  ✅   |   ✅    |                                            |
+| logname    | completed   |  ✅   |  ✅   |   ❌    |                                            |
+| ls         | in progress |  ✅   |  ✅   |   ✅    |                                            |
+| md5sum     | in progress |  ✅   |  ✅   |   ✅    |                                            |
+| mkdir      | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| mkfifo     | not started |  ❌   |  ❌   |   ❌    |                                            |
+| mknod      | not started |  ❌   |  ❌   |   ❌    |                                            |
+| mktemp     | not started |  ❌   |  ❌   |   ❌    |                                            |
+| mount      | in progress |  ❌   |  ✅   |   ✅    |                                            |
+| mv         | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| nice       | not started |  ❌   |  ❌   |   ❌    |                                            |
+| nl         | in progress |  ✅   |  ✅   |   ✅    |                                            |
+| nohup      | not started |  ❌   |  ❌   |   ❌    |                                            |
+| nproc      | completed   |  ✅   |  ✅   |   ❌    |                                            |
+| numfmt     | not started |  ❌   |  ❌   |   ❌    |                                            |
+| od         | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| paste      | not started |  ❌   |  ❌   |   ❌    |                                            |
+| pathchk    | not started |  ❌   |  ❌   |   ❌    |                                            |
+| pinky      | not started |  ❌   |  ❌   |   ❌    |                                            |
+| pr         | not started |  ❌   |  ❌   |   ❌    |                                            |
+| ps         | not started |  ❌   |  ❌   |   ❌    |                                            |
+| printenv   | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| printf     | not started |  ❌   |  ❌   |   ❌    |                                            |
+| ptx        | not started |  ❌   |  ❌   |   ❌    |                                            |
+| pwd        | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| readlink   | not started |  ❌   |  ❌   |   ❌    |                                            |
+| realpath   | not started |  ❌   |  ❌   |   ❌    |                                            |
+| renice     | not started |  ❌   |  ❌   |   ❌    |                                            |
+| rm         | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| rmdir      | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| route      | not started |  ❌   |  ❌   |   ❌    |                                            |
+| seq        | not started |  ❌   |  ❌   |   ❌    |                                            |
+| sha1sum    | not started |  ❌   |  ❌   |   ❌    |                                            |
+| sha224sum  | in progress |  ✅   |  ✅   |   ✅    |                                            |
+| sha256sum  | in progress |  ✅   |  ✅   |   ✅    |                                            |
+| sha384sum  | in progress |  ✅   |  ✅   |   ✅    |                                            |
+| sha512sum  | in progress |  ✅   |  ✅   |   ✅    |                                            |
+| shred      | not started |  ❌   |  ❌   |   ❌    |                                            |
+| shuf       | not started |  ❌   |  ❌   |   ❌    |                                            |
+| sleep      | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| sort       | not started |  ❌   |  ❌   |   ❌    |                                            |
+| split      | not started |  ❌   |  ❌   |   ❌    |                                            |
+| stat       | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| stty       | not started |  ❌   |  ❌   |   ❌    |                                            |
+| sum        | not started |  ❌   |  ❌   |   ❌    |                                            |
+| sync       | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| tac        | not started |  ❌   |  ❌   |   ❌    |                                            |
+| tail       | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| tee        | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| test       | not started |  ❌   |  ❌   |   ❌    |                                            |
+| time       | not started |  ❌   |  ❌   |   ❌    |                                            |
+| timeout    | not started |  ❌   |  ❌   |   ❌    |                                            |
+| touch      | in progress |  ✅   |  ✅   |   ✅    |                                            |
+| tr         | not started |  ❌   |  ❌   |   ❌    |                                            |
+| true       | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| truncate   | not started |  ❌   |  ❌   |   ❌    |                                            |
+| tsort      | not started |  ❌   |  ❌   |   ❌    |                                            |
+| tty        | not started |  ❌   |  ❌   |   ❌    |                                            |
+| umount     | not started |  ❌   |  ❌   |   ❌    |                                            |
+| uname      | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| unexpand   | not started |  ❌   |  ❌   |   ❌    |                                            |
+| uniq       | not started |  ❌   |  ❌   |   ❌    |                                            |
+| unlink     | in progress |  ✅   |  ✅   |   ✅    |                                            |
+| uptime     | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| users      | not started |  ❌   |  ❌   |   ❌    |                                            |
+| vdir       | in progress |  ✅   |  ✅   |   ✅    |                                            |
+| wc         | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| which      | not started |  ❌   |  ❌   |   ❌    |                                            |
+| who        | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| whoami     | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| yes        | completed   |  ✅   |  ✅   |   ✅    |                                            |
 
 ========================================================================
 
