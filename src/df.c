@@ -156,7 +156,7 @@ int main(const int argc, char *argv[])
     };
 
     int opt;
-    while ((opt = getopt_long(argc, argv, "VhikmgsTtdo::b:", longopts, nullptr)) != -1) {
+    while ((opt = getopt_long(argc, argv, "VhikmgsTtao::b:", longopts, nullptr)) != -1) {
         switch(opt) {
         case 'V':
             printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
