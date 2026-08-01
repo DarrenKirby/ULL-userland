@@ -194,7 +194,7 @@ int main(const int argc, char *argv[])
         case 't':
             opts.total = true;
             break;
-        case 'd':
+        case 'a':
             opts.inc_dummy = true;
             break;
         case 'o':
