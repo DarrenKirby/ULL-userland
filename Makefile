@@ -6,10 +6,13 @@ LDFLAGS ?=
 
 PKG_CONFIG ?= pkg-config
 
-SRCDIR := src
-BINDIR := bin
+SRC_DIR := src
+BIN_DIR := bin
 
-PROGRAMS := arch basename base32 base64 cal cat chgrp chown chroot cp df dirname env false fold free head link ln logname ls md5sum mount mkdir mv nl nproc od printenv pwd rm rmdir sha224sum sha256sum sha384sum sha512sum sleep stat sync tail tee touch true uname unlink uptime vdir wc who whoami yes
+# Automatically discover all .c files in src/, but exclude template.c
+SRCS     := $(filter-out $(SRC_DIR)/template.c, $(wildcard $(SRC_DIR)/*.c))
+PROGRAMS := $(patsubst $(SRC_DIR)/%.c,%,$(SRCS))
+BINARIES := $(patsubst %,$(BIN_DIR)/%,$(PROGRAMS))
 
 package := ull-userland
 version := 0.4.3
@@ -17,14 +20,23 @@ tarname := $(package)
 distdir := $(tarname)-$(version)
 
 # Default target
-all: prep $(PROGRAMS)
+all: prep $(BINARIES)
 
 prep:
-	mkdir -p $(BINDIR)
+	mkdir -p $(BIN_DIR)
 
-# Build each program
-$(PROGRAMS):
-	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $(SRCDIR)/$@.c $(LDFLAGS_$@) $(LDFLAGS)
+# Shared header files
+$(BIN_DIR)/sha256sum $(BIN_DIR)/sha512sum $(BIN_DIR)/sha384sum $(BIN_DIR)/sha224sum: $(SRC_DIR)/sha2.h
+$(BIN_DIR)/df: $(SRC_DIR)/mount.h
+
+# Provide aliases for running `make df` or `make base32` etc...
+.PHONY: $(PROGRAMS)
+$(PROGRAMS): %: $(BIN_DIR)/%
+
+# Pattern rule to build binaries from their corresponding .c file.
+# The $< variable is the prerequisite (.c file), and $@ is the target (binary).
+$(BIN_DIR)/%: $(SRC_DIR)/%.c $(SRC_DIR)/common.h
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS_$*) $(LDFLAGS)
 
 # Special link flags per program
 LDFLAGS_nl = -lm
@@ -33,7 +45,7 @@ LDFLAGS_nl = -lm
 dist: $(distdir).tar.gz
 
 $(distdir).tar.gz: $(distdir)
-	tar chof - $(distdir)| gzip -9 -c > $@
+	tar chof - $(distdir) | gzip -9 -c > $@
 	rm -rf $(distdir)
 
 $(distdir): FORCE
@@ -47,11 +59,11 @@ $(distdir): FORCE
 
 # Housekeeping
 clean:
-	-rm -rf $(BINDIR)/*
+	-rm -rf $(BIN_DIR)
 
 strip:
-	strip $(BINDIR)/*
+	strip $(BIN_DIR)/*
 
 FORCE:
 
-.PHONY: all clean dist strip prep $(PROGRAMS)
+.PHONY: all clean dist strip prep
