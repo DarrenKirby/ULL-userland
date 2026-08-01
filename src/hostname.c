@@ -22,7 +22,6 @@
 
 #include <getopt.h>
 #include <unistd.h>
-#include <sys/sysctl.h>
 
 #include "common.h"
 
