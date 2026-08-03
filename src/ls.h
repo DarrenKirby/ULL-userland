@@ -260,7 +260,10 @@ extern inline int process_args(const int argc, char** argv)
     return EXIT_SUCCESS;
 }
 
-extern inline uint16_t get_screen_width() {
+/* Return actual terminal width, or
+ * the value 82 if no terminal attached. */
+extern inline uint16_t get_screen_width()
+{
     uint16_t screen_width;
     /* Check if stdout is redirected to a file or a pipe. */
     if (!isatty(STDOUT_FILENO)) {
@@ -278,8 +281,10 @@ extern inline uint16_t get_screen_width() {
     return screen_width;
 }
 
-
-extern inline void resolve_link(const char *path, char buf[]) {
+/* Returns the file dereferenced from
+ * a symbolic link. */
+extern inline void resolve_link(const char *path, char buf[])
+{
     const ssize_t len = readlink(path, buf, PATH_MAX);
     if (len == -1) {
         memset(buf, '?', 3);
@@ -289,6 +294,8 @@ extern inline void resolve_link(const char *path, char buf[]) {
     buf[len] = '\0';
 }
 
+/* Print a filename to the screen, coloured
+ * and with classification glyphs is specified. */
 extern inline int p_filename(char *filename, const struct stat buf,
                                    const bool colour, const bool classify)
 {
@@ -351,8 +358,9 @@ extern inline int p_filename(char *filename, const struct stat buf,
     return len;
 }
 
-extern inline void print_one_format(const int32_t n_files, char* filenames[]) {
-    /* We are displaying short format, one file per line. */
+/* Display files in short format, one file per line. */
+extern inline void print_one_format(const int32_t n_files, char* filenames[])
+{
     for (int f = 0; f < n_files; f++) {
         struct stat buf;
         if (lstat(filenames[f], &buf) == -1) {
@@ -365,7 +373,10 @@ extern inline void print_one_format(const int32_t n_files, char* filenames[]) {
     }
 }
 
-extern inline char* fmt_time(const struct timespec time_d, char string_time[]) {
+/* Given a struct timespec, return a formatted
+ * string suitable for use in ls/dir/vdir. */
+extern inline char* fmt_time(const struct timespec time_d, char string_time[])
+{
     time_t now_t;
     (void) time(&now_t);
     const struct tm *now = localtime(&now_t);
@@ -382,11 +393,10 @@ extern inline char* fmt_time(const struct timespec time_d, char string_time[]) {
     return string_time;
 }
 
+/*  Display files long format, one file per line. */
 extern inline void print_long_format(const int32_t n_files, char *filenames[])
 {
-    /*  We are displaying long format, one file per line. */
     struct stat buf;
-
 
     for (int f = 0; f < n_files; f++) {
         if (opts.dereference) {
@@ -457,10 +467,10 @@ extern inline void print_long_format(const int32_t n_files, char *filenames[])
     }
 }
 
+/* Display files hort-format. As many as can fit per line. */
 extern inline void print_short_format(const int32_t n_files, char *filenames[],
     const uint32_t longest_so_far)
 {
-    /* Short-format. As many as can fit per line. */
     constexpr int padding = 2;
 
     /* The absolute maximum number of columns is if every file was 1 char long */
@@ -562,7 +572,8 @@ extern inline int compare_strings(const void *a, const void *b)
 }
 
 /* Comparison function for sorting by size. */
-extern inline int compare_size(const void *a, const void *b) {
+extern inline int compare_size(const void *a, const void *b)
+{
     struct stat buf_a;
     struct stat buf_b;
     const char *str_a = *(const char **)a;
@@ -592,7 +603,8 @@ extern inline int compare_size(const void *a, const void *b) {
 }
 
 /* Comparison function for sorting by atime. */
-extern inline int compare_atime(const void *a, const void *b) {
+extern inline int compare_atime(const void *a, const void *b)
+{
     struct stat buf_a;
     struct stat buf_b;
     const char *str_a = *(const char **)a;
@@ -623,7 +635,8 @@ extern inline int compare_atime(const void *a, const void *b) {
 }
 
 /* Comparison function for sorting by mtime. */
-extern inline int compare_mtime(const void *a, const void *b) {
+extern inline int compare_mtime(const void *a, const void *b)
+{
     struct stat buf_a;
     struct stat buf_b;
     const char *str_a = *(const char **)a;
@@ -654,7 +667,8 @@ extern inline int compare_mtime(const void *a, const void *b) {
 }
 
 /* Comparison function for sorting by ctime. */
-extern inline int compare_ctime(const void *a, const void *b) {
+extern inline int compare_ctime(const void *a, const void *b)
+{
     struct stat buf_a;
     struct stat buf_b;
     const char *str_a = *(const char **)a;
@@ -685,7 +699,8 @@ extern inline int compare_ctime(const void *a, const void *b) {
 }
 
 /* Reverse the sorted array for --reverse. */
-extern inline void reverse_array(char* arr[], const int size) {
+extern inline void reverse_array(char* arr[], const int size)
+{
     int left = 0;
     int right = size - 1;
 

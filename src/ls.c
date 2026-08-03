@@ -24,7 +24,6 @@
 #include <dirent.h>
 #include <time.h>
 
-
 #include "ls.h"
 
 #define DIRENT_STRING_SIZE 256
