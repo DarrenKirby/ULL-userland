@@ -25,6 +25,9 @@
 
 #include <getopt.h>
 #include <inttypes.h>
+#ifdef __linux__
+#include <sys/sysmacros.h>
+#endif
 
 #include "common.h"
 
@@ -407,7 +410,7 @@ extern inline void print_long_format(const int32_t n_files, char *filenames[])
         }
 
         if (opts.fields & (1 << BLK_S_BIT)) {
-            printf("%4" PRId32 " ", buf.st_blksize);
+            printf("%4" PRIu32 " ", buf.st_blksize);
         }
 
         if (opts.fields & (1 << DEV_BIT)) {
@@ -420,7 +423,7 @@ extern inline void print_long_format(const int32_t n_files, char *filenames[])
         }
 
         if (opts.fields & (1 << LINKS_BIT)) {
-            printf("%3" PRId32 " ", buf.st_nlink);
+            printf("%3" PRIu32 " ", buf.st_nlink);
         }
 
         if (opts.fields & (1 << USER_BIT)) {
