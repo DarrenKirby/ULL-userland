@@ -1,5 +1,5 @@
 /***************************************************************************
- *   vdir.c - print directory contents                                     *
+ *   dir.c - list files and directories                                     *
  *                                                                         *
  *   Copyright (C) 2014 - 2026 by Darren Kirby                             *
  *   darren@dragonbyte.ca                                                  *
@@ -20,272 +20,202 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-
-#include <stddef.h>
-#include <time.h>
+#include <sys/ioctl.h>
 #include <dirent.h>
-#include <getopt.h>
-
-#include "common.h"
+#include <time.h>
 
 
-static const char *APP_NAME = "vdir";
+#include "ls.h"
 
-static struct {
-    bool human:1;
-    bool all:1;
-    bool inode:1;
-    bool dereference:1;
-    bool colour:1;
-    bool classify:1;
-} opts = {
+#define DIRENT_STRING_SIZE 256
+
+char *APP_NAME = "dir";
+
+struct Opts opts = {
+    .fields = DEF_FIELDS, /* 1008 = 0000001111110000 */
+    .screen_width = 0,
+    .time = 0,
+    .ls_long = true,
     .human = false,
     .all = false,
-    .inode = false,
+    .almost_all = false,
+    .one = false,
     .dereference = false,
     .colour = false,
-    .classify = false };
+    .classify = false,
+    .size = false,
+    .reverse = false };
 
-static void show_help()
-{
-    printf("Usage: %s [OPTION]... [FILE]...\n\n\
-Print long-form directory contents\n\n\
-Options:\n\
-    -H, --human\t\t display file size in kilobytes and megabytes if appropriate (implies --long)\n\
-    -a, --all\t\t include dotfiles and implied `.' and `..' entries\n\
-    -i, --inode\t\t display inode numbers\n\
-    -d, --dereference\t show information for the file links reference rather than for the link itself\n\
-    -h, --help\t\t display this help\n\
-    -c, --colour\t use colour output\n\
-    -F, --classify\t\tappend indicator (one of */=>@|) to entries\n\
-    -V, --version\t display version information\n\n\
-Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
-}
-
-static void p_colour(char * filename, const struct stat buf)
-{
-    switch (buf.st_mode & S_IFMT) {
-        case S_IFBLK:
-            printf(ANSI_YELLOW "%s" ANSI_RESET, filename); /* block device */
-            break;
-        case S_IFCHR:
-            printf(ANSI_YELLOW_B "%s" ANSI_RESET, filename); /* character device */
-            break;
-        case S_IFDIR:
-            printf(ANSI_BLUE_B "%s" ANSI_RESET "%s",
-                filename, opts.classify ? "/" : ""); /* directory */
-            break;
-        case S_IFIFO:
-            printf(ANSI_YELLOW "%s" ANSI_RESET "%s",
-                filename, opts.classify ? "|" : ""); /* FIFO/pipe */
-            break;
-        case S_IFLNK:
-            printf(ANSI_CYAN_B "%s" ANSI_RESET "%s",
-                filename, opts.classify ? " ->" : ""); /* symlink */
-            break;
-        case S_IFSOCK:
-            printf("%s%s", filename, opts.classify ? "=" : ""); /* socket */
-            break;
-        default:   /* regular file */
-            /* Is it executable ? */
-            if ((buf.st_mode & S_IXUSR) || (buf.st_mode & S_IXGRP) || (buf.st_mode & S_IXOTH)) {
-                printf(ANSI_GREEN_B "%s" ANSI_RESET "%s", filename, opts.classify ? "*" : "");
-            } else {
-                printf("%s", filename);
-            }
-            break;
-    }
-}
-
-static void p_classify(char * filename, const struct stat buf)
-{
-    switch (buf.st_mode & S_IFMT) {
-        case S_IFBLK:
-            printf("%s", filename); /* block device */
-            break;
-        case S_IFCHR:
-            printf("%s", filename); /* character device */
-            break;
-        case S_IFDIR:
-            printf("%s/", filename); /* directory */
-            break;
-        case S_IFIFO:
-            printf("%s|", filename); /* FIFO/pipe */
-            break;
-        case S_IFLNK:
-            /* FIXME: links should point to their targets. */
-            printf("%s ->", filename); /* symlink */
-            break;
-        case S_IFSOCK:
-            printf("%s=", filename); /* socket */
-            break;
-        default:   /* regular file */
-            /* Is it executable ? */
-            if ((buf.st_mode & S_IXUSR) || (buf.st_mode & S_IXGRP) || (buf.st_mode & S_IXOTH)) {
-                printf("%s*", filename);
-            } else {
-                printf("%s", filename);
-            }
-            break;
-    }
-}
 
 int main(const int argc, char *argv[])
 {
-    const struct option long_opts[] = {
-        {.name = "help",        .has_arg = 0, .flag = nullptr, .val = 'h'},
-        {.name = "version",     .has_arg = 0, .flag = nullptr, .val = 'V'},
-        {.name = "all",         .has_arg = 0, .flag = nullptr, .val = 'a'},
-        {.name = "human",       .has_arg = 0, .flag = nullptr, .val = 'H'},
-        {.name = "inode",       .has_arg = 0, .flag = nullptr, .val = 'i'},
-        {.name = "dereference", .has_arg = 0, .flag = nullptr, .val = 'd'},
-        {.name = "colour",      .has_arg = 0, .flag = nullptr, .val = 'c'},
-        {.name = "classify",    .has_arg = 0, .flag = nullptr, .val = 'F'},
-        {.name = nullptr,       .has_arg = 0, .flag = nullptr, .val = 0}
-    };
-
-    int opt;
-    while ((opt = getopt_long(argc, argv, "VhaHidcF", long_opts, NULL)) != -1) {
-        switch(opt) {
-            case 'V':
-                printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
-                printf("%s compiled on %s at %s\n",
-                       strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
-                       __DATE__, __TIME__);
-                return EXIT_SUCCESS;
-            case 'h':
-                show_help();
-                return EXIT_SUCCESS;
-            case 'a':
-                opts.all = true;
-                break;
-            case 'H':
-                opts.human = true;
-                break;
-            case 'i':
-                opts.inode = true;
-                break;
-            case 'd':
-                opts.dereference = true;
-                break;
-            case 'c':
-                opts.colour = true;
-                break;
-            case 'F':
-                opts.classify = true;
-                break;
-            default:
-                show_help();
-                return EXIT_FAILURE;
-        }
-    }
-
-    const size_t path_max = get_path_max();
-    char path_to_ls[path_max];
-
-    if (argv[optind] != NULL) {
-        strlcpy(path_to_ls, argv[optind], sizeof(path_to_ls));
-    } else {
-        strlcpy(path_to_ls, ".", sizeof(path_to_ls));
-    }
-
-    DIR *dp;
-    struct dirent *list;
-    if ((dp = opendir(path_to_ls)) == NULL) {
-        fprintf(stderr, "%s: opendir() failed: %s\n", APP_NAME, strerror(errno));
+    if (process_args(argc, argv) != 0) {
         return EXIT_FAILURE;
     }
 
-    int n_files = 0; /* number of files to print */
+    /* Get width of term. */
+    if (opts.screen_width == 0) {
+        opts.screen_width = get_screen_width();
+    }
 
-    while ((list = readdir(dp)) != NULL) {
-        /* First time around get max file length. */
-        if (!opts.all) {
-            if (list->d_name[0] == '.') {
-                continue;
+    const size_t file_max = get_filename_max();
+    char path_to_ls[file_max];
+
+    const int n_args = argc - optind;
+    bool no_arg = n_args == 0 ? true : false;
+
+    do {
+        if (argv[optind] != NULL) {
+            strlcpy(path_to_ls, argv[optind], sizeof(path_to_ls));
+            no_arg = false;
+        } else {
+            /* If there were args, but we get here, it means
+             * the args have all been iterated over. Just break. */
+            if (no_arg) {
+                strlcpy(path_to_ls, ".", sizeof(path_to_ls));
+            } else {
+                break;
             }
         }
-        n_files++;
-    }
 
-    rewinddir(dp);
+        bool arg_is_dir;
 
-    char filenames[n_files][path_max];
-    int n = 0;
-
-    while ((list = readdir(dp)) != NULL) {
-        if (opts.all == 0) {
-            if (list->d_name[0] == '.') {
-                continue;
-            }
-        }
-        snprintf(filenames[n], sizeof filenames[n], "%s", list->d_name);
-        n++;
-    }
-    closedir(dp);
-
-    char cwd[path_max];
-    char *cwd_p = cwd;
-
-    if (getcwd(cwd_p, path_max) == NULL) {
-        fprintf(stderr, "%s: getcwd() failed: %s\n", APP_NAME, strerror(errno));
-        return EXIT_FAILURE;
-    }
-
-    if (chdir(path_to_ls) == -1) {
-        fprintf(stderr, "%s: chdir() failed: %s\n", APP_NAME, strerror(errno));
-        return EXIT_FAILURE;
-    }
-
-    struct stat buf;
-    time_t now_t;
-    (void) time(&now_t);
-    const struct tm *now = localtime(&now_t);
-    const int current_year = now->tm_year + 1900;
-    char string_time[13];
-
-    for (int f = 0; f < n_files; f++) {
-        if (opts.dereference == 1) {
-            if (stat(filenames[f], &buf) == -1) {
-                fprintf(stderr, "%s: stat() failed: %s\n", APP_NAME, strerror(errno));
+        DIR *dp;
+        struct dirent *list;
+        errno = 0;
+        if ((dp = opendir(path_to_ls)) == NULL) {
+            if (errno == ENOTDIR) {
+                arg_is_dir = false;
+            } else {
+                fprintf(stderr, "%s: opendir failed: %s", APP_NAME, strerror(errno));
                 return EXIT_FAILURE;
             }
         } else {
-            if (lstat(filenames[f], &buf) == -1) {
-                fprintf(stderr, "%s: lstat() failed: %s\n", APP_NAME, strerror(errno));
+            arg_is_dir = true;
+        }
+
+        int32_t n_files = 0;           /* Number of files to print. */
+        uint32_t longest_so_far = 0;   /* Longest filename seen so far. */
+
+        if (arg_is_dir) {
+            uint32_t n;
+            while ((list = readdir(dp)) != NULL) {
+                /* First time around, get max file length. */
+                if (list->d_name[0] == '.') {
+                    /* If neither -a nor -A is set, skip all dotfiles. */
+                    if (!opts.all && !opts.almost_all) {
+                        continue;
+                    }
+
+                    /* If -A is set (and not overridden by -a), skip ONLY '.' and '..' */
+                    if (opts.almost_all && !opts.all) {
+                        if (strcmp(list->d_name, ".") == 0 || strcmp(list->d_name, "..") == 0) {
+                            continue;
+                        }
+                    }
+                }
+                n_files++;
+
+                if ((n = strlen(list->d_name)) > longest_so_far) {
+                    longest_so_far = n;
+                }
+            }
+            rewinddir(dp);
+
+            char* filenames[n_files];
+            n = 0;
+
+            while ((list = readdir(dp)) != NULL) {
+                if (list->d_name[0] == '.') {
+                    /* If neither -a nor -A is set, skip all dotfiles. */
+                    if (!opts.all && !opts.almost_all) {
+                        continue;
+                    }
+
+                    /* If -A is set (and not overridden by -a), skip ONLY '.' and '..' */
+                    if (opts.almost_all && !opts.all) {
+                        if (strcmp(list->d_name, ".") == 0 || strcmp(list->d_name, "..") == 0) {
+                            continue;
+                        }
+                    }
+                }
+                filenames[n] = strdup(list->d_name);
+                n++;
+            }
+            closedir(dp);
+
+            /* `cd` to path_to_ls. This needs to be done before the
+             * qsort, as compare_size and compare_time calls stat. */
+            char cwd[file_max];
+            char *cwd_p = cwd;
+
+            if (getcwd(cwd_p, file_max) == NULL) {
+                fprintf(stderr, "%s: getcwd() failed: %s\n", APP_NAME, strerror(errno));
                 return EXIT_FAILURE;
             }
-        }
 
-        if (opts.inode == 1) {
-            printf("%8d ", (int) buf.st_ino);
-        }
-        printf("%s", filetype(buf.st_mode, 0));
-        printf("%s ", file_perm_str(buf.st_mode, 1));
-        printf("%2ld ", (long) buf.st_nlink);
-        printf("%s %s ", get_username(buf.st_uid), get_groupname(buf.st_gid));
-        (opts.human == 0) ?
-            (void)printf("%6lld ", (long long) buf.st_size) :       /* bytes */
-            format_ls(buf.st_size) ;                  /* ie: 16k */
+            if (chdir(path_to_ls) == -1) {
+                fprintf(stderr, "%s: chdir failed: %s", APP_NAME, strerror(errno));
+                return EXIT_FAILURE;
+            }
 
-        const struct tm *fil = localtime(&buf.st_mtime);
-        if (current_year != (fil->tm_year + 1900)) {
-            strftime(string_time, sizeof("Jan 01  1970"), "%b %d  %Y", localtime(&buf.st_mtime));
+            /* Sort the filenames as per options. */
+            if (opts.size) {
+                qsort(filenames, n_files, sizeof(char*), compare_size);
+            } else if (opts.time) {
+                switch (opts.time) {
+                    case 1: qsort(filenames, n_files, sizeof(char*), compare_atime); break;
+                    case 2: qsort(filenames, n_files, sizeof(char*), compare_mtime); break;
+                    case 3: qsort(filenames, n_files, sizeof(char*), compare_ctime); break;
+                    default: break;
+                }
+            } else {
+                /* Default alphabetic sort. */
+                qsort(filenames, n_files, sizeof(char*), compare_strings);
+            }
+
+            /* Reverse the array to print ascending order. */
+            if (opts.reverse) {
+                reverse_array(filenames, n_files);
+            }
+
+            if (n_args > 1) {
+                printf("\n%s:\n", path_to_ls);
+            }
+
+            if (opts.ls_long) {
+                print_long_format(n_files, filenames);
+            } else if (opts.one) {
+                print_one_format(n_files, filenames);
+            } else {
+                print_short_format(n_files, filenames, longest_so_far);
+            }
+
+            if (chdir(cwd_p) == -1) {
+                fprintf(stderr, "%s: chdir failed: %s", APP_NAME, strerror(errno));
+                return EXIT_FAILURE;
+            }
+
+            /* Deallocate the duped strings. */
+            for (int i = 0; i < n_files; i++) {
+                free(filenames[i]);
+            }
         } else {
-            strftime(string_time, sizeof("Jan 01 12:00"), "%b %d %H:%M", localtime(&buf.st_mtime));
+            /* Just a single file... */
+            char *filenames[1];
+            filenames[0] = strdup(path_to_ls);
+
+            if (opts.ls_long) {
+                print_long_format(n_files, filenames);
+            } else if (opts.one) {
+                print_one_format(n_files, filenames);
+            } else {
+                print_short_format(n_files, filenames, longest_so_far);
+            }
+            free(filenames[0]);
         }
 
-        printf("%s ", string_time);
-
-        if (opts.colour) {
-            p_colour(filenames[f], buf);
-        } else if (opts.classify) {
-            p_classify(filenames[f], buf);
-        } else {
-            printf("%s", filenames[f]);
-        }
-        printf("\n");
-    }
+    } while (argc > optind++);
 
     return EXIT_SUCCESS;
 }
