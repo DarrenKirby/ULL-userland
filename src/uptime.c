@@ -1,7 +1,7 @@
 /***************************************************************************
  *   uptime.c - Tell how long the system has been running                  *
  *                                                                         *
- *   Copyright (C) 2014 - 2025 Darren Kirby                                *
+ *   Copyright (C) 2014 - 2026 Darren Kirby                                *
  *   darren@dragonbyte.ca                                                  *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *

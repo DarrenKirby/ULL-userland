@@ -264,7 +264,7 @@ int main(const int argc, char *argv[])
         while (optind < argc) {
             vfs_stat_t tmp;
 
-            /* Calls native statfs on Mac, and custom statfs_ext on Linux */
+            /* Calls native statfs on Mac/BSD, and custom statfs_ext on Linux */
             if (vfs_statfs(argv[optind], &tmp) == -1) {
                 fprintf(stderr, "%s: %s: %s\n", APP_NAME, argv[optind], strerror(errno));
                 optind++;
