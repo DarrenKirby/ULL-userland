@@ -30,10 +30,24 @@
 
 #define PATH_MAX 4096
 
+/* Decimal constant for default
+ * bitfields to print. */
+#define DEF_FIELDS 1008
+
+/* Constants > 255 for long opts
+ * with no associated short opt. */
 #define OPT_ATIME 256
 #define OPT_MTIME 257
 #define OPT_CTIME 258
+#define OPT_P_ATIME 259
+#define OPT_P_MTIME 260
+#define OPT_P_CTIME 262
 
+/* Constants for sorting. */
+#define SORT_DEFAULT 0
+#define SORT_ATIME   1
+#define SORT_MTIME   2
+#define SORT_CTIME   3
 
 extern char* APP_NAME;
 
@@ -42,15 +56,32 @@ extern inline void show_help()
     printf("Usage: %s [OPTION]... [FILE]...\n\n\
 List and show info for files and directories\n\n\
 Options:\n\
-    -l, --long\t\toutput long format listing\n\
-    -H, --human\t\tdisplay file size in kilobytes and megabytes if appropriate (implies --long)\n\
-    -a, --all\t\tinclude dotfiles and implied `.' and `..' entries\n\
     -1, --one\t\tlist files one per line\n\
-    -i, --inode\t\tdisplay inode numbers (implies --long)\n\
+    -a, --all\t\tinclude dotfiles and implied `.' and `..' entries\n\
+    -A, --almost-all\tdo not list implied `.' and `..'\n\
+        --atime\t\tsort by access time, newest first\n\
+    -b, --blocks\tprint allocated blocks (implies --long)\n\
+    -B, --block-size\tprint I/O block size (implies --long)\n\
+    -c, --colour\tprint files/dirs in colour\n\
+        --ctime\t\tsort by change time, newest first\n\
     -d, --dereference\tshow information for the file links reference rather than for the link itself\n\
-    -w, --width=N\tset display screen width to 'N' characters\n\
+    -D, --device\tprint device maj/min (implies --long)\n\
+    -F, --classify\tappend indicator (one of */=@|) to entries\n\
+    -G, --no-group\tin a long listing, don't print group names\n\
     -h, --help\t\tdisplay this help\n\
-    -V, --version\tdisplay version information\n\n\
+    -H, --human\t\tdisplay file size in kilobytes and megabytes if appropriate (implies --long)\n\
+    -i, --inode\t\tdisplay inode numbers (implies --long)\n\
+    -l, --long\t\toutput long format listing\n\
+        --mtime\t\tsort by modification time, newest first\n\
+    -n, --no-colour\tdisable colour output\n\
+        --print-atime\tprint access time (implies --long)\n\
+        --print-ctime\tprint change time (implies --long)\n\
+        --print-mtime\tprint modification time (implies --long)\n\
+    -r, --reverse\treverse order while sorting\n\
+    -s, --size\t\tsort by file size, largest first\n\
+    -U, --no-user\tin a long listing, don't print user names\n\
+    -V, --version\tdisplay version information\n\
+    -w, --width=N\tset display screen width to 'N' characters\n\n\
 Report bugs to <darren@dragonbyte.ca>\n", APP_NAME);
 }
 
@@ -58,16 +89,32 @@ struct Opts {
     uint16_t fields;
     uint16_t screen_width;
     uint16_t time;
-    bool ls_long:1;        /* Print in long-format. */
-    bool human:1;          /* Print human-readable file sizes. */
-    bool all:1;            /* Include dot files. */
-    bool one:1;            /* Print one file per line. */
-    bool dereference:1;    /* Dereference symlinks. */
-    bool colour:1;         /* Print files/dirs in colour. */
-    bool classify:1;       /* Append filenames with classifiers. */
-    bool size:1;           /* Sort by size in bytes. */
-    bool reverse:1;        /* Print files in ascending order. */
+    bool ls_long;        /* Print in long-format. */
+    bool human;          /* Print human-readable file sizes. */
+    bool all;            /* Include dot files. */
+    bool almost_all;     /* Include dot files, except for implied '.' and '..' entries. */
+    bool one;            /* Print one file per line. */
+    bool dereference;    /* Dereference symlinks. */
+    bool colour;         /* Print files/dirs in colour. */
+    bool classify;       /* Append filenames with classifiers. */
+    bool size;           /* Sort by size in bytes. */
+    bool reverse;        /* Print files in ascending order. */
 };
+
+/* Fields to print for -l.
+ * Default: 0000001111110000 */
+#define INODE_BIT 0
+#define BLOCK_BIT 1
+#define BLK_S_BIT 2
+#define DEV_BIT   3
+#define PERMS_BIT 4
+#define LINKS_BIT 5
+#define USER_BIT  6
+#define GROUP_BIT 7
+#define SIZE_BIT  8
+#define MTIME_BIT 9
+#define ATIME_BIT 10
+#define CTIME_BIT 11
 
 extern struct Opts opts;
 
@@ -77,6 +124,7 @@ extern inline int process_args(const int argc, char** argv)
          { .name = "help",        .has_arg = no_argument,       .flag = nullptr, .val = 'h' },
          { .name = "version",     .has_arg = no_argument,       .flag = nullptr, .val = 'V' },
          { .name = "all",         .has_arg = no_argument,       .flag = nullptr, .val = 'a' },
+         { .name = "almost-all",  .has_arg = no_argument,       .flag = nullptr, .val = 'A' },
          { .name = "human",       .has_arg = no_argument,       .flag = nullptr, .val = 'H' },
          { .name = "long",        .has_arg = no_argument,       .flag = nullptr, .val = 'l' },
          { .name = "one",         .has_arg = no_argument,       .flag = nullptr, .val = '1' },
@@ -88,36 +136,47 @@ extern inline int process_args(const int argc, char** argv)
          { .name = "colour",      .has_arg = no_argument,       .flag = nullptr, .val = 'c' },
          { .name = "size",        .has_arg = no_argument,       .flag = nullptr, .val = 's' },
          { .name = "reverse",     .has_arg = no_argument,       .flag = nullptr, .val = 'r' },
+         { .name = "blocks",      .has_arg = no_argument,       .flag = nullptr, .val = 'b' },
+         { .name = "block-size",  .has_arg = no_argument,       .flag = nullptr, .val = 'B' },
+         { .name = "device",      .has_arg = no_argument,       .flag = nullptr, .val = 'D' },
+         { .name = "no-user",     .has_arg = no_argument,       .flag = nullptr, .val = 'U' },
+         { .name = "no-group",    .has_arg = no_argument,       .flag = nullptr, .val = 'G' },
          { .name = "atime",       .has_arg = no_argument,       .flag = nullptr, .val = OPT_ATIME },
          { .name = "mtime",       .has_arg = no_argument,       .flag = nullptr, .val = OPT_MTIME },
          { .name = "ctime",       .has_arg = no_argument,       .flag = nullptr, .val = OPT_CTIME },
+         { .name = "print-atime", .has_arg = no_argument,       .flag = nullptr, .val = OPT_P_ATIME },
+         { .name = "print-mtime", .has_arg = no_argument,       .flag = nullptr, .val = OPT_P_MTIME },
+         { .name = "print-ctime", .has_arg = no_argument,       .flag = nullptr, .val = OPT_P_CTIME },
          { .name = nullptr,       .has_arg = no_argument,       .flag = nullptr, .val = 0 }
     };
 
     int opt;
-    while ((opt = getopt_long(argc, argv, "VhalH1idw:Fncsr", long_opts, nullptr)) != -1) {
+    while ((opt = getopt_long(argc, argv, "VhalH1idw:FncsrbBDA", long_opts, nullptr)) != -1) {
         switch(opt) {
             case 'V':
                 printf("%s (%s) version %s\n", APP_NAME, APP_SUITE, APP_VERSION);
                 printf("%s compiled on %s at %s\n",
                        strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                        __DATE__, __TIME__);
-                return EXIT_SUCCESS;
+                exit(EXIT_SUCCESS);
             case 'h':
                 show_help();
-                return EXIT_SUCCESS;
+                exit(EXIT_SUCCESS);
             case 'a':
                 opts.all = true;
                 break;
+            case 'A':
+                opts.almost_all = true;
+                opts.all = false;
+                break;
             case 'l':
                 opts.ls_long = true;
-                opts.one = true;     /* '-l' implies '-1' one */
                 break;
             case '1':
                 opts.one = true;
                 break;
             case 'i':
-                // FIXME opts.inode = true;
+                opts.fields |= 1 << INODE_BIT;
                 opts.ls_long = true;   /* '-i' implies '-l' */
                 break;
             case 'd':
@@ -129,7 +188,6 @@ extern inline int process_args(const int argc, char** argv)
             case 'H':
                 opts.human = true;
                 opts.ls_long = true;   /* '-H' implies '-l' ls_long */
-                opts.one = true;       /* '-H' implies '-1' one     */
                 break;
             case 'c':
                 opts.colour = true;
@@ -142,23 +200,58 @@ extern inline int process_args(const int argc, char** argv)
                 break;
             case 's':
                 opts.size = true;
-                opts.time = 0;
+                opts.time = SORT_DEFAULT;
                 break;
             case 'r':
                 opts.reverse = true;
                 break;
+            case 'b':
+                /* Print allocated blocks. */
+                opts.fields |= 1 << BLOCK_BIT;
+                opts.ls_long = true;   /* '-b' implies '-l' */
+                break;
+            case 'B':
+                /* Print I/O block size. */
+                opts.fields |= 1 << BLK_S_BIT;
+                opts.ls_long = true;   /* '-B' implies '-l' */
+                break;
+            case 'D':
+                /* Print device maj/min. */
+                opts.fields |= 1 << DEV_BIT;
+                opts.ls_long = true;   /* '-D' implies '-l' */
+                break;
+            case 'U':
+                opts.fields &= ~(1 << USER_BIT);
+                break;
+            case 'G':
+                opts.fields &= ~(1 << GROUP_BIT);
+                break;
             case OPT_ATIME:
-                opts.time = 1;
+                opts.time = SORT_ATIME;
                 break;
             case OPT_MTIME:
-                opts.time = 2;
+                opts.time = SORT_MTIME;
                 break;
             case OPT_CTIME:
-                opts.time = 3;
+                opts.time = SORT_CTIME;
                 break;
+            case OPT_P_ATIME:
+                opts.fields |= 1 << ATIME_BIT;
+                opts.ls_long = true;   /* Implies '-l' */
+                break;
+            case OPT_P_MTIME:
+                opts.fields |= 1 << MTIME_BIT;
+                opts.ls_long = true;   /* Implies '-l' */
+                break;
+            case OPT_P_CTIME:
+                opts.fields |= 1 << CTIME_BIT;
+                opts.ls_long = true;   /* Implies '-l' */
+                break;
+            case ':':
+            case '?':
             default:
                 show_help();
-                return EXIT_FAILURE;
+                exit(EXIT_FAILURE);
         }
     }
     return EXIT_SUCCESS;
@@ -269,15 +362,28 @@ extern inline void print_one_format(const int32_t n_files, char* filenames[]) {
     }
 }
 
-extern inline void print_long_format(const int32_t n_files, char *filenames[])
-{
-    /*  We are displaying long format, one file per line. */
-    struct stat buf;
+extern inline char* fmt_time(const struct timespec time_d, char string_time[]) {
     time_t now_t;
     (void) time(&now_t);
     const struct tm *now = localtime(&now_t);
     const int current_year = now->tm_year + 1900;
-    char string_time[13];
+
+    const struct tm *fil = localtime(&time_d.tv_sec);
+    if (current_year != fil->tm_year + 1900) {
+        strftime(string_time, sizeof("Jan 01  1970"), "%b %d  %Y",
+                 localtime(&time_d.tv_sec));
+    } else {
+        strftime(string_time, sizeof("Jan 01 12:00"), "%b %d %H:%M",
+                 localtime(&time_d.tv_sec));
+    }
+    return string_time;
+}
+
+extern inline void print_long_format(const int32_t n_files, char *filenames[])
+{
+    /*  We are displaying long format, one file per line. */
+    struct stat buf;
+
 
     for (int f = 0; f < n_files; f++) {
         if (opts.dereference) {
@@ -292,26 +398,57 @@ extern inline void print_long_format(const int32_t n_files, char *filenames[])
             }
         }
 
-        // if (opts.inode) {
-        //     printf("%8d ", (int) buf.st_ino);
-        // }
-        printf("%s", filetype(buf.st_mode, 0));
-        printf("%s ", file_perm_str(buf.st_mode, 1));
-        printf("%2ld ", (long) buf.st_nlink);
-        printf("%s %s ", get_username(buf.st_uid), get_groupname(buf.st_gid));
-        !opts.human ? (void)printf("%6" PRId64 " ", buf.st_size) :
-            format_ls(buf.st_size);    /* ie: 16k */
-
-        const struct tm *fil = localtime(&buf.st_mtime);
-        if (current_year != fil->tm_year + 1900) {
-            strftime(string_time, sizeof("Jan 01  1970"), "%b %d  %Y",
-                     localtime(&buf.st_mtime));
-        } else {
-            strftime(string_time, sizeof("Jan 01 12:00"), "%b %d %H:%M",
-                     localtime(&buf.st_mtime));
+        if (opts.fields & (1 << INODE_BIT)) {
+            printf("%8" PRId64 " ", buf.st_ino);
         }
 
-        printf("%s ", string_time);
+        if (opts.fields & (1 << BLOCK_BIT)) {
+            printf("%3" PRId64 " ", buf.st_blocks);
+        }
+
+        if (opts.fields & (1 << BLK_S_BIT)) {
+            printf("%4" PRId32 " ", buf.st_blksize);
+        }
+
+        if (opts.fields & (1 << DEV_BIT)) {
+            printf("%d/%d ", major(buf.st_dev), minor(buf.st_dev));
+        }
+
+        if (opts.fields & (1 << PERMS_BIT)) {
+            printf("%s", filetype(buf.st_mode, 0));
+            printf("%s ", file_perm_str(buf.st_mode, 1));
+        }
+
+        if (opts.fields & (1 << LINKS_BIT)) {
+            printf("%3" PRId32 " ", buf.st_nlink);
+        }
+
+        if (opts.fields & (1 << USER_BIT)) {
+            printf("%s ", get_username(buf.st_uid));
+        }
+
+        if (opts.fields & (1 << GROUP_BIT)) {
+            printf("%s ", get_groupname(buf.st_gid));
+        }
+
+        if (opts.fields & (1 << SIZE_BIT)) {
+            !opts.human ? (void)printf("%6" PRId64 " ", buf.st_size) :
+                format_ls(buf.st_size);    /* ie: 16k */
+        }
+
+        char t_buf[13];
+        if (opts.fields & (1 << MTIME_BIT)) {
+            printf(" %s ", fmt_time(buf.st_mtim, t_buf));
+        }
+
+        if (opts.fields & (1 << ATIME_BIT)) {
+            printf(" %s ", fmt_time(buf.st_atim, t_buf));
+        }
+
+        if (opts.fields & (1 << CTIME_BIT)) {
+            printf(" %s ", fmt_time(buf.st_ctim, t_buf));
+        }
+
         p_filename(filenames[f], buf, opts.colour, opts.classify);
         putchar('\n');
     }

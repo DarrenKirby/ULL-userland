@@ -32,12 +32,13 @@
 char *APP_NAME = "ls";
 
 struct Opts opts = {
-    .fields = 0,
+    .fields = DEF_FIELDS, /* 1008 = 0000001111110000 */
     .screen_width = 0,
     .time = 0,
     .ls_long = false,
     .human = false,
     .all = false,
+    .almost_all = false,
     .one = false,
     .dereference = false,
     .colour = true,
@@ -100,9 +101,17 @@ int main(const int argc, char *argv[])
             uint32_t n;
             while ((list = readdir(dp)) != NULL) {
                 /* First time around, get max file length. */
-                if (!opts.all) {
-                    if (list->d_name[0] == '.') {
+                if (list->d_name[0] == '.') {
+                    /* If neither -a nor -A is set, skip all dotfiles. */
+                    if (!opts.all && !opts.almost_all) {
                         continue;
+                    }
+
+                    /* If -A is set (and not overridden by -a), skip ONLY '.' and '..' */
+                    if (opts.almost_all && !opts.all) {
+                        if (strcmp(list->d_name, ".") == 0 || strcmp(list->d_name, "..") == 0) {
+                            continue;
+                        }
                     }
                 }
                 n_files++;
@@ -117,10 +126,17 @@ int main(const int argc, char *argv[])
             n = 0;
 
             while ((list = readdir(dp)) != NULL) {
-                if (!opts.all) {
-
-                    if (list->d_name[0] == '.') {
+                if (list->d_name[0] == '.') {
+                    /* If neither -a nor -A is set, skip all dotfiles. */
+                    if (!opts.all && !opts.almost_all) {
                         continue;
+                    }
+
+                    /* If -A is set (and not overridden by -a), skip ONLY '.' and '..' */
+                    if (opts.almost_all && !opts.all) {
+                        if (strcmp(list->d_name, ".") == 0 || strcmp(list->d_name, "..") == 0) {
+                            continue;
+                        }
                     }
                 }
                 filenames[n] = strdup(list->d_name);
@@ -160,18 +176,17 @@ int main(const int argc, char *argv[])
 
             /* Reverse the array to print ascending order. */
             if (opts.reverse) {
-                reverseArray(filenames, n_files);
-                //reverse_array(n_files, file_max, filenames);
+                reverse_array(filenames, n_files);
             }
 
             if (n_args > 1) {
                 printf("\n%s:\n", path_to_ls);
             }
 
-            if (opts.one && !opts.ls_long) {
-                print_one_format(n_files, filenames);
-            } else if (opts.ls_long) {
+            if (opts.ls_long) {
                 print_long_format(n_files, filenames);
+            } else if (opts.one) {
+                print_one_format(n_files, filenames);
             } else {
                 print_short_format(n_files, filenames, longest_so_far);
             }
@@ -189,12 +204,11 @@ int main(const int argc, char *argv[])
             /* Just a single file... */
             char *filenames[1];
             filenames[0] = strdup(path_to_ls);
-            //memcpy(filenames, path_to_ls, strlen(path_to_ls) + 1);
 
-            if (opts.one && !opts.ls_long) {
-                print_one_format(n_files, filenames);
-            } else if (opts.ls_long) {
+            if (opts.ls_long) {
                 print_long_format(n_files, filenames);
+            } else if (opts.one) {
+                print_one_format(n_files, filenames);
             } else {
                 print_short_format(n_files, filenames, longest_so_far);
             }
