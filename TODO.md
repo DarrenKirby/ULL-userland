@@ -52,8 +52,8 @@ on macOS and FreeBSD. See notes below...
 | cut        | not started |  ❌   |  ❌   |   ❌    |                                            |
 | date       | not started |  ❌   |  ❌   |   ❌    |                                            |
 | dd         | not started |  ❌   |  ❌   |   ❌    |                                            |
-| df         | in progress |  ✅   |  ✅   |   ✅    |                                            |
-| dir        | not started |  ❌   |  ❌   |   ❌    |                                            |
+| df         | completed   |  ✅   |  ✅   |   ✅    |                                            |
+| dir        | completed   |  ✅   |  ✅   |   ✅    |                                            |
 | dircolors  | not started |  ❌   |  ❌   |   ❌    |                                            |
 | dirname    | completed   |  ✅   |  ✅   |   ✅    |                                            |
 | dmesg      | not started |  ❌   |  ❌   |   ❌    |                                            |
@@ -79,7 +79,7 @@ on macOS and FreeBSD. See notes below...
 | link       | in progress |  ✅   |  ✅   |   ✅    |                                            |
 | ln         | in progress |  ✅   |  ✅   |   ✅    |                                            |
 | logname    | completed   |  ✅   |  ✅   |   ❌    |                                            |
-| ls         | in progress |  ✅   |  ✅   |   ✅    |                                            |
+| ls         | completed   |  ✅   |  ✅   |   ✅    |                                            |
 | md5sum     | in progress |  ✅   |  ✅   |   ✅    |                                            |
 | mkdir      | completed   |  ✅   |  ✅   |   ✅    |                                            |
 | mkfifo     | not started |  ❌   |  ❌   |   ❌    |                                            |
@@ -142,7 +142,7 @@ on macOS and FreeBSD. See notes below...
 | unlink     | in progress |  ✅   |  ✅   |   ✅    |                                            |
 | uptime     | completed   |  ✅   |  ✅   |   ✅    |                                            |
 | users      | not started |  ❌   |  ❌   |   ❌    |                                            |
-| vdir       | in progress |  ✅   |  ✅   |   ✅    |                                            |
+| vdir       | completed   |  ✅   |  ✅   |   ✅    |                                            |
 | wc         | completed   |  ✅   |  ✅   |   ✅    |                                            |
 | which      | not started |  ❌   |  ❌   |   ❌    |                                            |
 | who        | completed   |  ✅   |  ✅   |   ✅    |                                            |
@@ -155,7 +155,6 @@ Some of these are implemented, may get to others.
 
 From procps:
 
-* free - Report the amounts of free and used memory in the system
 * hugetop - Report hugepage usage of processes and the system as a whole
 * kill - Send a signal to a process based on PID
 * pgrep - List processes based on name or other attributes
@@ -168,7 +167,6 @@ From procps:
 * sysctl - Read or write kernel parameters at run-time
 * tload - Graphical representation of system load average
 * top - Dynamic real-time view of running processes
-* uptime - Display how long the system has been running
 * vmstat - Report virtual memory statistics
 * w - Report logged in users and what they are doing
 * watch - Execute a program periodically, showing output fullscreen
@@ -176,7 +174,6 @@ From procps:
 From util-linux:
 
 * bits(1) - convert bit masks or lists from/to various formats
-* cal(1) - display a calendar
 * chfn(1) - change your finger information
 * choom(1) - display or adjust OOM-killer score
 * chrt(1) - manipulate the real-time attributes of a process
@@ -198,7 +195,6 @@ From util-linux:
 * getino(1) - print the unique inode number associated to a process file descriptor or namespace for a given PID
 * getopt(1) - parse command options (enhanced)
 * hardlink(1) - link multiple copies of a file
-* hexdump(1) - display file contents in hexadecimal, decimal, octal, or ascii
 * ionice(1) - set or get process I/O scheduling class and priority
 * ipcmk(1) - make various IPC resources
 * ipcrm(1) - remove certain IPC resources
