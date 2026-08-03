@@ -28,6 +28,7 @@ prep:
 # Shared header files
 $(BIN_DIR)/sha256sum $(BIN_DIR)/sha512sum $(BIN_DIR)/sha384sum $(BIN_DIR)/sha224sum: $(SRC_DIR)/sha2.h
 $(BIN_DIR)/df: $(SRC_DIR)/mount.h
+$(BIN_DIR)/ls $(BIN_DIR)/dir $(BIN_DIR)/vdir: $(SRC_DIR)/ls.h
 
 # Provide aliases for running `make df` or `make base32` etc...
 .PHONY: $(PROGRAMS)
