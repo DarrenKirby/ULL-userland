@@ -410,7 +410,7 @@ extern inline void print_long_format(const int32_t n_files, char *filenames[])
         }
 
         if (opts.fields & (1 << BLK_S_BIT)) {
-            printf("%4" PRIi64 " ", buf.st_blksize);
+            printf("%4" PRIi64 " ", (int64_t)buf.st_blksize);
         }
 
         if (opts.fields & (1 << DEV_BIT)) {
@@ -423,7 +423,7 @@ extern inline void print_long_format(const int32_t n_files, char *filenames[])
         }
 
         if (opts.fields & (1 << LINKS_BIT)) {
-            printf("%3" PRIu64 " ", buf.st_nlink);
+            printf("%3" PRIu64 " ", (int64_t)buf.st_nlink);
         }
 
         if (opts.fields & (1 << USER_BIT)) {
