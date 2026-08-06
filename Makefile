@@ -14,6 +14,13 @@ SRCS     := $(filter-out $(SRC_DIR)/template.c, $(wildcard $(SRC_DIR)/*.c))
 PROGRAMS := $(patsubst $(SRC_DIR)/%.c,%,$(SRCS))
 BINARIES := $(patsubst %,$(BIN_DIR)/%,$(PROGRAMS))
 
+# Remove proc from non-Linux builds
+UNAME_S := $(shell uname -s)
+ifneq ($(UNAME_S), Linux)
+	SRCS := $(filter-out ps.c, $(SRCS))
+	PROGRAMS := $(filter-out ps, $(PROGRAMS))
+endif
+
 package := ull-userland
 version := 0.4.3
 tarname := $(package)
