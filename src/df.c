@@ -164,11 +164,9 @@ int main(const int argc, char *argv[])
                    strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__,
                    __DATE__, __TIME__);
             return EXIT_SUCCESS;
-            break;
         case 'h':
             show_help();
             return EXIT_SUCCESS;
-            break;
         case 'i':
             /* Zero-out bits 6-9. */
             opts.fields &= ~(0b1111 << 6);
